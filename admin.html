@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title id="adminPageTitle">Store Admin Console • tioDisk</title>
+
+  <!-- Favicon -->
+  <link id="adminFavicon" rel="icon" type="image/jpeg" href="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+
+  <!-- Google Fonts: Hind Siliguri & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            daraz: {
+              DEFAULT: '#f85606',
+              hover: '#d94700',
+              light: '#fff1eb',
+              bg: '#eff0f5'
+            }
+          },
+          fontFamily: {
+            sans: ['"Hind Siliguri"', '"Inter"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', 'Inter', sans-serif;
+      letter-spacing: -0.01em;
+      background-color: #f1f2f7;
+    }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  </style>
+</head>
+<body class="text-slate-900 antialiased min-h-screen">
+
+  <!-- Floating Toast Notification -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Global Loading Indicator -->
+  <div id="globalLoader" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[10000] hidden flex-col items-center justify-center gap-3">
+    <div class="w-11 h-11 border-4 border-orange-200 border-t-[#f85606] rounded-full animate-spin"></div>
+    <span id="loaderText" class="text-xs font-bold text-white bg-[#f85606] px-4 py-1.5 rounded-full shadow-lg">Cloudinary-তে ফাইল আপলোড হচ্ছে...</span>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobileDrawerOverlay" onclick="toggleDrawer(false)" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+  <aside id="mobileDrawer" class="fixed top-0 right-0 w-72 h-full bg-white z-50 shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-200 ease-in-out">
+    <div>
+      <div class="flex items-center justify-between pb-5 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Store Logo" class="w-8 h-8 rounded-lg object-cover shadow-sm store-logo-img">
+          <span class="font-black text-base text-slate-900 store-name-text">Online Store</span>
+        </div>
+        <button onclick="toggleDrawer(false)" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <nav class="mt-6 space-y-1">
+        <button onclick="switchTab('dashboard'); toggleDrawer(false)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-[#f85606] transition">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i> ড্যাশবোর্ড (Overview)
+        </button>
+        <button onclick="switchTab('orders'); toggleDrawer(false)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-[#f85606] transition">
+          <div class="flex items-center gap-3">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i> অর্ডারসমূহ (Orders)
+          </div>
+          <span id="drawerOrderBadge" class="bg-[#f85606] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+        </button>
+        <button onclick="switchTab('products'); toggleDrawer(false)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-[#f85606] transition">
+          <i data-lucide="box" class="w-4 h-4"></i> প্রোডাক্টস (Products)
+        </button>
+        <button onclick="switchTab('categories'); toggleDrawer(false)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-[#f85606] transition">
+          <i data-lucide="layers" class="w-4 h-4"></i> ক্যাটাগরি (Categories)
+        </button>
+        <button onclick="switchTab('marketing'); toggleDrawer(false)" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-[#f85606] transition">
+          <i data-lucide="film" class="w-4 h-4"></i> রিলস, ব্যানার ও মিডিয়া
+        </button>
+      </nav>
+    </div>
+
+    <div class="pt-6 border-t border-slate-100">
+      <a id="drawerLiveStoreLink" href="index.html" target="_blank" class="live-store-link flex items-center justify-center gap-2 w-full py-2.5 bg-[#f85606] hover:bg-[#d94700] text-white text-xs font-bold rounded-xl shadow">
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        <span>লাইভ স্টোর ভিজিট</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="flex min-h-screen">
+    <!-- Desktop Minimal Sidebar -->
+    <aside class="hidden lg:flex flex-col w-64 border-r border-slate-200 bg-white p-5 justify-between shrink-0 shadow-sm">
+      <div class="space-y-6">
+        <div class="flex items-center gap-3 px-2">
+          <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Store Logo" class="w-9 h-9 rounded-xl object-cover shadow-sm store-logo-img">
+          <div>
+            <span class="font-black text-base tracking-tight text-slate-900 block leading-tight store-name-text">Online Store</span>
+            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Admin Console</span>
+          </div>
+        </div>
+
+        <nav class="space-y-1.5">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-[#f85606] hover:bg-orange-50 transition">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i> ড্যাশবোর্ড (Dashboard)
+          </button>
+          <button onclick="switchTab('orders')" id="nav-orders" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-[#f85606] hover:bg-orange-50 transition">
+            <div class="flex items-center gap-3">
+              <i data-lucide="shopping-cart" class="w-4 h-4"></i> অর্ডারসমূহ (Orders)
+            </div>
+            <span id="navOrderBadge" class="bg-[#f85606] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+          </button>
+          <button onclick="switchTab('products')" id="nav-products" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-[#f85606] hover:bg-orange-50 transition">
+            <i data-lucide="box" class="w-4 h-4"></i> প্রোডাক্টস (Products)
+          </button>
+          <button onclick="switchTab('categories')" id="nav-categories" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-[#f85606] hover:bg-orange-50 transition">
+            <i data-lucide="layers" class="w-4 h-4"></i> ক্যাটাগরি (Categories)
+          </button>
+          <button onclick="switchTab('marketing')" id="nav-marketing" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-[#f85606] hover:bg-orange-50 transition">
+            <i data-lucide="film" class="w-4 h-4"></i> রিলস ও ব্যানার (Media)
+          </button>
+        </nav>
+      </div>
+
+      <div class="border-t border-slate-100 pt-4">
+        <a id="desktopLiveStoreLink" href="index.html" target="_blank" class="live-store-link flex items-center justify-between p-2.5 rounded-xl border border-orange-100 hover:border-[#f85606] bg-orange-50/50 text-xs font-bold text-[#f85606] transition shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>লাইভ শপ দেখুন</span>
+          </div>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex flex-col min-w-0 pb-28 lg:pb-10">
+
+      <!-- Minimal Header -->
+      <header class="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+          <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Store Logo" class="lg:hidden w-8 h-8 rounded-lg object-cover shadow-sm store-logo-img">
+          <span class="lg:hidden font-black text-base text-slate-900 store-name-text">Online Store</span>
+          <span class="hidden lg:block text-xs font-bold text-slate-400 uppercase tracking-wider" id="headerBreadcrumb">Overview</span>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <a id="headerLiveStoreLink" href="index.html" target="_blank" class="live-store-link hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#f85606] text-[#f85606] hover:bg-orange-50 text-xs font-bold transition">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            <span>Live Store</span>
+          </a>
+          <button onclick="toggleDrawer(true)" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition active:scale-95">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD -->
+      <main id="tab-dashboard" class="tab-view active p-4 sm:p-8 max-w-6xl mx-auto w-full space-y-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div onclick="switchTab('orders'); setOrderFilter('today')" class="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm cursor-pointer hover:border-rose-400 transition">
+            <span class="text-[11px] font-bold text-rose-600 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> আজকের অর্ডার
+            </span>
+            <div class="text-xl sm:text-2xl font-black text-slate-900 mt-1" id="statTodayOrders">0</div>
+          </div>
+          <div onclick="switchTab('orders'); setOrderFilter('active')" class="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm cursor-pointer hover:border-amber-400 transition">
+            <span class="text-[11px] font-bold text-amber-600">পেন্ডিং অর্ডার</span>
+            <div class="text-xl sm:text-2xl font-black text-slate-900 mt-1" id="statPendingOrders">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[11px] font-medium text-slate-500">মোট প্রোডাক্ট</span>
+            <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-1" id="statProducts">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[11px] font-medium text-slate-500">ক্যাটাগরি</span>
+            <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-1" id="statCategories">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[11px] font-medium text-slate-500">স্লাইডার ব্যানার</span>
+            <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-1" id="statBanners">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[11px] font-medium text-slate-500">রিলস / শর্টস</span>
+            <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-1" id="statShorts">0</div>
+          </div>
+        </div>
+
+        <!-- Top Announcement Bar Editor -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="bell" class="w-4 h-4 text-[#f85606]"></i>
+              <span>ওয়েবসাইটের টপ এনাউন্সমেন্ট নোটিশ</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">গ্রাহকদের জন্য হোমপেজের সবার ওপরে প্রদর্শিত নোটিশ টেক্সট লিখুন।</p>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="announcementInput" placeholder="যেমন: আমাদের শপে ফ্রি হোম ডেলিভারি অফার চলছে!" class="flex-1 bg-slate-50 border border-slate-200 focus:border-[#f85606] focus:bg-white text-slate-900 rounded-xl px-3.5 py-2 text-xs outline-none transition">
+            <button onclick="saveAnnouncement()" class="bg-[#f85606] hover:bg-[#d94700] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> সেভ করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <button onclick="switchTab('orders')" class="p-5 rounded-2xl border border-slate-200 bg-white hover:border-[#f85606] text-left transition space-y-1 group shadow-sm">
+            <div class="w-9 h-9 rounded-xl bg-orange-50 text-[#f85606] flex items-center justify-center group-hover:bg-[#f85606] group-hover:text-white transition">
+              <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            </div>
+            <h4 class="text-xs font-bold text-slate-900 pt-2">অর্ডার ম্যানেজমেন্ট</h4>
+            <p class="text-[11px] text-slate-400">কুরিয়ার তথ্য ও ওয়ান-ক্লিক কপি সুবিধা</p>
+          </button>
+          <button onclick="openProductModal()" class="p-5 rounded-2xl border border-slate-200 bg-white hover:border-[#f85606] text-left transition space-y-1 group shadow-sm">
+            <div class="w-9 h-9 rounded-xl bg-orange-50 text-[#f85606] flex items-center justify-center group-hover:bg-[#f85606] group-hover:text-white transition">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </div>
+            <h4 class="text-xs font-bold text-slate-900 pt-2">নতুন প্রোডাক্ট যোগ করুন</h4>
+            <p class="text-[11px] text-slate-400">কালার ভিত্তিক ছবি ও সাইজ কন্ট্রোল</p>
+          </button>
+          <button onclick="switchTab('marketing')" class="p-5 rounded-2xl border border-slate-200 bg-white hover:border-[#f85606] text-left transition space-y-1 group shadow-sm">
+            <div class="w-9 h-9 rounded-xl bg-orange-50 text-[#f85606] flex items-center justify-center group-hover:bg-[#f85606] group-hover:text-white transition">
+              <i data-lucide="film" class="w-4 h-4"></i>
+            </div>
+            <h4 class="text-xs font-bold text-slate-900 pt-2">রিলস ও ব্যানার কন্ট্রোল</h4>
+            <p class="text-[11px] text-slate-400">শর্টস ভিডিও ও স্লাইডার ব্যানার ম্যানেজমেন্ট</p>
+          </button>
+        </div>
+      </main>
+
+      <!-- TAB 2: ORDERS MANAGEMENT -->
+      <main id="tab-orders" class="tab-view p-4 sm:p-8 max-w-6xl mx-auto w-full space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">অর্ডার ম্যানেজমেন্ট (Orders)</h2>
+            <p class="text-xs text-slate-400">রিয়েল-টাইম অর্ডার ট্র্যাকিং ও কুরিয়ার কপি সিস্টেম।</p>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1 sm:pb-0">
+            <button onclick="setOrderFilter('active')" id="btnFilter-active" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#f85606] text-white transition">
+              Active (<span id="countActive">0</span>)
+            </button>
+            <button onclick="setOrderFilter('today')" id="btnFilter-today" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              Today (<span id="countToday">0</span>)
+            </button>
+            <button onclick="setOrderFilter('history')" id="btnFilter-history" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              History (<span id="countHistory">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Orders Search Bar -->
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="orderSearchInput" oninput="filterOrdersList()" placeholder="কাস্টমারের নাম, মোবাইল নাম্বার বা জেলা দিয়ে খুঁজুন..." class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none focus:border-[#f85606] transition shadow-sm">
+        </div>
+
+        <!-- Orders List Container -->
+        <div id="ordersContainer" class="space-y-4">
+          <div class="text-center py-12 text-xs text-slate-400">অর্ডার লোড হচ্ছে...</div>
+        </div>
+      </main>
+
+      <!-- TAB 3: PRODUCTS -->
+      <main id="tab-products" class="tab-view p-4 sm:p-8 max-w-6xl mx-auto w-full space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">প্রোডাক্ট তালিকা ও স্টক</h2>
+            <p class="text-xs text-slate-400"><span class="store-name-text">শপের</span> সকল প্রডাক্টের নিয়ন্ত্রণ।</p>
+          </div>
+          <div class="flex items-center gap-2.5 w-full sm:w-auto">
+            <div class="relative flex-1 sm:w-60">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="productSearch" oninput="filterProducts()" placeholder="প্রডাক্ট খুঁজুন..." class="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 outline-none focus:border-[#f85606] transition">
+            </div>
+            <button onclick="openProductModal()" class="bg-[#f85606] hover:bg-[#d94700] text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 shadow">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> নতুন প্রোডাক্ট
+            </button>
+          </div>
+        </div>
+
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </main>
+
+      <!-- TAB 4: CATEGORIES -->
+      <main id="tab-categories" class="tab-view p-4 sm:p-8 max-w-6xl mx-auto w-full space-y-6">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">ক্যাটাগরি ম্যানেজমেন্ট</h2>
+          <p class="text-xs text-slate-400">শপের জন্য আকর্ষণীয় কালেকশন তৈরি করুন।</p>
+        </div>
+
+        <!-- Add Category Form -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি নাম *</label>
+              <input type="text" id="catName" placeholder="যেমন: শার্ট, টি-শার্ট, প্যান্ট" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি কভার ছবি *</label>
+              <div class="flex items-center gap-3">
+                <label class="flex-1 flex items-center justify-center gap-2 border border-dashed border-slate-300 hover:border-[#f85606] bg-slate-50 hover:bg-orange-50/50 rounded-xl py-2 px-3 cursor-pointer transition">
+                  <i data-lucide="upload" class="w-4 h-4 text-slate-500"></i>
+                  <span id="catUploadLabel" class="text-xs font-medium text-slate-600">ছবি নির্বাচন করুন</span>
+                  <input type="file" id="catFileInput" accept="image/*" class="hidden" onchange="previewCategoryFile(this)">
+                </label>
+                <div id="catPreviewBox" class="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden hidden shrink-0">
+                  <img id="catPreviewImg" class="w-full h-full object-cover">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="addCategory()" class="bg-[#f85606] hover:bg-[#d94700] text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> ক্যাটাগরি সেভ করুন
+            </button>
+          </div>
+        </div>
+
+        <div id="categoriesGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+      </main>
+
+      <!-- TAB 5: MARKETING, REELS & BANNER -->
+      <main id="tab-marketing" class="tab-view p-4 sm:p-8 max-w-6xl mx-auto w-full space-y-8">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">মার্কেটিং, রিলস ও ব্যানার</h2>
+          <p class="text-xs text-slate-400">হোমপেজের শর্টস/রিলস ভিডিও, স্লাইডার ব্যানার ও প্রমো অ্যাড নিয়ন্ত্রণ করুন।</p>
+        </div>
+
+        <!-- 1. Reels / Shorts Video Management -->
+        <div class="bg-white p-5 rounded-2xl border border-orange-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-orange-100 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f85606]"></span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800"><span class="store-name-text">শপ</span> Shorts & Reels ভিডিও</h3>
+            </div>
+            <span class="text-[10px] bg-orange-100 text-[#f85606] font-bold px-2 py-0.5 rounded">DYNAMIC REELS</span>
+          </div>
+          <p class="text-xs text-slate-500">হোমপেজে প্রদর্শিত শর্টস ভিডিও যুক্ত করুন। আপনি সরাসরি কোনো MP4 ভিডিও লিংক দিতে পারেন অথবা মেমোরি থেকে ভিডিও ফাইল আপলোড করতে পারেন।</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">ভিডিও লিংক (Direct MP4 URL)</label>
+              <div class="flex gap-2">
+                <input type="url" id="shortUrlInput" placeholder="https://domain.com/short.mp4" class="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none transition">
+                <button onclick="addShortFromUrl()" class="bg-[#f85606] hover:bg-[#d94700] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow shrink-0">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> যুক্ত করুন
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">অথবা ভিডিও ফাইল আপলোড করুন (Cloudinary)</label>
+              <label class="flex items-center justify-center gap-2 border border-dashed border-slate-300 hover:border-[#f85606] bg-slate-50 hover:bg-orange-50/50 rounded-xl py-2 px-3 cursor-pointer transition">
+                <i data-lucide="video" class="w-4 h-4 text-slate-500"></i>
+                <span id="shortUploadLabel" class="text-xs font-medium text-slate-600">ভিডিও ফাইল নির্বাচন</span>
+                <input type="file" id="shortFileInput" accept="video/mp4,video/*" class="hidden" onchange="uploadShortDirect(this)">
+              </label>
+            </div>
+          </div>
+
+          <!-- Existing Shorts List -->
+          <div class="pt-3 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-700 mb-2">বর্তমান অ্যাক্টিভ শর্টস ভিডিওসমূহ</h4>
+            <div id="shortsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <div class="col-span-full py-4 text-center text-xs text-slate-400">কোনো রিলস ভিডিও নেই</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Hero Sliders -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">হোমপেজ স্লাইডার ব্যানার</h3>
+            <span class="text-[11px] text-slate-400 font-medium">প্রস্তাবিত সাইজ: 1920x800</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <label class="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 hover:border-[#f85606] bg-slate-50/60 hover:bg-orange-50/30 rounded-xl py-3 cursor-pointer transition">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-500"></i>
+              <span id="bannerUploadLabel" class="text-xs font-bold text-slate-600">নতুন ব্যানার আপলোড করুন</span>
+              <input type="file" id="bannerFileInput" accept="image/*" class="hidden" onchange="uploadBannerDirect(this)">
+            </label>
+          </div>
+
+          <div id="bannersGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2"></div>
+        </div>
+
+        <!-- 3. Middle Promo Ads -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">মাঝের বিজ্ঞাপন ব্যানার (Promo Ads)</h3>
+            <span class="text-[11px] text-slate-400 font-medium">ক্যাটাগরির মাঝে প্রদর্শিত অ্যাড</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <label class="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 hover:border-[#f85606] bg-slate-50/60 hover:bg-orange-50/30 rounded-xl py-3 cursor-pointer transition">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-500"></i>
+              <span id="adUploadLabel" class="text-xs font-bold text-slate-600">অ্যাড ব্যানার আপলোড করুন</span>
+              <input type="file" id="adFileInput" accept="image/*" class="hidden" onchange="uploadAdDirect(this)">
+            </label>
+          </div>
+
+          <div id="adsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2"></div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- FLOATING MOBILE BOTTOM NAVIGATION -->
+  <nav class="lg:hidden fixed bottom-4 left-4 right-4 z-40 bg-white/95 backdrop-blur-md border border-slate-200 shadow-lg rounded-2xl px-2 py-2 flex items-center justify-around">
+    <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mob-item flex flex-col items-center gap-0.5 text-[#f85606] p-1.5">
+      <i data-lucide="layout-grid" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold">হোম</span>
+    </button>
+    <button onclick="switchTab('orders')" id="mob-orders" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1.5 relative">
+      <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold">অর্ডার</span>
+      <span id="mobOrderBadge" class="absolute top-0.5 right-2 w-2 h-2 bg-[#f85606] rounded-full hidden"></span>
+    </button>
+    <button onclick="switchTab('products')" id="mob-products" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1.5">
+      <i data-lucide="box" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold">প্রোডাক্ট</span>
+    </button>
+    <button onclick="switchTab('categories')" id="mob-categories" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1.5">
+      <i data-lucide="layers" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold">ক্যাটাগরি</span>
+    </button>
+    <button onclick="switchTab('marketing')" id="mob-marketing" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1.5">
+      <i data-lucide="film" class="w-4 h-4"></i>
+      <span class="text-[10px] font-bold">মিডিয়া</span>
+    </button>
+  </nav>
+
+  <!-- ADD PRODUCT MODAL -->
+  <div id="productModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh]">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-orange-50/50">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">নতুন প্রোডাক্ট যুক্ত করুন</h3>
+          <p class="text-[11px] text-slate-400">প্রোডাক্ট তথ্য, ভেরিয়েন্ট ও কালার ভিত্তিক ছবি গ্যালারি।</p>
+        </div>
+        <button onclick="closeProductModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-700">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-5 overflow-y-auto custom-scroll flex-1">
+        <!-- Basic Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">প্রোডাক্টের নাম *</label>
+            <input type="text" id="prodName" placeholder="যেমন: প্রিমিয়াম ক্যাজুয়াল শার্ট" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">ক্যাটাগরি *</label>
+            <select id="prodCategory" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+              <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">স্টক সংখ্যা (Stock)</label>
+            <input type="number" id="prodStock" placeholder="50" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">রেগুলার মূল্য (BDT) *</label>
+            <input type="number" id="prodRegularPrice" placeholder="1200" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">ডিসকাউন্ট বা অফার মূল্য (BDT)</label>
+            <input type="number" id="prodDiscountPrice" placeholder="850" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">সাইজসমূহ (কমা দিয়ে আলাদা করুন)</label>
+            <input type="text" id="prodSizes" placeholder="M, L, XL, XXL" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+          </div>
+        </div>
+
+        <!-- COLOR VARIANTS & MULTI-IMAGE SYSTEM -->
+        <div class="pt-2 border-t border-slate-100 space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">কালার ভ্যারিয়েন্ট ও ছবি</h4>
+                <p class="text-[11px] text-slate-400">প্রতিটি কালারের জন্য আলাদা ছবি আপলোড করতে পারবেন।</p>
+              </div>
+            </div>
+
+            <!-- Color Addition Input -->
+            <div class="flex gap-2 mt-3">
+              <input type="text" id="newColorInput" placeholder="কালারের নাম লিখুন (যেমন: Black, Navy Blue, Maroon)" class="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#f85606] rounded-xl px-3.5 py-2 text-xs outline-none">
+              <button type="button" onclick="addColorGroup()" class="bg-orange-50 hover:bg-orange-100 text-[#f85606] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> কালার যোগ করুন
+              </button>
+            </div>
+          </div>
+
+          <!-- Color Groups Container -->
+          <div id="colorGalleriesContainer" class="space-y-4">
+            <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3" id="colorGroup-default">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#f85606]"></span>
+                  <span class="text-xs font-bold text-slate-800">সাধারণ ছবি / ডিফল্ট ফটো গ্যালারি</span>
+                </div>
+              </div>
+
+              <!-- Upload Dropzone -->
+              <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-[#f85606] bg-white rounded-xl p-3.5 cursor-pointer transition text-center">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-slate-400"></i>
+                <span class="text-xs font-bold text-slate-600 mt-1">ছবি সিলেক্ট করুন</span>
+                <span class="text-[10px] text-slate-400">একসাথে একাধিক ছবি সিলেক্ট করা যাবে</span>
+                <input type="file" multiple accept="image/*" class="hidden" onchange="uploadColorPhotos(this, 'General')">
+              </label>
+
+              <!-- Image Thumbnails Grid -->
+              <div id="thumbs-General" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Free Delivery Check -->
+        <div class="pt-2 border-t border-slate-100">
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="prodFreeDelivery" class="w-4 h-4 rounded border-slate-300 text-[#f85606] focus:ring-0">
+            <span class="text-xs font-bold text-slate-700">এই প্রোডাক্টে ফ্রি ডেলিভারি প্রযোজ্য</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button onclick="closeProductModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition">বাতিল</button>
+        <button onclick="addProduct()" class="bg-[#f85606] hover:bg-[#d94700] text-white px-6 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> প্রকাশ করুন
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let LOGO_PLACEHOLDER = "https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg";
+
+    // 1. DYNAMIC SHOP RESOLVER (Reads ?shop=slug from URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentShop = urlParams.get('shop') || 'lowbudget'; // Default to lowbudget if no param
+
+    // Update all Live Store links immediately to preserve current shop
+    const liveStoreUrl = `index.html?shop=${currentShop}`;
+    document.querySelectorAll('.live-store-link').forEach(link => {
+      link.href = liveStoreUrl;
+    });
+
+    // Cloudinary Credentials
+    const CLOUDINARY_CLOUD_NAME = 'dwgvvzbvn';
+    const CLOUDINARY_UPLOAD_PRESET = 'storyapp';
+
+    // Firebase Credentials
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_HBGuQSh_GzqrHqHbgdaoBikLZsK3Qqs",
+      authDomain: "new-all-f99f7.firebaseapp.com",
+      databaseURL: "https://new-all-f99f7-default-rtdb.firebaseio.com",
+      projectId: "new-all-f99f7",
+      storageBucket: "new-all-f99f7.firebasestorage.app",
+      messagingSenderId: "1069748173900",
+      appId: "1:1069748173900:web:158d6336c0f4628133c8e9",
+      measurementId: "G-V6DZ37WSBF"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    // 2. DYNAMIC PATHS (Scoped specifically to this shop)
+    const PATHS = {
+      orders: `stores/${currentShop}/orders`,
+      announcement: `stores/${currentShop}/announcement`,
+      banners: `stores/${currentShop}/banners`,
+      categories: `stores/${currentShop}/categories`,
+      products: `stores/${currentShop}/products`,
+      ads: `stores/${currentShop}/ads`,
+      shorts: `stores/${currentShop}/shorts`,
+      settings: `stores/${currentShop}/settings`
+    };
+
+    // State Variables
+    let currentStoreName = 'Online Store';
+    let cachedProducts = {};
+    let allOrdersData = {};
+    let currentOrderFilter = 'active';
+    let activeColorGalleries = { 'General': [] };
+    let pendingCategoryImg = '';
+
+    // 3. LISTEN TO STORE SETTINGS (Store Name, Logo)
+    db.ref(PATHS.settings).on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+
+      currentStoreName = s.storeName || 'Online Store';
+      document.getElementById('adminPageTitle').innerText = `${currentStoreName} • Admin Console`;
+
+      // Update names across UI
+      document.querySelectorAll('.store-name-text').forEach(el => el.innerText = currentStoreName);
+
+      // Update logos across UI
+      if (s.logo) {
+        LOGO_PLACEHOLDER = s.logo;
+        document.getElementById('adminFavicon').href = s.logo;
+        document.querySelectorAll('.store-logo-img').forEach(el => el.src = s.logo);
+      }
+    });
+
+    // Loader Controller
+    function showLoader(msg = 'Uploading to Cloudinary...') {
+      document.getElementById('loaderText').innerText = msg;
+      document.getElementById('globalLoader').classList.remove('hidden');
+      document.getElementById('globalLoader').classList.add('flex');
+    }
+    function hideLoader() {
+      document.getElementById('globalLoader').classList.add('hidden');
+      document.getElementById('globalLoader').classList.remove('flex');
+    }
+
+    // Direct Cloudinary Upload Function (Image and Video)
+    async function uploadFileToCloudinary(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+      const isVideo = file.type && file.type.startsWith('video');
+      const endpoint = isVideo ? 'video' : 'image';
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${endpoint}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Cloudinary Upload Failed');
+      const data = await res.json();
+      return data.secure_url;
+    }
+
+    // Toast Alert
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs font-bold shadow-md flex items-center gap-2 bg-white ${
+        isError ? 'border-rose-200 text-rose-600' : 'border-emerald-200 text-emerald-700'
+      }`;
+      toast.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check-circle-2'}" class="w-4 h-4"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => toast.remove(), 200);
+      }, 2500);
+    }
+
+    // Tab Navigation
+    const tabTitles = {
+      dashboard: 'ড্যাশবোর্ড ওভারভিউ',
+      orders: 'অর্ডার ম্যানেজমেন্ট',
+      products: 'প্রোডাক্ট তালিকা',
+      categories: 'ক্যাটাগরি সমূহ',
+      marketing: 'রিলস ও মিডিয়া'
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add('active');
+
+      document.getElementById('headerBreadcrumb').innerText = tabTitles[tabId] || 'Overview';
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('bg-orange-50', 'text-[#f85606]');
+        btn.classList.add('text-slate-500');
+      });
+      const dBtn = document.getElementById(`nav-${tabId}`);
+      if (dBtn) {
+        dBtn.classList.add('bg-orange-50', 'text-[#f85606]');
+        dBtn.classList.remove('text-slate-500');
+      }
+
+      document.querySelectorAll('.mob-item').forEach(btn => {
+        btn.classList.remove('text-[#f85606]');
+        btn.classList.add('text-slate-400');
+      });
+      const mBtn = document.getElementById(`mob-${tabId}`);
+      if (mBtn) {
+        mBtn.classList.add('text-[#f85606]');
+        mBtn.classList.remove('text-slate-400');
+      }
+
+      lucide.createIcons();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleDrawer(open) {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('mobileDrawerOverlay');
+      if (open) {
+        overlay.classList.remove('hidden');
+        setTimeout(() => drawer.classList.remove('translate-x-full'), 10);
+      } else {
+        drawer.classList.add('translate-x-full');
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+      }
+    }
+
+    // Modal Control
+    function openProductModal() {
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+    function closeProductModal() {
+      document.getElementById('productModal').classList.add('hidden');
+    }
+
+    // ==================== 1. ORDERS MANAGEMENT LOGIC ====================
+    function setOrderFilter(filter) {
+      currentOrderFilter = filter;
+      ['active', 'today', 'history'].forEach(f => {
+        const btn = document.getElementById(`btnFilter-${f}`);
+        if (!btn) return;
+        if (f === filter) {
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#f85606] text-white transition";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+        }
+      });
+      renderOrdersList();
+    }
+
+    db.ref(PATHS.orders).on('value', snap => {
+      allOrdersData = snap.val() || {};
+      updateOrderCountsAndRender();
+    });
+
+    function updateOrderCountsAndRender() {
+      const orders = Object.values(allOrdersData);
+      const todayDateStr = new Date().toDateString();
+
+      let activeCount = 0;
+      let todayCount = 0;
+      let historyCount = 0;
+      let pendingCount = 0;
+
+      orders.forEach(o => {
+        const oDate = o.createdAt ? new Date(o.createdAt).toDateString() : '';
+        const isHistory = (o.status === 'Completed' || o.status === 'Delivered' || o.status === 'Cancelled');
+
+        if (oDate === todayDateStr) todayCount++;
+        if (o.status === 'Pending' || !o.status) pendingCount++;
+
+        if (isHistory) {
+          historyCount++;
+        } else {
+          activeCount++;
+        }
+      });
+
+      document.getElementById('statTodayOrders').innerText = todayCount;
+      document.getElementById('statPendingOrders').innerText = pendingCount;
+      document.getElementById('countActive').innerText = activeCount;
+      document.getElementById('countToday').innerText = todayCount;
+      document.getElementById('countHistory').innerText = historyCount;
+
+      const navBadge = document.getElementById('navOrderBadge');
+      const drawerBadge = document.getElementById('drawerOrderBadge');
+      const mobBadge = document.getElementById('mobOrderBadge');
+
+      if (pendingCount > 0) {
+        navBadge.innerText = pendingCount;
+        navBadge.classList.remove('hidden');
+        drawerBadge.innerText = pendingCount;
+        drawerBadge.classList.remove('hidden');
+        mobBadge.classList.remove('hidden');
+      } else {
+        navBadge.classList.add('hidden');
+        drawerBadge.classList.add('hidden');
+        mobBadge.classList.add('hidden');
+      }
+
+      renderOrdersList();
+    }
+
+    function renderOrdersList() {
+      const container = document.getElementById('ordersContainer');
+      container.innerHTML = '';
+
+      const query = (document.getElementById('orderSearchInput')?.value || '').toLowerCase().trim();
+      const todayDateStr = new Date().toDateString();
+
+      const filteredEntries = Object.entries(allOrdersData).filter(([id, o]) => {
+        const isHistory = (o.status === 'Completed' || o.status === 'Delivered' || o.status === 'Cancelled');
+        const oDate = o.createdAt ? new Date(o.createdAt).toDateString() : '';
+
+        if (currentOrderFilter === 'history' && !isHistory) return false;
+        if (currentOrderFilter === 'active' && isHistory) return false;
+        if (currentOrderFilter === 'today' && oDate !== todayDateStr) return false;
+
+        if (query) {
+          const matchName = (o.customerName || '').toLowerCase().includes(query);
+          const matchPhone = (o.phone || '').toLowerCase().includes(query);
+          const matchDistrict = (o.district || '').toLowerCase().includes(query);
+          return matchName || matchPhone || matchDistrict;
+        }
+        return true;
+      });
+
+      filteredEntries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+
+      if (filteredEntries.length === 0) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-12 text-center text-xs text-slate-400 border border-slate-200">কোনো অর্ডার পাওয়া যায়নি।</div>`;
+        return;
+      }
+
+      filteredEntries.forEach(([orderId, o]) => {
+        const dateFormatted = o.createdAt ? new Date(o.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A';
+
+        let statusBadge = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-200">Pending</span>`;
+        if (o.status === 'Confirmed') {
+          statusBadge = `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-blue-200">Confirmed</span>`;
+        } else if (o.status === 'Shipped') {
+          statusBadge = `<span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-purple-200">Shipped</span>`;
+        } else if (o.status === 'Delivered' || o.status === 'Completed') {
+          statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">Delivered</span>`;
+        } else if (o.status === 'Cancelled') {
+          statusBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-rose-200">Cancelled</span>`;
+        }
+
+        let itemsHtml = '';
+        if (o.items && Array.isArray(o.items)) {
+          itemsHtml = o.items.map(it => `
+            <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+              <img src="${it.imageUrl || LOGO_PLACEHOLDER}" class="w-10 h-10 rounded-lg object-cover bg-white border border-slate-200 shrink-0">
+              <div class="flex-1 min-w-0 text-xs">
+                <span class="font-bold text-slate-900 block truncate">${it.name}</span>
+                <span class="text-slate-500 text-[11px]">${it.selectedSize ? 'Size: ' + it.selectedSize : ''} ${it.selectedColor ? ' | Color: ' + it.selectedColor : ''} | Qty: ${it.quantity}</span>
+              </div>
+              <span class="font-bold text-xs text-[#f85606]">৳${it.price * it.quantity}</span>
+            </div>
+          `).join('');
+        }
+
+        const card = document.createElement('div');
+        card.className = "bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4 hover:border-orange-300 transition";
+        card.innerHTML = `
+          <!-- Order Header -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs text-slate-900 uppercase">#${orderId.slice(-6)}</span>
+              <span class="text-[11px] text-slate-400">• ${dateFormatted}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              ${statusBadge}
+              <button onclick="deleteItem('${PATHS.orders}/${orderId}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="মুছে ফেলুন">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Customer Info & Fast Copy -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1.5 text-xs text-slate-700 bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">কাস্টমার তথ্য</span>
+                <button onclick="copyCustomerInfo('${orderId}')" class="bg-white hover:bg-orange-50 hover:text-[#f85606] border border-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-800 flex items-center gap-1 shadow-sm transition active:scale-95">
+                  <i data-lucide="copy" class="w-3 h-3"></i> কপি তথ্য
+                </button>
+              </div>
+              <div class="font-bold text-slate-900 text-sm">${o.customerName || 'N/A'}</div>
+              <div class="flex items-center gap-1.5 font-semibold text-slate-800">
+                <i data-lucide="phone" class="w-3.5 h-3.5 text-[#f85606]"></i>
+                <a href="tel:${o.phone}" class="hover:underline">${o.phone || 'N/A'}</a>
+              </div>
+              <div class="text-slate-600 pt-1 leading-relaxed">
+                <b>ঠিকানা:</b> ${o.address || ''}, <b>জেলা:</b> ${o.district || ''}
+              </div>
+              <div class="text-[11px] text-slate-500 font-medium">
+                ডেলিভারি এলাকা: <span class="capitalize font-bold text-slate-700">${o.deliveryZone === 'inside' ? 'ঢাকার ভিতরে (৳' + (o.deliveryFee || 60) + ')' : 'ঢাকার বাইরে (৳' + (o.deliveryFee || 130) + ')'}</span>
+              </div>
+            </div>
+
+            <!-- Ordered Items & Pricing -->
+            <div class="space-y-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">অর্ডারকৃত পণ্য</span>
+              <div class="space-y-1.5 max-h-36 overflow-y-auto custom-scroll pr-1">
+                ${itemsHtml}
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                <span class="text-slate-500">ডেলিভারি চার্জ: <b>৳${o.deliveryFee || 0}</b></span>
+                <span class="font-black text-sm text-[#f85606]">মোট: ৳${o.totalAmount || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Action Buttons -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 bg-slate-50/50 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 p-3 sm:px-5 rounded-b-2xl">
+            <span class="text-[11px] text-slate-500 font-bold">স্ট্যাটাস পরিবর্তন:</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="updateOrderStatus('${orderId}', 'Confirmed')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold transition active:scale-95 shadow-sm">
+                Confirm
+              </button>
+              <button onclick="updateOrderStatus('${orderId}', 'Shipped')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[11px] font-bold transition active:scale-95 shadow-sm">
+                Shipped
+              </button>
+              <button onclick="updateOrderStatus('${orderId}', 'Delivered')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition active:scale-95 shadow-sm">
+                Delivered
+              </button>
+              <button onclick="updateOrderStatus('${orderId}', 'Cancelled')" class="px-2.5 py-1.5 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-600 rounded-xl text-[11px] font-bold transition active:scale-95">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function filterOrdersList() {
+      renderOrdersList();
+    }
+
+    function copyCustomerInfo(orderId) {
+      const o = allOrdersData[orderId];
+      if (!o) return;
+
+      let itemDetails = '';
+      if (o.items && Array.isArray(o.items)) {
+        itemDetails = o.items.map(it => `${it.name} (${it.selectedSize || 'Free'} | ${it.selectedColor || '-'} x ${it.quantity})`).join(', ');
+      }
+
+      const copyText = `Name: ${o.customerName}\nPhone: ${o.phone}\nAddress: ${o.address}, ${o.district}\nCOD Amount: ${o.totalAmount} BDT\nItems: ${itemDetails}`;
+
+      navigator.clipboard.writeText(copyText).then(() => {
+        showToast('কুরিয়ার তথ্য সফলভাবে কপি হয়েছে!');
+      }).catch(() => {
+        showToast('কপি ব্যর্থ হয়েছে', true);
+      });
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+      db.ref(`${PATHS.orders}/${orderId}`).update({
+        status: newStatus,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        showToast(`অর্ডারের স্ট্যাটাস আপডেট হয়েছে: ${newStatus}`);
+      }).catch(err => {
+        showToast('আপডেট ব্যর্থ হয়েছে', true);
+      });
+    }
+
+    // ==================== 2. COLOR VARIANTS & MULTI-IMAGE ====================
+    function addColorGroup() {
+      const input = document.getElementById('newColorInput');
+      const colorName = input.value.trim();
+
+      if (!colorName) return showToast('দয়া করে কালারের নাম লিখুন', true);
+      if (activeColorGalleries[colorName]) return showToast('এই কালারটি ইতোমধ্যে যোগ করা আছে!', true);
+
+      activeColorGalleries[colorName] = [];
+      renderColorGroupDOM(colorName);
+      input.value = '';
+      lucide.createIcons();
+    }
+
+    function renderColorGroupDOM(colorName) {
+      const container = document.getElementById('colorGalleriesContainer');
+      const div = document.createElement('div');
+      const safeId = colorName.replace(/\s+/g, '-');
+      div.id = `colorGroup-${safeId}`;
+      div.className = 'bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3';
+
+      div.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-[#f85606]"></span>
+            <span class="text-xs font-bold text-slate-900">${colorName}</span>
+          </div>
+          <button type="button" onclick="removeColorGroup('${colorName}')" class="text-slate-400 hover:text-rose-600 text-xs font-semibold flex items-center gap-1">
+            <i data-lucide="trash" class="w-3.5 h-3.5"></i> রিমুভ
+          </button>
+        </div>
+
+        <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-[#f85606] bg-white rounded-xl p-3.5 cursor-pointer transition text-center">
+          <i data-lucide="upload-cloud" class="w-5 h-5 text-slate-400"></i>
+          <span class="text-xs font-bold text-slate-600 mt-1">${colorName}-এর ছবি আপলোড করুন</span>
+          <span class="text-[10px] text-slate-400">একাধিক ছবি সিলেক্ট করুন</span>
+          <input type="file" multiple accept="image/*" class="hidden" onchange="uploadColorPhotos(this, '${colorName}')">
+        </label>
+
+        <div id="thumbs-${safeId}" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
+      `;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function removeColorGroup(colorName) {
+      delete activeColorGalleries[colorName];
+      const safeId = colorName.replace(/\s+/g, '-');
+      const el = document.getElementById(`colorGroup-${safeId}`);
+      if (el) el.remove();
+    }
+
+    async function uploadColorPhotos(input, colorName) {
+      const files = Array.from(input.files);
+      if (!files.length) return;
+
+      showLoader(`${files.length} টি ছবি আপলোড হচ্ছে...`);
+      try {
+        for (const file of files) {
+          const url = await uploadFileToCloudinary(file);
+          activeColorGalleries[colorName].push(url);
+        }
+        renderColorThumbnails(colorName);
+        showToast(`${files.length} টি ছবি সফলভাবে আপলোড হয়েছে!`);
+      } catch (err) {
+        console.error(err);
+        showToast('ছবি আপলোড ব্যর্থ হয়েছে!', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    function renderColorThumbnails(colorName) {
+      const safeId = colorName.replace(/\s+/g, '-');
+      const grid = document.getElementById(`thumbs-${safeId}`);
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      activeColorGalleries[colorName].forEach((url, idx) => {
+        grid.innerHTML += `
+          <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-square group bg-white shadow-sm">
+            <img src="${url}" class="w-full h-full object-cover">
+            <button type="button" onclick="deleteColorPhoto('${colorName}', ${idx})" class="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition shadow">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function deleteColorPhoto(colorName, index) {
+      activeColorGalleries[colorName].splice(index, 1);
+      renderColorThumbnails(colorName);
+    }
+
+    // ==================== 3. ANNOUNCEMENT ====================
+    db.ref(PATHS.announcement).on('value', snap => {
+      if (snap.val()) document.getElementById('announcementInput').value = snap.val();
+    });
+    function saveAnnouncement() {
+      const val = document.getElementById('announcementInput').value.trim();
+      db.ref(PATHS.announcement).set(val);
+      showToast('টপ নোটিশ আপডেট করা হয়েছে');
+    }
+
+    // ==================== 4. REELS / SHORTS VIDEO MANAGEMENT ====================
+    function addShortFromUrl() {
+      const url = document.getElementById('shortUrlInput').value.trim();
+      if (!url) return showToast('দয়া করে ভিডিও URL দিন', true);
+
+      db.ref(PATHS.shorts).push({
+        url: url,
+        createdAt: Date.now()
+      }).then(() => {
+        document.getElementById('shortUrlInput').value = '';
+        showToast('রিলস ভিডিও সফলভাবে যুক্ত হয়েছে!');
+      }).catch(() => {
+        showToast('ভিডিও সংরক্ষণ ব্যর্থ হয়েছে', true);
+      });
+    }
+
+    async function uploadShortDirect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('রিলস ভিডিও আপলোড হচ্ছে (Cloudinary)...');
+      try {
+        const url = await uploadFileToCloudinary(file);
+        await db.ref(PATHS.shorts).push({
+          url: url,
+          createdAt: Date.now()
+        });
+        showToast('রিলস ভিডিও সফলভাবে আপলোড হয়েছে!');
+      } catch (err) {
+        showToast('ভিডিও আপলোড ব্যর্থ হয়েছে', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    db.ref(PATHS.shorts).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('shortsGrid');
+      const keys = Object.keys(data);
+      document.getElementById('statShorts').innerText = keys.length;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-4 text-center text-xs text-slate-400">কোনো রিলস বা শর্টস ভিডিও নেই</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const s = data[key];
+        const vUrl = typeof s === 'object' ? s.url : s;
+        grid.innerHTML += `
+          <div class="relative group rounded-xl overflow-hidden border border-slate-200 aspect-[9/16] bg-black shadow-sm">
+            <video src="${vUrl}" class="w-full h-full object-cover pointer-events-none" muted playsinline preload="metadata"></video>
+            <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center p-2">
+              <button onclick="deleteItem('${PATHS.shorts}/${key}')" class="p-2 bg-white rounded-xl text-rose-600 hover:bg-rose-50 shadow transition active:scale-95" title="মুছে ফেলুন">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">Reel</div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    // ==================== 5. BANNERS ====================
+    async function uploadBannerDirect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('স্লাইডার ব্যানার আপলোড হচ্ছে...');
+      try {
+        const url = await uploadFileToCloudinary(file);
+        await db.ref(PATHS.banners).push({ imageUrl: url, createdAt: Date.now() });
+        showToast('স্লাইডার ব্যানার সফলভাবে যুক্ত হয়েছে!');
+      } catch (err) {
+        showToast('ব্যানার আপলোড ব্যর্থ হয়েছে', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    db.ref(PATHS.banners).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('bannersGrid');
+      const keys = Object.keys(data);
+      document.getElementById('statBanners').innerText = keys.length;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400">কোনো ব্যানার নেই</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const b = data[key];
+        grid.innerHTML += `
+          <div class="relative group rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100">
+            <img src="${b.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <button onclick="deleteItem('${PATHS.banners}/${key}')" class="p-2 bg-white rounded-lg text-rose-600 hover:bg-rose-50 shadow-sm">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    // ==================== 6. PROMO ADS ====================
+    async function uploadAdDirect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('প্রমো অ্যাড আপলোড হচ্ছে...');
+      try {
+        const url = await uploadFileToCloudinary(file);
+        await db.ref(PATHS.ads).push({ imageUrl: url, createdAt: Date.now() });
+        showToast('বিজ্ঞাপন ব্যানার পাবলিশ হয়েছে!');
+      } catch (err) {
+        showToast('অ্যাড আপলোড ব্যর্থ হয়েছে', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    db.ref(PATHS.ads).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('adsGrid');
+      const keys = Object.keys(data);
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400">কোনো প্রমো অ্যাড নেই</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const ad = data[key];
+        grid.innerHTML += `
+          <div class="relative group rounded-xl overflow-hidden border border-slate-200 h-28 bg-slate-100">
+            <img src="${ad.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <button onclick="deleteItem('${PATHS.ads}/${key}')" class="p-2 bg-white rounded-lg text-rose-600 hover:bg-rose-50 shadow-sm">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    // ==================== 7. CATEGORIES ====================
+    async function previewCategoryFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('ক্যাটাগরি ছবি আপলোড হচ্ছে...');
+      try {
+        pendingCategoryImg = await uploadFileToCloudinary(file);
+        document.getElementById('catPreviewImg').src = pendingCategoryImg;
+        document.getElementById('catPreviewBox').classList.remove('hidden');
+        document.getElementById('catUploadLabel').innerText = 'ছবি পরিবর্তন';
+        showToast('ক্যাটাগরি ছবি প্রস্তুত!');
+      } catch (err) {
+        showToast('ক্যাটাগরি ছবি আপলোড ব্যর্থ হয়েছে', true);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function addCategory() {
+      const name = document.getElementById('catName').value.trim();
+      if (!name || !pendingCategoryImg) return showToast('ক্যাটাগরির নাম ও ছবি আবশ্যক', true);
+
+      db.ref(PATHS.categories).push({ name, imageUrl: pendingCategoryImg });
+      document.getElementById('catName').value = '';
+      pendingCategoryImg = '';
+      document.getElementById('catPreviewBox').classList.add('hidden');
+      document.getElementById('catUploadLabel').innerText = 'ছবি নির্বাচন করুন';
+      showToast('ক্যাটাগরি সফলভাবে তৈরি হয়েছে');
+    }
+
+    db.ref(PATHS.categories).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('categoriesGrid');
+      const select = document.getElementById('prodCategory');
+      const keys = Object.keys(data);
+      document.getElementById('statCategories').innerText = keys.length;
+      grid.innerHTML = '';
+      select.innerHTML = '<option value="">ক্যাটাগরি নির্বাচন করুন</option>';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400">কোনো ক্যাটাগরি নেই</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const c = data[key];
+        select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        grid.innerHTML += `
+          <div class="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square bg-slate-100">
+            <img src="${c.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent p-3 flex flex-col justify-between">
+              <div class="flex justify-end opacity-0 group-hover:opacity-100 transition">
+                <button onclick="deleteItem('${PATHS.categories}/${key}')" class="p-1.5 bg-white/90 rounded-lg text-rose-600 hover:bg-white">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <span class="text-xs font-bold text-white truncate">${c.name}</span>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    // ==================== 8. PRODUCTS ====================
+    db.ref(PATHS.products).on('value', snap => {
+      cachedProducts = snap.val() || {};
+      document.getElementById('statProducts').innerText = Object.keys(cachedProducts).length;
+      renderProducts(cachedProducts);
+    });
+
+    function renderProducts(data) {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+      const keys = Object.keys(data);
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-xs text-slate-400">কোনো প্রোডাক্ট পাওয়া যায়নি</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const p = data[key];
+        let totalPhotos = p.gallery ? p.gallery.length : 0;
+        const colorTags = p.colors && p.colors.length ? p.colors.join(', ') : 'Standard';
+
+        grid.innerHTML += `
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 flex gap-3.5 items-center hover:border-orange-300 transition group shadow-sm">
+            <div class="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-100 shrink-0">
+              <img src="${p.imageUrl}" class="w-full h-full object-cover" onerror="this.src='${LOGO_PLACEHOLDER}'">
+              ${totalPhotos > 1 ? `<span class="absolute bottom-1 right-1 bg-black/70 text-white text-[9px] font-bold px-1 rounded">${totalPhotos}</span>` : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-[10px] font-bold text-[#f85606] uppercase tracking-wider">${p.category || 'General'}</span>
+              <h4 class="text-xs font-bold text-slate-900 truncate">${p.name}</h4>
+              <div class="flex items-center gap-1.5 text-xs mt-0.5">
+                <span class="font-extrabold text-[#f85606]">৳${p.discountPrice || p.regularPrice}</span>
+                ${p.discountPrice ? `<span class="text-[11px] text-slate-400 line-through">৳${p.regularPrice}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-2 mt-1 text-[10px] text-slate-500">
+                <span class="truncate">কালার: <b>${colorTags}</b></span>
+                <span>• স্টক: <b>${p.stock || 0}</b></span>
+              </div>
+            </div>
+            <button onclick="deleteItem('${PATHS.products}/${key}')" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition shrink-0">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function filterProducts() {
+      const q = document.getElementById('productSearch').value.toLowerCase();
+      const filtered = {};
+      Object.entries(cachedProducts).forEach(([k, p]) => {
+        if (p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q))) {
+          filtered[k] = p;
+        }
+      });
+      renderProducts(filtered);
+    }
+
+    function addProduct() {
+      const name = document.getElementById('prodName').value.trim();
+      const category = document.getElementById('prodCategory').value;
+      const regularPrice = document.getElementById('prodRegularPrice').value;
+      const discountPrice = document.getElementById('prodDiscountPrice').value;
+      const stock = document.getElementById('prodStock').value;
+      const sizes = document.getElementById('prodSizes').value.split(',').map(s => s.trim()).filter(Boolean);
+      const isFreeDelivery = document.getElementById('prodFreeDelivery').checked;
+
+      let allImages = [];
+      const colorImagesMap = {};
+      const activeColorsList = [];
+
+      Object.entries(activeColorGalleries).forEach(([color, urls]) => {
+        if (urls && urls.length > 0) {
+          colorImagesMap[color] = urls;
+          allImages.push(...urls);
+          if (color !== 'General') activeColorsList.push(color);
+        }
+      });
+
+      if (!name || !category || !regularPrice) return showToast('নাম, ক্যাটাগরি ও রেগুলার মূল্য আবশ্যক', true);
+      if (allImages.length === 0) return showToast('কমপক্ষে একটি ছবি আপলোড করুন', true);
+
+      db.ref(PATHS.products).push({
+        name,
+        category,
+        regularPrice: Number(regularPrice),
+        discountPrice: discountPrice ? Number(discountPrice) : null,
+        stock: stock ? Number(stock) : 0,
+        sizes,
+        colors: activeColorsList,
+        colorImages: colorImagesMap,
+        imageUrl: allImages[0],
+        gallery: allImages,
+        isFreeDelivery,
+        createdAt: Date.now()
+      });
+
+      showToast(`${currentStoreName} শপে প্রোডাক্ট সফলভাবে পাবলিশ হয়েছে!`);
+      closeProductModal();
+
+      document.getElementById('prodName').value = '';
+      document.getElementById('prodRegularPrice').value = '';
+      document.getElementById('prodDiscountPrice').value = '';
+      document.getElementById('prodStock').value = '';
+      document.getElementById('prodSizes').value = '';
+      document.getElementById('prodFreeDelivery').checked = false;
+
+      activeColorGalleries = { 'General': [] };
+      document.getElementById('thumbs-General').innerHTML = '';
+      const customGroups = document.querySelectorAll("[id^='colorGroup-']:not(#colorGroup-default)");
+      customGroups.forEach(el => el.remove());
+    }
+
+    function deleteItem(path) {
+      if (confirm('আপনি কি নিশ্চিতভাবে এই রেকর্ডটি মুছে ফেলতে চান?')) {
+        db.ref(path).remove();
+        showToast('সফলভাবে মুছে ফেলা হয়েছে');
+      }
+    }
+
+    // Init App
+    switchTab('dashboard');
+    lucide.createIcons();
+  </script>
+</body>
+</html>
