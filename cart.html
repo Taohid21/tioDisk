@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="cartPageTitle">Shopping Cart | Online Store</title>
   
   <!-- Favicon -->
@@ -32,81 +32,128 @@
   </script>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #fcfcfc;
+      color: #0f172a;
+    }
   </style>
 </head>
 <body class="antialiased selection:bg-black selection:text-white min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-white border-b border-gray-100 sticky top-0 z-30">
-    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+  <header class="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      
+      <!-- Back Button & Logo -->
       <div class="flex items-center gap-3">
-        <a id="cartBackLink" href="index.html" class="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-black hover:bg-gray-50 transition active:scale-95">
+        <button onclick="handleBackNavigation()" class="w-9 h-9 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-black hover:bg-gray-100 transition active:scale-95 shadow-sm" title="Go Back">
           <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        </a>
-        <div class="flex items-center gap-2">
-          <img id="cartHeaderLogo" src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Logo" class="w-7 h-7 rounded-lg object-cover">
-          <h1 class="text-base sm:text-lg font-bold text-black"><span id="cartStoreTitle">Shopping Cart</span> (<span id="cartCountHeader">0</span>)</h1>
+        </button>
+        <div class="flex items-center gap-2.5">
+          <img id="cartHeaderLogo" src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Logo" class="w-8 h-8 rounded-xl object-cover border border-gray-100">
+          <div>
+            <h1 class="text-sm sm:text-base font-extrabold text-black flex items-center gap-1.5">
+              <span id="cartStoreTitle">Shopping Cart</span>
+              <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full font-bold" id="cartCountHeader">0</span>
+            </h1>
+          </div>
         </div>
       </div>
-      <button onclick="clearCart()" class="text-xs font-semibold text-gray-400 hover:text-black transition">Clear All</button>
+
+      <!-- Action -->
+      <button onclick="clearCart()" class="text-xs font-semibold text-gray-500 hover:text-red-600 transition flex items-center gap-1">
+        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Clear All</span>
+      </button>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
     
     <!-- Empty Cart State -->
-    <div id="cartEmptyState" class="hidden text-center py-20 bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-      <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
-        <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+    <div id="cartEmptyState" class="hidden text-center py-20 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm max-w-lg mx-auto mt-6">
+      <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
+        <i data-lucide="shopping-bag" class="w-8 h-8"></i>
       </div>
-      <h3 class="text-base font-bold text-black mb-1">Your cart is empty</h3>
-      <p class="text-xs text-gray-500 mb-6">Looks like you haven't added any items to your cart yet.</p>
-      <a id="continueShoppingLink" href="index.html" class="inline-block bg-black hover:bg-neutral-800 text-white px-6 py-2.5 rounded-xl text-xs font-semibold transition shadow active:scale-95">
-        Continue Shopping
-      </a>
+      <h3 class="text-lg font-bold text-black mb-1">Your cart is currently empty</h3>
+      <p class="text-xs text-gray-500 mb-6 max-w-xs mx-auto">Looks like you haven't added any products yet. Browse our store to find your essentials.</p>
+      <button onclick="handleBackNavigation()" class="inline-flex items-center gap-2 bg-black hover:bg-neutral-800 text-white px-6 py-3 rounded-xl text-xs font-semibold transition shadow-md active:scale-95">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Continue Shopping</span>
+      </button>
     </div>
 
-    <!-- Active Cart Items -->
-    <div id="cartContent" class="space-y-6">
-      <div id="cartItemsList" class="space-y-3"></div>
-
-      <!-- Price Breakdown Card -->
-      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3 text-xs sm:text-sm">
-        <div class="flex justify-between text-gray-500">
-          <span>Subtotal</span>
-          <span class="font-bold text-black" id="subtotalPrice">BDT 0</span>
-        </div>
-        <div class="flex justify-between text-gray-500">
-          <span>Estimated Delivery</span>
-          <span class="text-gray-400">Calculated at checkout</span>
-        </div>
-        <div class="border-t border-gray-100 pt-3 flex justify-between text-base font-extrabold text-black">
-          <span>Total</span>
-          <span id="grandTotalPrice">BDT 0</span>
-        </div>
-
-        <button onclick="proceedToCheckout()" class="w-full mt-4 bg-black hover:bg-neutral-800 text-white py-3.5 rounded-xl font-bold text-xs tracking-wider uppercase transition active:scale-[0.99] shadow">
-          Proceed to Checkout
-        </button>
+    <!-- Active Cart: Responsive 2-Column on Desktop (PC) & Clean Stack on Mobile -->
+    <div id="cartContent" class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      
+      <!-- Left Column: Products List (lg: 8 Cols) -->
+      <div class="lg:col-span-7 xl:col-span-8 space-y-3" id="cartItemsList">
+        <!-- Dynamic Cart Items Rendered Here -->
       </div>
+
+      <!-- Right Column: Order Summary & Checkout Card (lg: 4 Cols Sticky) -->
+      <div class="lg:col-span-5 xl:col-span-4 sticky top-24">
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+          
+          <h2 class="text-sm font-bold uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">Order Summary</h2>
+
+          <div class="space-y-2.5 text-xs sm:text-sm">
+            <div class="flex justify-between text-gray-600">
+              <span>Subtotal (<span id="summaryTotalItems">0</span> items)</span>
+              <span class="font-bold text-black" id="subtotalPrice">BDT 0</span>
+            </div>
+            
+            <div class="flex justify-between text-gray-600">
+              <span>Delivery Fee</span>
+              <span class="text-emerald-600 font-semibold" id="deliveryFeeNotice">Calculated at Checkout</span>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 pt-3 flex justify-between items-baseline text-base font-extrabold text-black">
+            <span>Total Amount</span>
+            <span class="text-lg sm:text-xl text-black" id="grandTotalPrice">BDT 0</span>
+          </div>
+
+          <button onclick="proceedToCheckout()" class="w-full bg-black hover:bg-neutral-800 text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition active:scale-[0.99] shadow-md flex items-center justify-center gap-2">
+            <span>Proceed to Checkout</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+
+          <button onclick="handleBackNavigation()" class="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold text-xs transition active:scale-[0.99] flex items-center justify-center gap-1.5 border border-gray-200">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Continue Shopping</span>
+          </button>
+
+          <!-- Safe Checkout Badge -->
+          <div class="pt-2 flex items-center justify-center gap-2 text-[11px] text-gray-400 font-medium">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+            <span>100% Secure Checkout Guaranteed</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
   <script>
     let LOGO_PLACEHOLDER = "https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg";
 
-    // 1. DYNAMIC SHOP RESOLVER (Reads ?shop=slug from URL)
+    // 1. DYNAMIC SHOP RESOLVER
     const urlParams = new URLSearchParams(window.location.search);
-    const currentShop = urlParams.get('shop') || 'lowbudget'; // Default to lowbudget
-
-    // Unique Shop-based Cart Key
+    const currentShop = urlParams.get('shop') || 'lowbudget';
     const CART_STORAGE_KEY = `cart_${currentShop}`;
 
-    // Update Back & Continue Shopping Links to preserve current shop
-    const homeShopUrl = `index.html?shop=${currentShop}`;
-    document.getElementById('cartBackLink').href = homeShopUrl;
-    document.getElementById('continueShoppingLink').href = homeShopUrl;
+    // 2. SMART BACK NAVIGATION
+    // আগে যে ফাইলে ছিল ঠিক সেখানে যাবে, ইতিহাস না থাকলে শপের index.html পেজে যাবে
+    function handleBackNavigation() {
+      if (document.referrer && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = `index.html?shop=${encodeURIComponent(currentShop)}`;
+      }
+    }
 
     // Firebase Config
     const firebaseConfig = {
@@ -122,7 +169,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. DYNAMIC SETTINGS LISTENER (Store Name, Logo)
+    // Load Settings
     db.ref(`stores/${currentShop}/settings`).on('value', snap => {
       const s = snap.val();
       if (!s) return;
@@ -150,13 +197,16 @@
       const content = document.getElementById('cartContent');
       const list = document.getElementById('cartItemsList');
       const headerCount = document.getElementById('cartCountHeader');
+      const summaryItems = document.getElementById('summaryTotalItems');
 
       const totalItems = cart.reduce((acc, it) => acc + (it.quantity || 1), 0);
       headerCount.innerText = totalItems;
+      if (summaryItems) summaryItems.innerText = totalItems;
 
       if (cart.length === 0) {
         emptyState.classList.remove('hidden');
         content.classList.add('hidden');
+        lucide.createIcons();
         return;
       }
 
@@ -167,16 +217,19 @@
       let subtotal = 0;
 
       cart.forEach((item, index) => {
-        subtotal += item.price * item.quantity;
+        const itemPrice = Number(item.price) || 0;
+        const itemQty = Number(item.quantity) || 1;
+        subtotal += itemPrice * itemQty;
 
         const el = document.createElement('div');
-        el.className = "bg-white p-4 rounded-2xl border border-gray-100 flex gap-4 items-center shadow-sm";
+        el.className = "bg-white p-4 sm:p-5 rounded-3xl border border-gray-100 flex gap-4 items-center shadow-sm hover:border-gray-200 transition";
 
+        // Size Selector
         let sizeSelect = '';
         if (item.sizes && item.sizes.length > 0) {
           sizeSelect = `
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="text-[11px] text-gray-400 font-medium">Size:</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-gray-500 font-medium">Size:</span>
               <select onchange="updateVariant(${index}, 'selectedSize', this.value)" class="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none font-semibold cursor-pointer">
                 ${item.sizes.map(s => {
                   const val = typeof s === 'object' ? s.size : s;
@@ -187,11 +240,12 @@
           `;
         }
 
+        // Color Selector
         let colorSelect = '';
         if (item.colors && item.colors.length > 0) {
           colorSelect = `
-            <div class="flex items-center gap-1.5 mt-1">
-              <span class="text-[11px] text-gray-400 font-medium">Color:</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-gray-500 font-medium">Color:</span>
               <select onchange="updateVariant(${index}, 'selectedColor', this.value)" class="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none font-semibold cursor-pointer">
                 ${item.colors.map(c => `<option value="${c}" ${c === item.selectedColor ? 'selected' : ''}>${c}</option>`).join('')}
               </select>
@@ -200,25 +254,37 @@
         }
 
         el.innerHTML = `
-          <img src="${item.imageUrl || LOGO_PLACEHOLDER}" alt="${item.name}" class="w-20 h-24 object-cover rounded-xl border border-gray-100 bg-gray-50 shrink-0">
+          <img 
+            src="${item.imageUrl || LOGO_PLACEHOLDER}" 
+            alt="${item.name}" 
+            class="w-20 h-24 sm:w-24 sm:h-28 object-cover rounded-2xl border border-gray-100 bg-gray-50 shrink-0"
+            onerror="this.src='${LOGO_PLACEHOLDER}'"
+          >
           <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-start">
-              <h4 class="text-xs sm:text-sm font-semibold text-black truncate">${item.name}</h4>
-              <button onclick="removeItem(${index})" class="text-gray-400 hover:text-red-600 p-1 transition" title="Remove Item">
+            <div class="flex justify-between items-start gap-2">
+              <h4 class="text-xs sm:text-sm font-bold text-gray-900 line-clamp-1">${item.name}</h4>
+              <button onclick="removeItem(${index})" class="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition shrink-0" title="Remove Item">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
-            <div class="text-xs font-bold text-black mt-1">BDT ${item.price}</div>
             
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-xs sm:text-sm font-extrabold text-black">BDT ${itemPrice}</span>
+              ${item.regularPrice && item.regularPrice > itemPrice ? `<span class="text-[11px] text-gray-400 line-through">BDT ${item.regularPrice}</span>` : ''}
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 mt-2">
               ${sizeSelect}
               ${colorSelect}
             </div>
 
-            <div class="flex items-center gap-2 mt-3">
-              <button onclick="changeQty(${index}, -1)" class="w-7 h-7 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center font-bold text-xs hover:bg-gray-100 transition active:scale-95">-</button>
-              <span class="text-xs font-bold w-6 text-center">${item.quantity}</span>
-              <button onclick="changeQty(${index}, 1)" class="w-7 h-7 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center font-bold text-xs hover:bg-gray-100 transition active:scale-95">+</button>
+            <div class="flex items-center gap-3 mt-3">
+              <div class="flex items-center border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
+                <button onclick="changeQty(${index}, -1)" class="w-8 h-8 flex items-center justify-center font-bold text-sm text-gray-600 hover:bg-gray-200 transition active:scale-95">-</button>
+                <span class="text-xs font-bold w-7 text-center select-none text-black">${itemQty}</span>
+                <button onclick="changeQty(${index}, 1)" class="w-8 h-8 flex items-center justify-center font-bold text-sm text-gray-600 hover:bg-gray-200 transition active:scale-95">+</button>
+              </div>
+              <span class="text-xs text-gray-400 font-medium">Sub: BDT ${itemPrice * itemQty}</span>
             </div>
           </div>
         `;
@@ -232,7 +298,13 @@
 
     function changeQty(index, delta) {
       cart[index].quantity += delta;
-      if (cart[index].quantity <= 0) cart.splice(index, 1);
+      if (cart[index].quantity <= 0) {
+        if (confirm('Do you want to remove this product from the cart?')) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].quantity = 1;
+        }
+      }
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
       renderCart();
     }
@@ -249,7 +321,7 @@
     }
 
     function clearCart() {
-      if (confirm('Are you sure you want to clear your cart?')) {
+      if (confirm('Are you sure you want to clear your entire cart?')) {
         cart = [];
         localStorage.removeItem(CART_STORAGE_KEY);
         renderCart();
@@ -261,7 +333,11 @@
       window.location.href = `checkout.html?fromCart=true&shop=${encodeURIComponent(currentShop)}`;
     }
 
-    loadCart();
+    // Initialize instantly
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadCart();
+    });
   </script>
 </body>
 </html>
