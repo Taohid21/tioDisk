@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="checkoutPageTitle">Checkout | Online Store</title>
+  
+  <!-- Favicon -->
+  <link id="pageFavicon" rel="icon" type="image/jpeg" href="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #fcfcfc;
+      color: #0f172a;
+    }
+    .custom-scroll::-webkit-scrollbar { height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    
+    /* Skeleton */
+    .skeleton-box {
+      background: #f1f5f9;
+      position: relative;
+      overflow: hidden;
+    }
+    .skeleton-box::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+      animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-black selection:text-white min-h-screen flex flex-col">
+
+  <!-- ==================== HEADER (Full Width for PC & Mobile) ==================== -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      
+      <!-- Smart Back Button -->
+      <button onclick="handleHeaderBack()" class="w-9 h-9 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-800 hover:bg-gray-100 transition active:scale-95 shadow-sm" title="Go Back">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </button>
+      
+      <!-- Brand Logo & Name -->
+      <a id="headerHomeLink" href="index.html" class="flex items-center gap-2.5">
+        <img id="headerLogo" src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Logo" class="w-8 h-8 rounded-xl object-cover border border-gray-100 shadow-sm">
+        <span id="headerStoreName" class="font-extrabold text-base sm:text-lg tracking-tight text-black">Online Store</span>
+      </a>
+
+      <!-- Secure Checkout Badge -->
+      <div class="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Secure Checkout</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== SCREEN 1: PRODUCT SHOWCASE (Responsive 2-Col on PC) ==================== -->
+  <main id="screen-product" class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 pb-28 md:pb-8">
+    
+    <div id="productLoadingBox" class="py-24 text-center">
+      <div class="w-10 h-10 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-xs text-gray-400 font-medium tracking-wide">Loading product information...</p>
+    </div>
+
+    <!-- 2 Column Grid for PC, Clean Stack for Mobile -->
+    <div id="productMainContent" class="hidden grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-10 items-start">
+      
+      <!-- Left Column: Product Visuals (md: 6 or 7 cols) -->
+      <div class="md:col-span-6 lg:col-span-6 space-y-3">
+        
+        <!-- Big Preview Image -->
+        <div class="bg-white rounded-3xl overflow-hidden border border-gray-200/80 shadow-sm relative group cursor-pointer" onclick="openLightbox()">
+          <div class="relative w-full aspect-[3/4] sm:aspect-square bg-gray-50 flex items-center justify-center">
+            <img id="pShowcaseImage" src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Product" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300">
+            
+            <div class="absolute bottom-3 right-3 bg-black/75 backdrop-blur-sm text-white text-[11px] font-medium px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+              <span>Click to Zoom</span>
+            </div>
+
+            <div class="absolute top-3 left-3" id="pBadgesWrapper"></div>
+          </div>
+        </div>
+
+        <!-- Gallery Thumbnails -->
+        <div id="galleryThumbnailsContainer" class="hidden flex gap-2.5 overflow-x-auto pb-1 custom-scroll"></div>
+      </div>
+
+      <!-- Right Column: Product Configurations & Order Action (md: 6 or 5 cols) -->
+      <div class="md:col-span-6 lg:col-span-6 space-y-4">
+        
+        <!-- Title & Pricing -->
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-sm space-y-3">
+          <span id="pCategoryBadge" class="text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 px-2.5 py-1 rounded-md border border-gray-100">Category</span>
+          <h1 id="pShowcaseTitle" class="text-lg sm:text-2xl font-black text-black leading-snug">Product Title</h1>
+
+          <div class="flex items-baseline gap-3 pt-2 border-t border-gray-100">
+            <span id="pShowcasePrice" class="text-2xl sm:text-3xl font-black text-black">BDT 0</span>
+            <span id="pShowcaseOldPrice" class="text-sm text-gray-400 line-through"></span>
+          </div>
+        </div>
+
+        <!-- Variants Selection -->
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200/80 shadow-sm space-y-4">
+          
+          <!-- Colors -->
+          <div id="colorsWrap" class="hidden space-y-2">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Select Color:</label>
+            <div id="colorsList" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Sizes -->
+          <div id="sizesWrap" class="hidden space-y-2">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Select Size:</label>
+            <div id="sizesList" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- Quantity -->
+          <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+            <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Quantity:</span>
+            <div class="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+              <button type="button" onclick="changeQty(-1)" class="w-9 h-9 flex items-center justify-center font-bold text-sm text-gray-600 hover:bg-gray-200 transition active:scale-95">-</button>
+              <span id="qtyCount" class="w-10 text-center text-xs font-bold text-black bg-white py-2">1</span>
+              <button type="button" onclick="changeQty(1)" class="w-9 h-9 flex items-center justify-center font-bold text-sm text-gray-600 hover:bg-gray-200 transition active:scale-95">+</button>
+            </div>
+          </div>
+
+          <!-- Desktop Direct Buy Button (পিসির জন্য দৃশ্যমান) -->
+          <div class="hidden md:block pt-3 border-t border-gray-100">
+            <button 
+              onclick="proceedToCheckoutScreen()" 
+              class="w-full bg-black hover:bg-neutral-800 text-white py-4 px-6 rounded-2xl font-bold text-sm tracking-wide transition active:scale-[0.99] flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+            >
+              <span>Proceed to Checkout</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Mobile Sticky Bottom Bar (মোবাইলে হাতের কাছে অর্ডার বাটন) -->
+    <div id="stickyOrderBar" class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 sm:p-4 shadow-xl">
+      <div class="max-w-xl mx-auto flex items-center justify-between gap-4">
+        <div>
+          <span class="text-[10px] text-gray-400 font-semibold block uppercase tracking-wider">Total</span>
+          <span id="stickyBottomPrice" class="text-lg font-black text-black">BDT 0</span>
+        </div>
+        <button 
+          onclick="proceedToCheckoutScreen()" 
+          class="flex-1 bg-black hover:bg-neutral-800 text-white py-3 px-6 rounded-xl font-bold text-xs tracking-wide transition active:scale-95 flex items-center justify-center gap-2 shadow-md"
+        >
+          <span>Order Now</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== SCREEN 2: CHECKOUT FORM (Responsive 2-Col on PC) ==================== -->
+  <main id="screen-checkout" class="hidden flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      
+      <!-- Left Column: Delivery Form (lg: 7 Cols) -->
+      <div class="lg:col-span-7 xl:col-span-8">
+        <form id="orderForm" onsubmit="handleOrderSubmit(event)" class="space-y-4">
+          <div class="bg-white border border-gray-200/80 rounded-3xl p-5 sm:p-7 shadow-sm space-y-4">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+              <h2 class="text-sm sm:text-base font-extrabold uppercase tracking-wider text-gray-900 flex items-center gap-2">
+                <i data-lucide="truck" class="w-4 h-4 text-black"></i>
+                <span>Delivery Information</span>
+              </h2>
+              <span class="text-[11px] text-gray-400 font-medium">* Required</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1.5">Full Name *</label>
+                <input 
+                  type="text" 
+                  id="custName" 
+                  required 
+                  placeholder="e.g. Tanvir Hasan" 
+                  class="w-full bg-gray-50 border border-gray-200 focus:border-black focus:bg-white text-black rounded-xl p-3 text-xs sm:text-sm outline-none transition"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1.5">Phone Number *</label>
+                <input 
+                  type="tel" 
+                  id="custPhone" 
+                  required 
+                  placeholder="01XXXXXXXXX" 
+                  class="w-full bg-gray-50 border border-gray-200 focus:border-black focus:bg-white text-black rounded-xl p-3 text-xs sm:text-sm outline-none transition"
+                >
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1.5">District *</label>
+              <select 
+                id="custDistrict" 
+                required 
+                onchange="handleDistrictChange(this.value)" 
+                class="w-full bg-gray-50 border border-gray-200 focus:border-black focus:bg-white text-black rounded-xl p-3 text-xs sm:text-sm outline-none transition cursor-pointer"
+              >
+                <option value="">Select District</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1.5">Full Delivery Address *</label>
+              <textarea 
+                id="custAddress" 
+                required 
+                rows="2" 
+                placeholder="House no, Flat, Road, Thana, Area details..." 
+                class="w-full bg-gray-50 border border-gray-200 focus:border-black focus:bg-white text-black rounded-xl p-3 text-xs sm:text-sm outline-none transition"
+              ></textarea>
+            </div>
+
+            <!-- Delivery Zone Options -->
+            <div class="pt-2">
+              <label class="block text-xs font-bold text-gray-700 mb-2">Delivery Zone *</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-3 p-3.5 border border-gray-200 rounded-2xl cursor-pointer has-[:checked]:border-black has-[:checked]:bg-gray-50 transition bg-white shadow-sm">
+                  <input type="radio" name="deliveryZone" value="inside" checked onchange="updateSummaryPricing()" class="accent-black w-4 h-4">
+                  <div class="text-xs">
+                    <span class="font-bold text-black block text-xs sm:text-sm">Inside Dhaka</span>
+                    <span class="text-gray-400 font-medium" id="insideChargeText">BDT 60</span>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3.5 border border-gray-200 rounded-2xl cursor-pointer has-[:checked]:border-black has-[:checked]:bg-gray-50 transition bg-white shadow-sm">
+                  <input type="radio" name="deliveryZone" value="outside" onchange="updateSummaryPricing()" class="accent-black w-4 h-4">
+                  <div class="text-xs">
+                    <span class="font-bold text-black block text-xs sm:text-sm">Outside Dhaka</span>
+                    <span class="text-gray-400 font-medium" id="outsideChargeText">BDT 130</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Mobile Only Submit button position -->
+          <div class="lg:hidden">
+            <button 
+              type="submit" 
+              class="w-full bg-black hover:bg-neutral-800 text-white py-4 rounded-2xl font-bold text-sm tracking-wide transition active:scale-95 flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+            >
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i> 
+              <span>Confirm Order</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right Column: Order Review & Pricing Summary (lg: 5 Cols Sticky) -->
+      <div class="lg:col-span-5 xl:col-span-4 sticky top-24 space-y-4">
+        
+        <!-- Items Review -->
+        <div class="bg-white border border-gray-200/80 rounded-3xl p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Order Items</h3>
+            <button onclick="goToProductScreen()" class="text-xs text-black font-semibold hover:underline">Change</button>
+          </div>
+          <div id="checkoutSummaryList" class="space-y-2.5 max-h-60 overflow-y-auto pr-1 custom-scroll"></div>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="bg-white border border-gray-200/80 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+          <div class="space-y-2.5 text-xs sm:text-sm">
+            <div class="flex justify-between text-gray-600">
+              <span>Subtotal:</span>
+              <span id="sumSubtotal" class="font-bold text-black">BDT 0</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Delivery Fee:</span>
+              <span id="sumDelivery" class="font-bold text-black">BDT 0</span>
+            </div>
+            <div class="flex justify-between text-base sm:text-lg font-black text-black border-t border-gray-100 pt-3">
+              <span>Grand Total:</span>
+              <span id="sumGrandTotal">BDT 0</span>
+            </div>
+          </div>
+
+          <!-- Desktop Submit Button (ডেস্কটপে ডান কলামের নিচে থাকবে) -->
+          <div class="hidden lg:block pt-2">
+            <button 
+              type="button"
+              onclick="document.getElementById('orderForm').requestSubmit()"
+              id="submitOrderBtnDesktop" 
+              class="w-full bg-black hover:bg-neutral-800 text-white py-4 rounded-2xl font-bold text-sm tracking-wide transition active:scale-95 flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+            >
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i> 
+              <span>Confirm Order</span>
+            </button>
+          </div>
+
+          <div class="pt-1 flex items-center justify-center gap-2 text-[11px] text-gray-400 font-medium">
+            <i data-lucide="banknote" class="w-4 h-4 text-gray-500"></i>
+            <span>Cash on Delivery (Pay when received)</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ==================== LIGHTBOX MODAL ==================== -->
+  <div id="imageLightboxModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm hidden flex-col items-center justify-center p-4" onclick="closeLightbox()">
+    <button onclick="closeLightbox()" class="absolute top-5 right-5 text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition">
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+    <div class="max-w-2xl max-h-[85vh] w-full flex items-center justify-center" onclick="event.stopPropagation()">
+      <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl">
+    </div>
+  </div>
+
+  <!-- ==================== SUCCESS MODAL ==================== -->
+  <div id="successModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100">
+      <div class="w-16 h-16 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i data-lucide="check" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-lg font-black text-black mb-1">Order Placed Successfully!</h3>
+      <p id="successMsg" class="text-xs text-gray-500 leading-relaxed mb-6">
+        Thank you for ordering. Our representative will contact you shortly to confirm your delivery details.
+      </p>
+      <a id="successReturnLink" href="index.html" class="inline-flex items-center justify-center gap-2 w-full bg-black hover:bg-neutral-800 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition active:scale-95 shadow-md">
+        <span>Return to Store</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    let LOGO_PLACEHOLDER = "https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentShop = urlParams.get('shop') || 'lowbudget';
+    const productId = urlParams.get('id');
+    const fromCart = urlParams.get('fromCart') === 'true';
+
+    const CART_STORAGE_KEY = `cart_${currentShop}`;
+    const homeShopUrl = `index.html?shop=${currentShop}`;
+    document.getElementById('headerHomeLink').href = homeShopUrl;
+    document.getElementById('successReturnLink').href = homeShopUrl;
+
+    // 64 Districts
+    const BD_DISTRICTS = [
+      "Dhaka", "Chattogram", "Patuakhali", "Barishal", "Gazipur", "Narayanganj", "Cumilla", "Sylhet", "Rajshahi", "Bogura", 
+      "Khulna", "Mymensingh", "Rangpur", "Dinajpur", "Jashore", "Cox's Bazar", "Brahmanbaria", "Noakhali", "Feni", "Lakshmipur", 
+      "Chandpur", "Habiganj", "Moulvibazar", "Sunamganj", "Narsingdi", "Munshiganj", "Manikganj", "Tangail", "Kishoreganj", 
+      "Netrokona", "Jamalpur", "Sherpur", "Faridpur", "Gopalganj", "Madaripur", "Shariatpur", "Rajbari", "Pabna", "Sirajganj", 
+      "Natore", "Naogaon", "Chapainawabganj", "Joypurhat", "Gaibandha", "Kurigram", "Lalmonirhat", "Nilphamari", "Thakurgaon", 
+      "Panchagarh", "Kushtia", "Meherpur", "Chuadanga", "Jhenaidah", "Magura", "Narail", "Bagerhat", "Satkhira", "Bhola", 
+      "Jhalokathi", "Pirojpur", "Barguna", "Bandarban", "Rangamati", "Khagrachhari"
+    ];
+
+    const distSelect = document.getElementById('custDistrict');
+    BD_DISTRICTS.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.innerText = d;
+      distSelect.appendChild(opt);
+    });
+
+    // Firebase Init
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_HBGuQSh_GzqrHqHbgdaoBikLZsK3Qqs",
+      authDomain: "new-all-f99f7.firebaseapp.com",
+      databaseURL: "https://new-all-f99f7-default-rtdb.firebaseio.com",
+      projectId: "new-all-f99f7",
+      storageBucket: "new-all-f99f7.firebasestorage.app",
+      messagingSenderId: "1069748173900",
+      appId: "1:1069748173900:web:158d6336c0f4628133c8e9"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const PATHS = {
+      orders: `stores/${currentShop}/orders`,
+      products: `stores/${currentShop}/products`,
+      settings: `stores/${currentShop}/settings`
+    };
+
+    let currentOrderItems = [];
+    let deliverySettings = { insideDhaka: 60, outsideDhaka: 130 };
+    let singleProductData = null;
+    let selectedSize = '';
+    let selectedColor = '';
+    let singleQty = 1;
+
+    // Load Settings
+    db.ref(PATHS.settings).on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+
+      const storeName = s.storeName || 'Online Store';
+      document.title = `Checkout | ${storeName}`;
+      document.getElementById('headerStoreName').innerText = storeName;
+      document.getElementById('successMsg').innerText = `Thank you for ordering with ${storeName}. Our representative will contact you shortly to confirm your delivery details.`;
+
+      if (s.logo) {
+        LOGO_PLACEHOLDER = s.logo;
+        document.getElementById('headerLogo').src = s.logo;
+        document.getElementById('pageFavicon').href = s.logo;
+      }
+
+      if (s.delivery) {
+        deliverySettings = s.delivery;
+        document.getElementById('insideChargeText').innerText = `BDT ${deliverySettings.insideDhaka || 60}`;
+        document.getElementById('outsideChargeText').innerText = `BDT ${deliverySettings.outsideDhaka || 130}`;
+        updateSummaryPricing();
+      }
+    });
+
+    // Initialize Order Source
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      if (fromCart) {
+        currentOrderItems = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+        if (currentOrderItems.length === 0) {
+          window.location.href = homeShopUrl;
+          return;
+        }
+        document.getElementById('productLoadingBox').style.display = 'none';
+        proceedToCheckoutScreen();
+      } else if (productId) {
+        db.ref(`${PATHS.products}/${productId}`).once('value', snap => {
+          document.getElementById('productLoadingBox').style.display = 'none';
+          singleProductData = snap.val();
+          if (!singleProductData) {
+            alert('Product not found!');
+            window.location.href = homeShopUrl;
+            return;
+          }
+          renderProductShowcase(singleProductData);
+        });
+      } else {
+        window.location.href = homeShopUrl;
+      }
+    });
+
+    function renderProductShowcase(p) {
+      document.getElementById('productMainContent').classList.remove('hidden');
+
+      const imgEl = document.getElementById('pShowcaseImage');
+      imgEl.src = p.imageUrl || LOGO_PLACEHOLDER;
+
+      document.getElementById('pShowcaseTitle').innerText = p.name;
+      document.getElementById('pCategoryBadge').innerText = p.category || 'General';
+      
+      const price = Number(p.discountPrice || p.regularPrice);
+      document.getElementById('pShowcasePrice').innerText = `BDT ${price}`;
+
+      if (p.discountPrice && Number(p.discountPrice) < Number(p.regularPrice)) {
+        document.getElementById('pShowcaseOldPrice').innerText = `BDT ${p.regularPrice}`;
+      }
+
+      const badgeWrap = document.getElementById('pBadgesWrapper');
+      badgeWrap.innerHTML = '';
+      if (p.isFreeDelivery) {
+        badgeWrap.innerHTML += `<span class="bg-black text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow">Free Delivery</span>`;
+      }
+
+      // Thumbnails
+      if (p.gallery && Array.isArray(p.gallery) && p.gallery.length > 1) {
+        const thumbCont = document.getElementById('galleryThumbnailsContainer');
+        thumbCont.classList.remove('hidden');
+        thumbCont.innerHTML = '';
+        p.gallery.forEach(url => {
+          const t = document.createElement('img');
+          t.src = url;
+          t.className = "w-14 h-14 object-cover rounded-xl border border-gray-200 hover:border-black cursor-pointer bg-white shrink-0 transition";
+          t.onclick = () => { imgEl.src = url; };
+          thumbCont.appendChild(t);
+        });
+      }
+
+      // Colors
+      if (p.colors && p.colors.length > 0) {
+        document.getElementById('colorsWrap').classList.remove('hidden');
+        const cList = document.getElementById('colorsList');
+        cList.innerHTML = '';
+        p.colors.forEach((c, idx) => {
+          if (idx === 0) selectedColor = c;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `px-3.5 py-2 rounded-xl border text-xs font-semibold transition ${idx === 0 ? 'bg-black text-white border-black shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`;
+          btn.innerText = c;
+          btn.onclick = () => {
+            selectedColor = c;
+            cList.querySelectorAll('button').forEach(b => {
+              b.className = 'px-3.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold transition';
+            });
+            btn.className = 'px-3.5 py-2 rounded-xl border bg-black text-white border-black text-xs font-semibold transition shadow-sm';
+
+            if (p.colorImages && p.colorImages[c] && p.colorImages[c].length > 0) {
+              imgEl.src = p.colorImages[c][0];
+            }
+            syncProductOrderState();
+          };
+          cList.appendChild(btn);
+        });
+      }
+
+      // Sizes
+      if (p.sizes && p.sizes.length > 0) {
+        document.getElementById('sizesWrap').classList.remove('hidden');
+        const sList = document.getElementById('sizesList');
+        sList.innerHTML = '';
+        p.sizes.forEach((s, idx) => {
+          const val = typeof s === 'object' ? s.size : s;
+          if (idx === 0) selectedSize = val;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `px-3.5 py-2 rounded-xl border text-xs font-semibold transition ${idx === 0 ? 'bg-black text-white border-black shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`;
+          btn.innerText = val;
+          btn.onclick = () => {
+            selectedSize = val;
+            sList.querySelectorAll('button').forEach(b => {
+              b.className = 'px-3.5 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold transition';
+            });
+            btn.className = 'px-3.5 py-2 rounded-xl border bg-black text-white border-black text-xs font-semibold transition shadow-sm';
+            syncProductOrderState();
+          };
+          sList.appendChild(btn);
+        });
+      }
+
+      syncProductOrderState();
+      lucide.createIcons();
+    }
+
+    function changeQty(delta) {
+      singleQty += delta;
+      if (singleQty < 1) singleQty = 1;
+      document.getElementById('qtyCount').innerText = singleQty;
+      syncProductOrderState();
+    }
+
+    function syncProductOrderState() {
+      if (!singleProductData) return;
+      const currentImg = document.getElementById('pShowcaseImage').src;
+      const unitPrice = Number(singleProductData.discountPrice || singleProductData.regularPrice);
+      
+      currentOrderItems = [{
+        id: productId,
+        name: singleProductData.name,
+        price: unitPrice,
+        imageUrl: currentImg || singleProductData.imageUrl,
+        isFreeDelivery: !!singleProductData.isFreeDelivery,
+        selectedSize: selectedSize,
+        selectedColor: selectedColor,
+        quantity: singleQty
+      }];
+
+      document.getElementById('stickyBottomPrice').innerText = `BDT ${unitPrice * singleQty}`;
+      updateSummaryPricing();
+    }
+
+    function proceedToCheckoutScreen() {
+      document.getElementById('screen-product').classList.add('hidden');
+      document.getElementById('stickyOrderBar')?.classList.add('hidden');
+      
+      const chkScreen = document.getElementById('screen-checkout');
+      chkScreen.classList.remove('hidden');
+
+      const summaryCont = document.getElementById('checkoutSummaryList');
+      summaryCont.innerHTML = '';
+      currentOrderItems.forEach(it => {
+        summaryCont.innerHTML += `
+          <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+            <img src="${it.imageUrl || LOGO_PLACEHOLDER}" class="w-14 h-14 object-cover rounded-xl border border-gray-100 bg-white shrink-0">
+            <div class="flex-1 min-w-0 text-xs">
+              <span class="font-bold text-gray-900 block truncate">${it.name}</span>
+              <span class="text-gray-400 text-[11px] block mt-0.5">${it.selectedSize ? 'Size: ' + it.selectedSize : ''} ${it.selectedColor ? '| Color: ' + it.selectedColor : ''} | Qty: ${it.quantity}</span>
+              <span class="font-extrabold text-black mt-1 block">BDT ${it.price * it.quantity}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      updateSummaryPricing();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    function goToProductScreen() {
+      if (fromCart) {
+        window.location.href = `cart.html?shop=${encodeURIComponent(currentShop)}`;
+        return;
+      }
+      document.getElementById('screen-checkout').classList.add('hidden');
+      document.getElementById('screen-product').classList.remove('hidden');
+      document.getElementById('stickyOrderBar')?.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Smart Header Back button
+    function handleHeaderBack() {
+      const isCheckoutActive = !document.getElementById('screen-checkout').classList.contains('hidden');
+      if (isCheckoutActive && !fromCart) {
+        goToProductScreen();
+      } else if (document.referrer && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = homeShopUrl;
+      }
+    }
+
+    function openLightbox() {
+      const currentSrc = document.getElementById('pShowcaseImage').src;
+      const lb = document.getElementById('imageLightboxModal');
+      const lbImg = document.getElementById('lightboxImg');
+      lbImg.src = currentSrc;
+      lb.classList.remove('hidden');
+      lb.classList.add('flex');
+    }
+
+    function closeLightbox() {
+      const lb = document.getElementById('imageLightboxModal');
+      lb.classList.add('hidden');
+      lb.classList.remove('flex');
+    }
+
+    function handleDistrictChange(dist) {
+      const radioInside = document.querySelector('input[name="deliveryZone"][value="inside"]');
+      const radioOutside = document.querySelector('input[name="deliveryZone"][value="outside"]');
+      if (dist === "Dhaka") {
+        radioInside.checked = true;
+      } else if (dist !== "") {
+        radioOutside.checked = true;
+      }
+      updateSummaryPricing();
+    }
+
+    function updateSummaryPricing() {
+      let subtotal = 0;
+      let allFreeDelivery = currentOrderItems.length > 0 && currentOrderItems.every(item => item.isFreeDelivery);
+
+      currentOrderItems.forEach(item => {
+        subtotal += item.price * item.quantity;
+      });
+
+      const zoneRadio = document.querySelector('input[name="deliveryZone"]:checked');
+      const zone = zoneRadio ? zoneRadio.value : 'inside';
+      let deliveryFee = zone === 'inside' ? Number(deliverySettings.insideDhaka || 60) : Number(deliverySettings.outsideDhaka || 130);
+
+      if (allFreeDelivery) {
+        deliveryFee = 0;
+        document.getElementById('sumDelivery').innerHTML = `<span class="text-emerald-600 font-bold">Free</span>`;
+      } else {
+        document.getElementById('sumDelivery').innerText = `BDT ${deliveryFee}`;
+      }
+
+      document.getElementById('sumSubtotal').innerText = `BDT ${subtotal}`;
+      document.getElementById('sumGrandTotal').innerText = `BDT ${subtotal + deliveryFee}`;
+    }
+
+    function handleOrderSubmit(e) {
+      e.preventDefault();
+      const submitBtns = [document.getElementById('submitOrderBtnDesktop'), e.target.querySelector('button[type="submit"]')];
+      
+      submitBtns.forEach(btn => {
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span>Processing...</span>`;
+        }
+      });
+
+      const zone = document.querySelector('input[name="deliveryZone"]:checked').value;
+      const allFreeDelivery = currentOrderItems.every(item => item.isFreeDelivery);
+      const deliveryFee = allFreeDelivery ? 0 : (zone === 'inside' ? Number(deliverySettings.insideDhaka || 60) : Number(deliverySettings.outsideDhaka || 130));
+      const subtotal = currentOrderItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+
+      const orderData = {
+        customerName: document.getElementById('custName').value.trim(),
+        phone: document.getElementById('custPhone').value.trim(),
+        district: document.getElementById('custDistrict').value,
+        address: document.getElementById('custAddress').value.trim(),
+        deliveryZone: zone,
+        deliveryFee: deliveryFee,
+        subtotal: subtotal,
+        totalAmount: subtotal + deliveryFee,
+        items: currentOrderItems,
+        status: 'Pending',
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      db.ref(PATHS.orders).push(orderData)
+        .then(() => {
+          if (fromCart) localStorage.removeItem(CART_STORAGE_KEY);
+
+          confetti({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.6 }
+          });
+
+          document.getElementById('successModal').classList.remove('hidden');
+          document.getElementById('successModal').classList.add('flex');
+        })
+        .catch(err => {
+          alert('Error: ' + err.message);
+          submitBtns.forEach(btn => {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> <span>Confirm Order</span>`;
+            }
+          });
+          lucide.createIcons();
+        });
+    }
+  </script>
+</body>
+</html>
