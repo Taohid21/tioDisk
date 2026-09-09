@@ -1,0 +1,2605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title id="adminPageTitle">Style Forever Cpanel</title>
+
+  <!-- Favicon -->
+  <link id="adminFavicon" rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1788708839/b5fnlbs8a19t3hutx5wd.jpg">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Space Grotesk -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace']
+          },
+          boxShadow: {
+            'studio': '0 20px 40px -15px rgba(0,0,0,0.06), 0 0 1px 1px rgba(0,0,0,0.04)',
+            '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="antialiased min-h-screen selection:bg-black selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Global Loader Modal -->
+  <div id="globalLoader" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[10000] hidden flex-col items-center justify-center gap-3">
+    <div class="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+    <span id="loaderText" class="text-xs font-bold text-white bg-black/80 px-5 py-2 rounded-full shadow-2xl">Processing request...</span>
+  </div>
+
+  <div class="flex min-h-screen">
+    
+    <!-- ==================== DESKTOP SIDEBAR ==================== -->
+    <aside class="hidden lg:flex flex-col w-64 border-r border-slate-200/90 bg-white p-5 justify-between shrink-0 shadow-sm">
+      <div class="space-y-6">
+        
+        <!-- Brand Header -->
+        <div class="flex items-center gap-3 px-2 py-1">
+          <img src="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1788708839/b5fnlbs8a19t3hutx5wd.jpg" alt="Style Forever" class="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-sm store-logo-img">
+          <div class="min-w-0">
+            <span class="font-extrabold text-sm tracking-tight text-slate-900 block truncate store-name-text">Style Forever</span>
+            <span class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Master Console</span>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-1">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <span>Dashboard</span>
+          </button>
+          
+          <button onclick="switchTab('orders')" id="nav-orders" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <div class="flex items-center gap-3">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              <span>Orders</span>
+            </div>
+            <span id="navOrderBadge" class="bg-black text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full hidden">0</span>
+          </button>
+          
+          <button onclick="switchTab('products')" id="nav-products" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <i data-lucide="shirt" class="w-4 h-4"></i>
+            <span>Products & Stock</span>
+          </button>
+          
+          <button onclick="switchTab('campaigns')" id="nav-campaigns" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <i data-lucide="tag" class="w-4 h-4"></i>
+            <span>Campaigns & Combos</span>
+          </button>
+
+          <button onclick="switchTab('categories')" id="nav-categories" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>Categories</span>
+          </button>
+          
+          <button onclick="switchTab('marketing')" id="nav-marketing" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <i data-lucide="film" class="w-4 h-4"></i>
+            <span>Media Studio</span>
+          </button>
+
+          <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-black hover:bg-slate-100 transition">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            <span>Courier & Payments</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Live Store Preview Link -->
+      <div class="border-t border-slate-100 pt-4">
+        <a id="desktopLiveStoreLink" href="index.html" target="_blank" class="live-store-link flex items-center justify-between p-3 rounded-2xl border border-slate-200 hover:border-black bg-slate-50 hover:bg-white text-xs font-bold text-slate-800 transition shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live Storefront</span>
+          </div>
+          <i data-lucide="external-link" class="w-4 h-4 text-slate-400"></i>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT AREA ==================== -->
+    <div class="flex-1 flex flex-col min-w-0 pb-24 lg:pb-12">
+
+      <!-- Admin Header Bar -->
+      <header class="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1788708839/b5fnlbs8a19t3hutx5wd.jpg" alt="Logo" class="lg:hidden w-8 h-8 rounded-xl object-cover border border-slate-200 store-logo-img">
+          <span class="lg:hidden font-extrabold text-sm text-slate-900 truncate store-name-text">Style Forever</span>
+          <div class="hidden lg:flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span>Admin</span>
+            <span>/</span>
+            <span class="text-slate-900" id="headerBreadcrumb">Dashboard</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a id="headerLiveStoreLink" href="https://styleforeverbd.com" target="_blank" class="live-store-link flex items-center gap-1.5 px-4 py-2 rounded-xl bg-black text-white text-xs font-bold hover:bg-slate-800 transition shadow-sm">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            <span>View Website</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- ==================== TAB 1: DASHBOARD ==================== -->
+      <main id="tab-dashboard" class="tab-view active p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-6">
+        
+        <!-- Metrics Counter Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div onclick="switchTab('orders'); setOrderFilter('today')" class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-black transition">
+            <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Today Orders
+            </span>
+            <div class="text-2xl font-black text-slate-900 mt-2 font-mono" id="statTodayOrders">0</div>
+          </div>
+          <div onclick="switchTab('orders'); setOrderFilter('active')" class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm cursor-pointer hover:border-black transition">
+            <span class="text-[11px] font-bold text-amber-600">Pending Review</span>
+            <div class="text-2xl font-black text-slate-900 mt-2 font-mono" id="statPendingOrders">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+            <span class="text-[11px] font-bold text-slate-500">Products</span>
+            <div class="text-2xl font-black text-slate-900 mt-2 font-mono" id="statProducts">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+            <span class="text-[11px] font-bold text-slate-500">Campaigns</span>
+            <div class="text-2xl font-black text-slate-900 mt-2 font-mono" id="statCampaigns">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+            <span class="text-[11px] font-bold text-slate-500">Banners</span>
+            <div class="text-2xl font-black text-slate-900 mt-2 font-mono" id="statBanners">0</div>
+          </div>
+          <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+            <span class="text-[11px] font-bold text-slate-500">Shorts / Reels</span>
+            <div class="text-2xl font-black text-slate-900 mt-2 font-mono" id="statShorts">0</div>
+          </div>
+        </div>
+
+        <!-- Announcement Top Bar Controller -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+              <i data-lucide="bell" class="w-4 h-4 text-black"></i>
+              <span>Storefront Announcement Ticker</span>
+            </h3>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="announcementInput" placeholder="e.g. Style Forever • Flat 20% Off on Summer Collection • Free Delivery Above 2000 BDT" class="flex-1 bg-slate-50 border border-slate-200 focus:border-black focus:bg-white text-slate-900 rounded-xl px-4 py-2.5 text-xs sm:text-sm outline-none transition font-medium">
+            <button onclick="saveAnnouncement()" class="bg-black hover:bg-neutral-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Save Announcement</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Fast Navigation Action Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <button onclick="openProductModal()" class="p-5 rounded-3xl border border-slate-200/80 bg-white hover:border-black text-left transition space-y-2 shadow-sm group">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 text-black flex items-center justify-center group-hover:bg-black group-hover:text-white transition">
+              <i data-lucide="plus" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900">Add Fashion Apparel</h4>
+            <p class="text-xs text-slate-400">Configure sizes, colors, photo sets, stock, advance payment & COD</p>
+          </button>
+
+          <button onclick="switchTab('campaigns')" class="p-5 rounded-3xl border border-slate-200/80 bg-white hover:border-black text-left transition space-y-2 shadow-sm group">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 text-black flex items-center justify-center group-hover:bg-black group-hover:text-white transition">
+              <i data-lucide="tag" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900">Create Combo / Campaign</h4>
+            <p class="text-xs text-slate-400">Bundle multiple items, offer custom bundle discounts or free shipping</p>
+          </button>
+
+          <button onclick="switchTab('settings')" class="p-5 rounded-3xl border border-slate-200/80 bg-white hover:border-black text-left transition space-y-2 shadow-sm group">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 text-black flex items-center justify-center group-hover:bg-black group-hover:text-white transition">
+              <i data-lucide="truck" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900">Steadfast Courier & Payments</h4>
+            <p class="text-xs text-slate-400">Setup 1-click automatic consignment entry & bKash / Nagad accounts</p>
+          </button>
+        </div>
+      </main>
+
+      <!-- ==================== TAB 2: ORDERS & STEADFAST ==================== -->
+      <main id="tab-orders" class="tab-view p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">Orders & Courier Dispatch</h2>
+            <p class="text-xs text-slate-400">Review advance payment proofs, verify TrxID and book to Steadfast Courier</p>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <button onclick="setOrderFilter('active')" id="btnFilter-active" class="px-4 py-2 rounded-xl text-xs font-bold bg-black text-white transition">
+              Active (<span id="countActive" class="font-mono">0</span>)
+            </button>
+            <button onclick="setOrderFilter('today')" id="btnFilter-today" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              Today (<span id="countToday" class="font-mono">0</span>)
+            </button>
+            <button onclick="setOrderFilter('history')" id="btnFilter-history" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              History (<span id="countHistory" class="font-mono">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Order Search -->
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="orderSearchInput" oninput="renderOrdersList()" placeholder="Search by order ID, customer name, phone number or TrxID..." class="w-full bg-white border border-slate-200/80 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-slate-900 outline-none focus:border-black transition shadow-sm font-medium">
+        </div>
+
+        <!-- Orders List Container -->
+        <div id="ordersContainer" class="space-y-4">
+          <div class="text-center py-16 text-xs text-slate-400 font-medium">Loading orders...</div>
+        </div>
+      </main>
+
+      <!-- ==================== TAB 3: PRODUCTS & CLOTHING APPAREL ==================== -->
+      <main id="tab-products" class="tab-view p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">Product Inventory & Variations</h2>
+            <p class="text-xs text-slate-400">Total catalog, sizes, color galleries and payment rules</p>
+          </div>
+          <div class="flex items-center gap-2.5 w-full sm:w-auto">
+            <div class="relative flex-1 sm:w-64">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="productSearch" oninput="filterProducts()" placeholder="Search products..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 outline-none focus:border-black transition font-medium">
+            </div>
+            <button onclick="openProductModal()" class="bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add Product</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+      </main>
+
+      <!-- ==================== TAB 4: CAMPAIGNS & COMBOS ==================== -->
+      <main id="tab-campaigns" class="tab-view p-3 sm:p-6 max-w-7xl mx-auto w-full space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-extrabold text-slate-900 tracking-tight">Create Combo Offer</h2>
+          <span id="comboSelectedCount" class="text-xs font-bold text-slate-500">0 Selected</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div>
+              <input type="text" id="campTitle" placeholder="Combo Title (e.g. 3-in-1 Combo)" class="w-full bg-white border border-slate-300 focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium text-slate-900 placeholder:text-slate-400">
+            </div>
+
+            <div>
+              <input type="text" id="campBadge" placeholder="Badge (e.g. Hot Deal / Save 200)" class="w-full bg-white border border-slate-300 focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium text-slate-900 placeholder:text-slate-400">
+            </div>
+
+            <div>
+              <input type="number" id="campPrice" placeholder="Combo Price (BDT)" class="w-full bg-white border border-slate-300 focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-bold text-slate-900 placeholder:text-slate-400">
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Select Products:</div>
+            <div id="campaignProductSelector" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-80 overflow-y-auto custom-scroll p-1">
+              <div class="col-span-full py-4 text-center text-xs text-slate-400 font-medium">Loading catalog items...</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 pt-1">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-slate-800 shrink-0">
+              <input type="checkbox" id="campFreeDelivery" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-0">
+              <span class="text-xs font-semibold whitespace-nowrap">Free Delivery</span>
+            </label>
+
+            <button onclick="createCampaign()" class="bg-black hover:bg-neutral-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shrink-0 active:scale-95 flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span class="whitespace-nowrap">Save Combo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-5 space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600">Active Combos</h4>
+          <div id="campaignsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+      </main>
+
+      <!-- ==================== TAB 5: CATEGORIES ==================== -->
+      <main id="tab-categories" class="tab-view p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Collections & Categories</h2>
+          <p class="text-xs text-slate-400">Organize store collections with high quality cover photos</p>
+        </div>
+
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Category Name *</label>
+              <input type="text" id="catName" placeholder="e.g. Shirts, Polos, Denim Jeans, Hoodies" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Cover Image *</label>
+              <div class="flex items-center gap-3">
+                <label class="flex-1 flex items-center justify-center gap-2 border border-dashed border-slate-300 hover:border-black bg-slate-50 hover:bg-slate-100 rounded-xl py-2 px-3 cursor-pointer transition">
+                  <i data-lucide="upload" class="w-4 h-4 text-slate-500"></i>
+                  <span id="catUploadLabel" class="text-xs font-semibold text-slate-700">Choose Image</span>
+                  <input type="file" id="catFileInput" accept="image/*" class="hidden" onchange="previewCategoryFile(this)">
+                </label>
+                <div id="catPreviewBox" class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden hidden shrink-0">
+                  <img id="catPreviewImg" class="w-full h-full object-cover">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="addCategory()" class="bg-black hover:bg-neutral-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Save Category</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="categoriesGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+      </main>
+
+      <!-- ==================== TAB 6: MEDIA STUDIO ==================== -->
+      <main id="tab-marketing" class="tab-view p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-8">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Media Studio</h2>
+          <p class="text-xs text-slate-400">Hero banners, 9:16 vertical video reels, and promotional ads</p>
+        </div>
+
+        <!-- 1. Hero Banners -->
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                <i data-lucide="image" class="w-4 h-4 text-black"></i>
+                <span>Hero Slider Banners</span>
+              </h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Recommended resolution: 1920x800 or 1200x500</p>
+            </div>
+            <span class="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full">Top Slider</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Direct Image URL</label>
+              <div class="flex gap-2">
+                <input type="url" id="bannerUrlInput" placeholder="https://domain.com/banner.jpg" class="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+                <button type="button" onclick="addBannerFromUrl()" class="bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm shrink-0">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Or Upload Banner Image File</label>
+              <label class="flex items-center justify-center gap-2 border border-dashed border-slate-300 hover:border-black bg-slate-50 hover:bg-slate-100 rounded-xl py-2 px-3 cursor-pointer transition">
+                <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-500"></i>
+                <span id="bannerUploadLabel" class="text-xs font-semibold text-slate-700">Choose Banner Image</span>
+                <input type="file" id="bannerFileInput" accept="image/*" class="hidden" onchange="uploadBannerDirect(this)">
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-700 mb-3">Active Slider Banners</h4>
+            <div id="bannersGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+          </div>
+        </div>
+
+        <!-- 2. Shorts & Reels -->
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                <i data-lucide="film" class="w-4 h-4 text-black"></i>
+                <span>Shorts & Reels</span>
+              </h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Vertical 9:16 mobile videos</p>
+            </div>
+            <span class="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full">9:16 Reel</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Direct Video URL</label>
+              <div class="flex gap-2">
+                <input type="url" id="shortUrlInput" placeholder="https://domain.com/reel.mp4" class="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+                <button type="button" onclick="addShortFromUrl()" class="bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm shrink-0">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Or Upload MP4 Video File</label>
+              <label class="flex items-center justify-center gap-2 border border-dashed border-slate-300 hover:border-black bg-slate-50 hover:bg-slate-100 rounded-xl py-2 px-3 cursor-pointer transition">
+                <i data-lucide="video" class="w-4 h-4 text-slate-500"></i>
+                <span id="shortUploadLabel" class="text-xs font-semibold text-slate-700">Choose MP4 Video File</span>
+                <input type="file" id="shortFileInput" accept="video/mp4,video/*" class="hidden" onchange="uploadShortDirect(this)">
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-700 mb-3">Active Video Reels</h4>
+            <div id="shortsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3"></div>
+          </div>
+        </div>
+
+        <!-- 3. In-Feed Promo Banners -->
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">In-Feed Promotional Banners</h3>
+            <span class="text-[11px] text-slate-400 font-medium">Displayed between categories</span>
+          </div>
+
+          <label class="flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 hover:border-black bg-slate-50 hover:bg-slate-100 rounded-2xl py-3.5 cursor-pointer transition">
+            <i data-lucide="upload-cloud" class="w-4 h-4 text-slate-500"></i>
+            <span class="text-xs font-bold text-slate-700">Upload Promo Banner</span>
+            <input type="file" id="adFileInput" accept="image/*" class="hidden" onchange="uploadAdDirect(this)">
+          </label>
+
+          <div id="adsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"></div>
+        </div>
+      </main>
+
+      <!-- ==================== TAB 7: SETTINGS, COURIER & PAYMENTS ==================== -->
+      <main id="tab-settings" class="tab-view p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-6">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Settings</h2>
+        </div>
+
+        <!-- Couriers -->
+        <div class="space-y-2.5">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+            <i data-lucide="truck" class="w-4 h-4 text-slate-800"></i>
+            <span>Courier</span>
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div onclick="openModal('courierModal')" class="bg-white border border-slate-200 hover:border-black rounded-2xl p-4 shadow-sm transition cursor-pointer flex items-center justify-between group">
+              <div class="flex items-center gap-3 min-w-0">
+                <img src="https://cdn.shopify.com/app-store/listing_images/9e9c23dca8723a5dc6765c0388fe3836/icon/CI3npbPFsoYDEAE=.jpeg" alt="Steadfast" class="w-10 h-10 rounded-xl object-cover border border-slate-100 shrink-0">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xs font-extrabold text-slate-900 truncate">Steadfast Courier</h4>
+                    <span id="courierStatusBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Not Setup</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 truncate mt-0.5">Automated Dispatch API</p>
+                </div>
+              </div>
+              <div class="w-7 h-7 rounded-lg bg-slate-50 group-hover:bg-black group-hover:text-white flex items-center justify-center text-slate-400 transition shrink-0">
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Gateways -->
+        <div class="space-y-2.5">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+            <i data-lucide="credit-card" class="w-4 h-4 text-slate-800"></i>
+            <span>Payment Accounts</span>
+          </h3>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div onclick="openPaymentConfig('bkash')" class="bg-white border border-slate-200/90 hover:border-[#D12053] rounded-3xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between space-y-3 group">
+              <div class="flex items-center justify-between">
+                <img src="https://static.vecteezy.com/system/resources/previews/039/340/798/non_2x/bkash-logo-free-vector.jpg" alt="bKash" class="h-8 object-contain">
+                <span id="bkashBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">Off</span>
+              </div>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900">bKash</h4>
+                <p id="bkashPreviewText" class="text-[11px] text-slate-400 truncate mt-0.5">Click to configure</p>
+              </div>
+            </div>
+
+            <div onclick="openPaymentConfig('nagad')" class="bg-white border border-slate-200/90 hover:border-[#F7921E] rounded-3xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between space-y-3 group">
+              <div class="flex items-center justify-between">
+                <img src="https://play-lh.googleusercontent.com/tFk8R3Fkav7fZEY8e7VJtMwtRCowaWU2Us-AmWaKnTOWBer427fPjWetoOnhrUM4nWeZb0AOEJ6lnlwJ9HRu" alt="Nagad" class="h-8 object-contain">
+                <span id="nagadBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">Off</span>
+              </div>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900">Nagad</h4>
+                <p id="nagadPreviewText" class="text-[11px] text-slate-400 truncate mt-0.5">Click to configure</p>
+              </div>
+            </div>
+
+            <div onclick="openPaymentConfig('rocket')" class="bg-white border border-slate-200/90 hover:border-[#8C3494] rounded-3xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between space-y-3 group">
+              <div class="flex items-center justify-between">
+                <img src="https://static.vecteezy.com/system/resources/thumbnails/068/706/013/small/rocket-color-logo-mobile-banking-icon-free-png.png" alt="Rocket" class="h-8 object-contain">
+                <span id="rocketBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">Off</span>
+              </div>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900">Rocket</h4>
+                <p id="rocketPreviewText" class="text-[11px] text-slate-400 truncate mt-0.5">Click to configure</p>
+              </div>
+            </div>
+
+            <div onclick="openPaymentConfig('bank')" class="bg-white border border-slate-200/90 hover:border-slate-800 rounded-3xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between space-y-3 group">
+              <div class="flex items-center justify-between">
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+                  <i data-lucide="building-2" class="w-4 h-4"></i>
+                </div>
+                <span id="bankBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">Off</span>
+              </div>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900">Bank Transfer</h4>
+                <p id="bankPreviewText" class="text-[11px] text-slate-400 truncate mt-0.5">Click to configure</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Info & Shipping Rates Card -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-slate-800"></i>
+              <span>Store Details & Shipping Fees</span>
+            </h3>
+          </div>
+
+          <div onclick="openModal('storeInfoModal')" class="bg-white border border-slate-200/90 hover:border-black rounded-3xl p-5 shadow-sm hover:shadow-md transition cursor-pointer flex items-center justify-between group">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center shrink-0">
+                <i data-lucide="store" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900" id="previewStoreName">Style Forever</h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                  Phone: <span id="previewPhone" class="font-medium text-slate-600">+8801704609401</span> • 
+                  Inside: <span id="previewDelInside" class="font-bold text-slate-800">BDT 60</span> • 
+                  Outside: <span id="previewDelOutside" class="font-bold text-slate-800">BDT 130</span>
+                </p>
+              </div>
+            </div>
+            <div class="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-black group-hover:text-white flex items-center justify-center text-slate-400 transition shrink-0">
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
+            </div>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ==================== MOBILE BOTTOM BAR ==================== -->
+  <nav class="lg:hidden fixed bottom-3 left-2 right-2 z-40 bg-white/95 backdrop-blur-md border border-slate-200 shadow-xl rounded-2xl p-1 flex items-center justify-around">
+    <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mob-item flex flex-col items-center gap-0.5 text-black p-1">
+      <i data-lucide="layout-grid" class="w-4 h-4"></i>
+      <span class="text-[9px] font-bold">Home</span>
+    </button>
+    <button onclick="switchTab('orders')" id="mob-orders" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1 relative">
+      <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+      <span class="text-[9px] font-semibold">Orders</span>
+      <span id="mobOrderBadge" class="absolute top-0.5 right-1 w-2 h-2 bg-black rounded-full hidden"></span>
+    </button>
+    <button onclick="switchTab('products')" id="mob-products" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1">
+      <i data-lucide="shirt" class="w-4 h-4"></i>
+      <span class="text-[9px] font-semibold">Products</span>
+    </button>
+    <button onclick="switchTab('categories')" id="mob-categories" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1">
+      <i data-lucide="layers" class="w-4 h-4"></i>
+      <span class="text-[9px] font-semibold">Category</span>
+    </button>
+    <button onclick="switchTab('campaigns')" id="mob-campaigns" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1">
+      <i data-lucide="tag" class="w-4 h-4"></i>
+      <span class="text-[9px] font-semibold">Combos</span>
+    </button>
+    <button onclick="switchTab('marketing')" id="mob-marketing" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1">
+      <i data-lucide="film" class="w-4 h-4"></i>
+      <span class="text-[9px] font-semibold">Media</span>
+    </button>
+    <button onclick="switchTab('settings')" id="mob-settings" class="mob-item flex flex-col items-center gap-0.5 text-slate-400 p-1">
+      <i data-lucide="settings" class="w-4 h-4"></i>
+      <span class="text-[9px] font-semibold">Courier</span>
+    </button>
+  </nav>
+
+  <!-- ==================== COURIER CONFIG MODAL ==================== -->
+  <div id="courierModal" class="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[92vh] flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://cdn.shopify.com/app-store/listing_images/9e9c23dca8723a5dc6765c0388fe3836/icon/CI3npbPFsoYDEAE=.jpeg" class="w-8 h-8 rounded-xl object-cover">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Steadfast Courier API</h3>
+            <p class="text-[11px] text-slate-400">Automated order booking & tracking</p>
+          </div>
+        </div>
+        <button onclick="closeModal('courierModal')" class="p-1 rounded-lg text-slate-400 hover:text-black">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Steadfast API Key *</label>
+          <input type="text" id="steadfastApiKey" placeholder="e.g. stf_live_xxxx" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Steadfast Secret Key *</label>
+          <input type="password" id="steadfastSecretKey" placeholder="e.g. stf_sec_xxxx" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+        </div>
+
+        <p class="text-[11px] text-slate-400 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
+          Get these keys from your Steadfast Courier Merchant Portal under <b>Settings &rarr; API Credentials</b>.
+        </p>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button onclick="closeModal('courierModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-black transition">Cancel</button>
+        <button onclick="saveCourierConfig()" class="bg-black hover:bg-neutral-800 text-white px-5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Save Courier</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PAYMENT GATEWAY CONFIG MODAL ==================== -->
+  <div id="paymentModal" class="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[92vh] flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="paymentModalIconWrap" class="w-8 h-8 rounded-xl flex items-center justify-center"></div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900" id="paymentModalTitle">Payment Account</h3>
+            <p class="text-[11px] text-slate-400">Advance fees & TrxID verification</p>
+          </div>
+        </div>
+        <button onclick="closeModal('paymentModal')" class="p-1 rounded-lg text-slate-400 hover:text-black">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4" id="mobileWalletFields">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1" id="paymentNumberLabel">Account Number</label>
+          <input type="text" id="paymentNumberInput" placeholder="e.g. 017xxxxxxxx" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Account Type</label>
+          <select id="paymentTypeSelect" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+            <option value="Personal (Send Money)">Personal (Send Money)</option>
+            <option value="Merchant (Payment)">Merchant (Payment)</option>
+            <option value="Agent (Cash In)">Agent (Cash In)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="p-6 pt-0 space-y-4 hidden" id="bankFields">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Bank Account Instructions</label>
+          <textarea id="payBankNoteInput" rows="4" placeholder="Bank Name: City Bank&#10;Account Name: Style Forever&#10;Account Number: 1234567890&#10;Branch: Gulshan" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium"></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button onclick="closeModal('paymentModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-black transition">Cancel</button>
+        <button onclick="savePaymentConfig()" class="bg-black hover:bg-neutral-800 text-white px-5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Save Channel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== STORE INFO & RATES MODAL ==================== -->
+  <div id="storeInfoModal" class="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[92vh] flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Store Information & Rates</h3>
+          <p class="text-[11px] text-slate-400">Shipping rates & store hotline</p>
+        </div>
+        <button onclick="closeModal('storeInfoModal')" class="p-1 rounded-lg text-slate-400 hover:text-black">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Store Name *</label>
+          <input type="text" id="setStoreName" placeholder="Style Forever" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Contact Phone</label>
+          <input type="text" id="setStorePhone" placeholder="+8801704609401" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Inside Dhaka (BDT)</label>
+            <input type="number" id="setDelInside" placeholder="60" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Outside Dhaka (BDT)</label>
+            <input type="number" id="setDelOutside" placeholder="130" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2.5 text-xs outline-none transition font-medium">
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button onclick="closeModal('storeInfoModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-black transition">Cancel</button>
+        <button onclick="saveStoreInfoConfig()" class="bg-black hover:bg-neutral-800 text-white px-5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Save Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ADVANCED PRODUCT MODAL ==================== -->
+  <div id="productModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-2xl h-[95vh] sm:h-auto rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+      
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-slate-900" id="prodModalTitle">Add Product</h3>
+        <button onclick="closeProductModal()" class="w-8 h-8 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-black flex items-center justify-center transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto custom-scroll flex-1">
+        <!-- Basic Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Product Title *</label>
+            <input type="text" id="prodName" placeholder="e.g. Style Forever Tailored Oxford Shirt" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
+            <select id="prodCategory" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition cursor-pointer font-medium">
+              <option value="">Select Category</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Total Stock</label>
+            <input type="number" id="prodStock" placeholder="100" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Regular Price (BDT) *</label>
+            <input type="number" id="prodRegularPrice" placeholder="1450" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Discount Price (BDT)</label>
+            <input type="number" id="prodDiscountPrice" placeholder="1150" class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Product Description</label>
+            <textarea id="prodDescription" rows="3" placeholder="ফেব্রিক ডিটেইলস, সাইজ গাইড, বিবরণ ইত্যাদি লিখুন..." class="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium"></textarea>
+          </div>
+        </div>
+
+        <!-- Fashion Sizing Presets -->
+        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-800">Fashion Size Selector & Presets</label>
+            <span class="text-[10px] text-slate-400 font-semibold">Click presets to auto-fill</span>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="applySizePreset('tops')" class="px-2.5 py-1 bg-white hover:bg-black hover:text-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition">
+              Tops / Shirts (S, M, L, XL, XXL)
+            </button>
+            <button type="button" onclick="applySizePreset('pants')" class="px-2.5 py-1 bg-white hover:bg-black hover:text-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition">
+              Pants / Jeans (28, 30, 32, 34, 36, 38)
+            </button>
+            <button type="button" onclick="applySizePreset('shoes')" class="px-2.5 py-1 bg-white hover:bg-black hover:text-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition">
+              Footwear (39, 40, 41, 42, 43, 44)
+            </button>
+            <button type="button" onclick="applySizePreset('freesize')" class="px-2.5 py-1 bg-white hover:bg-black hover:text-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition">
+              Free Size
+            </button>
+          </div>
+
+          <input type="text" id="prodSizes" placeholder="Sizes (comma separated: S, M, L, XL)" class="w-full bg-white border border-slate-200 focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+        </div>
+
+        <!-- Payment & Delivery Rules -->
+        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
+          <span class="text-xs font-bold text-slate-800 block">Product Payment & Delivery Rules</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <label class="flex items-center gap-2 cursor-pointer bg-white p-3 rounded-xl border border-slate-200">
+              <input type="checkbox" id="prodCodEnabled" checked class="w-4 h-4 rounded border-slate-300 text-black focus:ring-0">
+              <div>
+                <span class="text-xs font-bold text-slate-800 block">Cash on Delivery (COD)</span>
+                <span class="text-[10px] text-slate-400">Allow customers to pay full COD</span>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-2 cursor-pointer bg-white p-3 rounded-xl border border-slate-200">
+              <input type="checkbox" id="prodAdvanceRequired" onchange="toggleAdvanceAmount(this)" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-0">
+              <div>
+                <span class="text-xs font-bold text-slate-800 block">Require Advance Payment</span>
+                <span class="text-[10px] text-slate-400">Customer must pay advance to order</span>
+              </div>
+            </label>
+
+            <div id="advanceAmountWrapper" class="sm:col-span-2 hidden bg-white p-3 rounded-xl border border-slate-200">
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Advance Payment Amount (BDT) *</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="prodAdvanceAmount" placeholder="e.g. 150" class="flex-1 bg-slate-50 border border-slate-200 focus:border-black rounded-xl px-3 py-1.5 text-xs outline-none font-medium">
+                <span class="text-[11px] text-slate-400 font-semibold">Remaining balance collected via COD</span>
+              </div>
+            </div>
+
+            <label class="sm:col-span-2 flex items-center gap-2 cursor-pointer bg-white p-3 rounded-xl border border-slate-200">
+              <input type="checkbox" id="prodFreeDelivery" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-0">
+              <div>
+                <span class="text-xs font-bold text-slate-800 block">Free Delivery Applicable</span>
+                <span class="text-[10px] text-slate-400">Zero shipping fee for this item</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Color Variants with Dedicated Galleries -->
+        <div class="pt-2 border-t border-slate-100 space-y-4">
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Color Variants & Photo Sets</h4>
+            <p class="text-[11px] text-slate-400">Upload dedicated high resolution galleries for each apparel color</p>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="newColorInput" placeholder="Add Color (e.g. Jet Black, Navy Blue, Olive Green)" class="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-black rounded-xl px-3.5 py-2 text-xs outline-none transition font-medium">
+            <button type="button" onclick="addColorGroup()" class="bg-slate-100 hover:bg-slate-200 text-slate-900 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Color
+            </button>
+          </div>
+
+          <div id="colorGalleriesContainer" class="space-y-4">
+            <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3" id="colorGroup-default">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800">Primary / General Photo Gallery</span>
+              </div>
+
+              <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-black bg-white rounded-xl p-3.5 cursor-pointer transition text-center">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-slate-400"></i>
+                <span class="text-xs font-bold text-slate-700 mt-1">Select General Photos</span>
+                <span class="text-[10px] text-slate-400">Cloudinary multi-image upload</span>
+                <input type="file" multiple accept="image/*" class="hidden" onchange="uploadColorPhotos(this, 'General')">
+              </label>
+
+              <div id="thumbs-General" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button onclick="closeProductModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-black transition">Cancel</button>
+        <button onclick="saveProduct()" class="bg-black hover:bg-neutral-800 text-white px-7 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Save Product</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let LOGO_PLACEHOLDER = "https://res.cloudinary.com/dwgvvzbvn/image/upload/v1788708839/b5fnlbs8a19t3hutx5wd.jpg";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentShop = urlParams.get('shop') || 'styleforever';
+
+    const liveStoreUrl = `index.html?shop=${encodeURIComponent(currentShop)}`;
+    document.querySelectorAll('.live-store-link').forEach(link => {
+      link.href = liveStoreUrl;
+    });
+
+    const CLOUDINARY_CLOUD_NAME = 'dwgvvzbvn';
+    const CLOUDINARY_UPLOAD_PRESET = 'storyapp';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_HBGuQSh_GzqrHqHbgdaoBikLZsK3Qqs",
+      authDomain: "new-all-f99f7.firebaseapp.com",
+      databaseURL: "https://new-all-f99f7-default-rtdb.firebaseio.com",
+      projectId: "new-all-f99f7",
+      storageBucket: "new-all-f99f7.firebasestorage.app",
+      messagingSenderId: "1069748173900",
+      appId: "1:1069748173900:web:158d6336c0f4628133c8e9",
+      measurementId: "G-V6DZ37WSBF"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const PATHS = {
+      orders: `stores/${currentShop}/orders`,
+      announcement: `stores/${currentShop}/announcement`,
+      banners: `stores/${currentShop}/banners`,
+      categories: `stores/${currentShop}/categories`,
+      products: `stores/${currentShop}/products`,
+      campaigns: `stores/${currentShop}/campaigns`,
+      ads: `stores/${currentShop}/ads`,
+      shorts: `stores/${currentShop}/shorts`,
+      settings: `stores/${currentShop}/settings`
+    };
+
+    let currentStoreSettings = {
+      storeName: 'Style Forever',
+      logo: LOGO_PLACEHOLDER,
+      phone: '+8801704609401',
+      steadfastApiKey: '',
+      steadfastSecretKey: '',
+      bkash: '',
+      nagad: '',
+      rocket: '',
+      bankNote: '',
+      delInside: 60,
+      delOutside: 130
+    };
+
+    let cachedProducts = {};
+    let cachedCategories = {};
+    let allOrdersData = {};
+    let allCampaignsData = {};
+    let currentOrderFilter = 'active';
+    let activeColorGalleries = { 'General': [] };
+    let pendingCategoryImg = '';
+    let selectedCampaignProducts = new Set();
+    let editingProductId = null;
+    let activeModalsStack = [];
+
+    // Load Settings
+    db.ref(PATHS.settings).on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+
+      currentStoreSettings = { ...currentStoreSettings, ...s };
+      if (s.logo) LOGO_PLACEHOLDER = s.logo;
+
+      document.getElementById('adminPageTitle').innerText = `${s.storeName || 'Style Forever'} | Master Admin Console`;
+      document.querySelectorAll('.store-name-text').forEach(el => el.innerText = s.storeName || 'Style Forever');
+
+      if (s.logo) {
+        document.getElementById('adminFavicon').href = s.logo;
+        document.querySelectorAll('.store-logo-img').forEach(el => el.src = s.logo);
+      }
+
+      if (document.getElementById('previewStoreName')) document.getElementById('previewStoreName').innerText = s.storeName || 'Style Forever';
+      if (document.getElementById('previewPhone')) document.getElementById('previewPhone').innerText = s.phone || '+8801704609401';
+      if (document.getElementById('previewDelInside')) document.getElementById('previewDelInside').innerText = `BDT ${s.delInside || 60}`;
+      if (document.getElementById('previewDelOutside')) document.getElementById('previewDelOutside').innerText = `BDT ${s.delOutside || 130}`;
+
+      const cBadge = document.getElementById('courierStatusBadge');
+      if (cBadge) {
+        if (s.steadfastApiKey && s.steadfastSecretKey) {
+          cBadge.innerText = 'Connected';
+          cBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+        } else {
+          cBadge.innerText = 'Not Setup';
+          cBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500';
+        }
+      }
+
+      updatePaymentBadge('bkash', s.bkash);
+      updatePaymentBadge('nagad', s.nagad);
+      updatePaymentBadge('rocket', s.rocket);
+      updatePaymentBadge('bank', s.bankNote);
+    });
+
+    function updatePaymentBadge(channel, val) {
+      const badge = document.getElementById(`${channel}Badge`);
+      const preview = document.getElementById(`${channel}PreviewText`);
+      if (!badge || !preview) return;
+
+      if (val && val.trim() !== '') {
+        badge.innerText = 'Active';
+        badge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+        preview.innerText = val.split('\n')[0];
+      } else {
+        badge.innerText = 'Off';
+        badge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500';
+        preview.innerText = 'Click to configure';
+      }
+    }
+
+    function showLoader(msg = 'Processing request...') {
+      document.getElementById('loaderText').innerText = msg;
+      document.getElementById('globalLoader').classList.remove('hidden');
+      document.getElementById('globalLoader').classList.add('flex');
+    }
+    function hideLoader() {
+      document.getElementById('globalLoader').classList.add('hidden');
+      document.getElementById('globalLoader').classList.remove('flex');
+    }
+
+    async function uploadFileToCloudinary(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+      const isVideo = file.type && file.type.startsWith('video');
+      const endpoint = isVideo ? 'video' : 'image';
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${endpoint}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Cloudinary Upload Failed');
+      const data = await res.json();
+      return data.secure_url;
+    }
+
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs font-bold shadow-md flex items-center gap-2 bg-white ${
+        isError ? 'border-rose-200 text-rose-600' : 'border-emerald-200 text-emerald-700'
+      }`;
+      toast.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check-circle-2'}" class="w-4 h-4"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => toast.remove(), 200);
+      }, 2500);
+    }
+
+    const tabTitles = {
+      dashboard: 'Dashboard',
+      orders: 'Orders & Steadfast',
+      products: 'Products & Stock',
+      campaigns: 'Campaigns & Combos',
+      categories: 'Categories',
+      marketing: 'Media Studio',
+      settings: 'Courier & Settings'
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add('active');
+
+      document.getElementById('headerBreadcrumb').innerText = tabTitles[tabId] || 'Overview';
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('bg-slate-100', 'text-black');
+        btn.classList.add('text-slate-500');
+      });
+      const dBtn = document.getElementById(`nav-${tabId}`);
+      if (dBtn) {
+        dBtn.classList.add('bg-slate-100', 'text-black');
+        dBtn.classList.remove('text-slate-500');
+      }
+
+      document.querySelectorAll('.mob-item').forEach(btn => {
+        btn.classList.remove('text-black');
+        btn.classList.add('text-slate-400');
+      });
+      const mBtn = document.getElementById(`mob-${tabId}`);
+      if (mBtn) {
+        mBtn.classList.add('text-black');
+        mBtn.classList.remove('text-slate-400');
+      }
+
+      lucide.createIcons();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==================== 1. ORDERS & STEADFAST ====================
+    function setOrderFilter(filter) {
+      currentOrderFilter = filter;
+      ['active', 'today', 'history'].forEach(f => {
+        const btn = document.getElementById(`btnFilter-${f}`);
+        if (!btn) return;
+        if (f === filter) {
+          btn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-black text-white transition";
+        } else {
+          btn.className = "px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+        }
+      });
+      renderOrdersList();
+    }
+
+    db.ref(PATHS.orders).on('value', snap => {
+      allOrdersData = snap.val() || {};
+      updateOrderCountsAndRender();
+    });
+
+    function updateOrderCountsAndRender() {
+      const orders = Object.values(allOrdersData);
+      const todayDateStr = new Date().toDateString();
+
+      let activeCount = 0;
+      let todayCount = 0;
+      let historyCount = 0;
+      let pendingCount = 0;
+
+      orders.forEach(o => {
+        const oDate = o.createdAt ? new Date(o.createdAt).toDateString() : '';
+        const isHistory = (o.status === 'Completed' || o.status === 'Delivered' || o.status === 'Cancelled');
+
+        if (oDate === todayDateStr) todayCount++;
+        if (o.status === 'Pending' || !o.status) pendingCount++;
+
+        if (isHistory) historyCount++;
+        else activeCount++;
+      });
+
+      document.getElementById('statTodayOrders').innerText = todayCount;
+      document.getElementById('statPendingOrders').innerText = pendingCount;
+      document.getElementById('countActive').innerText = activeCount;
+      document.getElementById('countToday').innerText = todayCount;
+      document.getElementById('countHistory').innerText = historyCount;
+
+      const navBadge = document.getElementById('navOrderBadge');
+      const mobBadge = document.getElementById('mobOrderBadge');
+
+      if (pendingCount > 0) {
+        navBadge.innerText = pendingCount;
+        navBadge.classList.remove('hidden');
+        mobBadge.classList.remove('hidden');
+      } else {
+        navBadge.classList.add('hidden');
+        mobBadge.classList.add('hidden');
+      }
+
+      renderOrdersList();
+    }
+
+    function renderOrdersList() {
+      const container = document.getElementById('ordersContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const query = (document.getElementById('orderSearchInput')?.value || '').toLowerCase().trim();
+      const todayDateStr = new Date().toDateString();
+
+      const filteredEntries = Object.entries(allOrdersData).filter(([id, o]) => {
+        const isHistory = (o.status === 'Completed' || o.status === 'Delivered' || o.status === 'Cancelled');
+        const oDate = o.createdAt ? new Date(o.createdAt).toDateString() : '';
+
+        if (currentOrderFilter === 'history' && !isHistory) return false;
+        if (currentOrderFilter === 'active' && isHistory) return false;
+        if (currentOrderFilter === 'today' && oDate !== todayDateStr) return false;
+
+        if (query) {
+          const matchId = id.toLowerCase().includes(query);
+          const matchName = (o.customerName || '').toLowerCase().includes(query);
+          const matchPhone = (o.phone || '').toLowerCase().includes(query);
+          const matchTrx = (o.trxId || '').toLowerCase().includes(query);
+          return matchId || matchName || matchPhone || matchTrx;
+        }
+        return true;
+      });
+
+      filteredEntries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+
+      if (filteredEntries.length === 0) {
+        container.innerHTML = `<div class="bg-white rounded-3xl p-16 text-center text-xs text-slate-400 border border-slate-200/80">No orders matching current filter.</div>`;
+        return;
+      }
+
+      filteredEntries.forEach(([orderId, o]) => {
+        const dateFormatted = o.createdAt ? new Date(o.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A';
+        const collectableCod = o.codAmount !== undefined ? Number(o.codAmount) : Math.max(0, (Number(o.totalAmount) || 0) - (Number(o.advancePaid) || 0));
+
+        let statusBadge = `<span class="bg-amber-50 text-amber-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-amber-200/80">Pending</span>`;
+        if (o.status === 'Confirmed') {
+          statusBadge = `<span class="bg-blue-50 text-blue-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-blue-200/80">Confirmed</span>`;
+        } else if (o.status === 'Dispatched' || o.status === 'Shipped') {
+          statusBadge = `<span class="bg-purple-50 text-purple-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-purple-200/80">Dispatched (Steadfast)</span>`;
+        } else if (o.status === 'Delivered' || o.status === 'Completed') {
+          statusBadge = `<span class="bg-emerald-50 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-emerald-200/80">Delivered</span>`;
+        } else if (o.status === 'Cancelled') {
+          statusBadge = `<span class="bg-rose-50 text-rose-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-rose-200/80">Cancelled</span>`;
+        }
+
+        // Order Note Box
+        let orderNoteBlock = '';
+        if (o.orderNote && o.orderNote.trim()) {
+          orderNoteBlock = `
+            <div class="bg-amber-50/90 border border-amber-200/80 rounded-xl p-2.5 text-xs text-amber-950 flex items-start gap-2">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5"></i>
+              <div class="min-w-0 flex-1">
+                <span class="font-extrabold uppercase text-[9px] tracking-wider text-amber-800 block">Customer Note</span>
+                <span class="font-medium text-xs break-words">${o.orderNote}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        // Ordered Items List
+        let itemsHtml = '';
+        if (o.items && Array.isArray(o.items)) {
+          itemsHtml = o.items.map(it => `
+            <div class="flex items-center gap-3 bg-zinc-50/80 p-2 rounded-xl border border-zinc-100">
+              <img src="${it.imageUrl || LOGO_PLACEHOLDER}" class="w-10 h-10 rounded-lg object-cover bg-white border border-zinc-200 shrink-0">
+              <div class="flex-1 min-w-0 text-xs">
+                <span class="font-extrabold text-zinc-900 block truncate">${it.name}</span>
+                <div class="text-zinc-500 text-[10px] flex items-center gap-1.5 flex-wrap">
+                  ${it.selectedSize ? `<span class="bg-zinc-200/80 text-zinc-800 font-bold px-1.5 py-0.5 rounded">${it.selectedSize}</span>` : ''}
+                  ${it.selectedColor ? `<span class="bg-zinc-200/80 text-zinc-800 font-bold px-1.5 py-0.5 rounded">${it.selectedColor}</span>` : ''}
+                  <span>Qty: <b>${it.quantity}</b></span>
+                </div>
+              </div>
+              <span class="font-mono font-bold text-xs text-zinc-900 shrink-0">BDT ${it.price * it.quantity}</span>
+            </div>
+          `).join('');
+        }
+
+        // Dynamic Payment Method Breakdown (Full Online / Advance / COD)
+        let paymentBlock = '';
+        const isFullPay = o.paymentType === 'full' || (collectableCod === 0 && Number(o.advancePaid) > 0);
+        
+        if (isFullPay) {
+          paymentBlock = `
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 space-y-1.5 text-xs">
+              <div class="flex items-center justify-between text-emerald-900 font-extrabold">
+                <span class="flex items-center gap-1.5">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Full Online Payment (${o.paymentMethod || 'Online'})</span>
+                </span>
+                <span class="font-mono text-xs bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md">Paid 100%</span>
+              </div>
+              <div class="text-[11px] text-zinc-700 leading-relaxed font-medium">
+                <div>Paid Amount: <b class="font-mono text-zinc-900">BDT ${o.advancePaid || o.totalAmount}</b></div>
+                ${o.senderNumber ? `<div>Sender Mobile: <b class="font-mono text-zinc-900">${o.senderNumber}</b></div>` : ''}
+                ${o.trxId ? `<div>TrxID: <span class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-900">${o.trxId}</span></div>` : ''}
+                <div class="text-emerald-700 font-bold mt-1">Due at Delivery: BDT 0 (No COD)</div>
+              </div>
+            </div>
+          `;
+        } else if (o.paymentType === 'advance' || (Number(o.advancePaid) > 0 && collectableCod > 0)) {
+          paymentBlock = `
+            <div class="bg-purple-50 border border-purple-200 rounded-2xl p-3.5 space-y-1.5 text-xs">
+              <div class="flex items-center justify-between text-purple-900 font-extrabold">
+                <span class="flex items-center gap-1.5">
+                  <i data-lucide="wallet" class="w-4 h-4 text-purple-600"></i>
+                  <span>Advance Payment (${o.paymentMethod || 'Online'})</span>
+                </span>
+                <span class="font-mono text-purple-900 font-extrabold">Paid: BDT ${o.advancePaid}</span>
+              </div>
+              <div class="text-[11px] text-zinc-700 leading-relaxed font-medium">
+                ${o.senderNumber ? `<div>Sender Mobile: <b class="font-mono text-zinc-900">${o.senderNumber}</b></div>` : ''}
+                ${o.trxId ? `<div>TrxID: <span class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-purple-200 text-purple-900">${o.trxId}</span></div>` : ''}
+                <div class="pt-1 border-t border-purple-200/60 flex justify-between font-bold text-zinc-900">
+                  <span>Balance Due at Delivery:</span>
+                  <span class="font-mono text-purple-900">BDT ${collectableCod}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          paymentBlock = `
+            <div class="bg-zinc-100 border border-zinc-200 rounded-2xl p-3.5 text-xs space-y-1">
+              <div class="flex items-center justify-between font-extrabold text-zinc-900">
+                <span>Payment: Cash on Delivery (COD)</span>
+                <span class="font-mono">BDT ${collectableCod}</span>
+              </div>
+              <p class="text-[10px] text-zinc-500 font-medium">Full payment will be collected by courier agent.</p>
+            </div>
+          `;
+        }
+
+        let steadfastPill = '';
+        if (o.steadfastConsignmentId || o.steadfastTracking) {
+          steadfastPill = `
+            <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg text-[10px] text-emerald-800 font-bold">
+              <i data-lucide="truck" class="w-3 h-3 text-emerald-600"></i>
+              <span>CID: <b>${o.steadfastConsignmentId || o.steadfastTracking}</b></span>
+            </div>
+          `;
+        }
+
+        const card = document.createElement('div');
+        card.className = "bg-white border border-zinc-200/90 rounded-3xl p-5 shadow-sm space-y-4 hover:border-zinc-300 transition";
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-zinc-100">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-mono font-black text-xs text-zinc-900 tracking-wider">#${orderId.slice(-6).toUpperCase()}</span>
+              <span class="text-[11px] text-zinc-400 font-medium">• ${dateFormatted}</span>
+              ${steadfastPill}
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${statusBadge}
+              
+              <!-- Printable Invoice Button -->
+              <button onclick="printOrderInvoice('${orderId}')" class="p-1.5 text-zinc-500 hover:text-zinc-900 rounded-lg hover:bg-zinc-100 transition" title="Print Invoice">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+              </button>
+
+              <button onclick="deleteItem('${PATHS.orders}/${orderId}')" class="p-1.5 text-zinc-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="Delete Order">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <!-- Left: Customer Info -->
+            <div class="space-y-2.5 text-xs text-zinc-700 bg-zinc-50/80 p-4 rounded-2xl border border-zinc-100">
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-extrabold uppercase tracking-widest text-zinc-400">Customer Details</span>
+                <button onclick="copyCustomerInfo('${orderId}')" class="bg-white hover:bg-zinc-100 border border-zinc-200 px-2.5 py-1 rounded-lg text-[10px] font-bold text-zinc-800 flex items-center gap-1 shadow-2xs transition active:scale-95">
+                  <i data-lucide="copy" class="w-3 h-3"></i> Copy Info
+                </button>
+              </div>
+
+              <div class="font-extrabold text-zinc-900 text-sm tracking-tight">${o.customerName || 'N/A'}</div>
+              <div class="flex items-center gap-1.5 font-mono font-bold text-zinc-800">
+                <i data-lucide="phone" class="w-3.5 h-3.5 text-zinc-500"></i>
+                <a href="tel:${o.phone}" class="hover:underline">${o.phone || 'N/A'}</a>
+              </div>
+              
+              <div class="text-zinc-600 leading-relaxed font-medium">
+                ${o.address || ''}${o.district ? ', <b class="text-zinc-800">' + o.district + '</b>' : ''}
+              </div>
+
+              <div class="text-[11px] text-zinc-500 font-medium pt-1.5 border-t border-zinc-200/70 flex justify-between">
+                <span>Zone: <b class="text-zinc-800">${o.deliveryZone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}</b></span>
+                <span>Delivery: <b class="font-mono text-zinc-800">BDT ${o.deliveryFee || 0}</b></span>
+              </div>
+
+              ${orderNoteBlock}
+            </div>
+
+            <!-- Right: Items & Financials -->
+            <div class="space-y-2.5">
+              ${paymentBlock}
+              <div class="space-y-1.5 max-h-40 overflow-y-auto custom-scroll pr-1">
+                ${itemsHtml}
+              </div>
+
+              <div class="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
+                <span class="text-zinc-500">COD Collectable: <b class="font-mono text-zinc-900 font-extrabold">BDT ${collectableCod}</b></span>
+                <span class="font-extrabold text-sm text-zinc-900 font-mono">Total: BDT ${o.totalAmount || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-100 bg-zinc-50/60 -mx-5 -mb-5 p-3.5 rounded-b-3xl">
+            <div class="flex items-center gap-1.5">
+              <button onclick="dispatchToSteadfast('${orderId}')" class="px-3.5 py-1.5 bg-zinc-900 hover:bg-black text-white rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95">
+                <i data-lucide="send" class="w-3 h-3"></i>
+                <span>Dispatch to Steadfast</span>
+              </button>
+              <button onclick="updateOrderStatus('${orderId}', 'Confirmed')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold transition active:scale-95 shadow-sm">
+                Confirm
+              </button>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="printOrderInvoice('${orderId}')" class="px-3 py-1.5 bg-white border border-zinc-200 hover:border-zinc-400 text-zinc-800 rounded-xl text-[11px] font-bold transition active:scale-95 shadow-2xs flex items-center gap-1">
+                <i data-lucide="file-text" class="w-3 h-3"></i> Invoice
+              </button>
+              <button onclick="updateOrderStatus('${orderId}', 'Delivered')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition active:scale-95 shadow-sm">
+                Delivered
+              </button>
+              <button onclick="updateOrderStatus('${orderId}', 'Cancelled')" class="px-3 py-1.5 bg-zinc-200 hover:bg-rose-100 hover:text-rose-700 text-zinc-700 rounded-xl text-[11px] font-bold transition active:scale-95">
+                Cancel
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function copyCustomerInfo(orderId) {
+      const o = allOrdersData[orderId];
+      if (!o) return;
+
+      let itemDetails = '';
+      if (o.items && Array.isArray(o.items)) {
+        itemDetails = o.items.map(it => `${it.name} (${it.selectedSize ? 'Size: ' + it.selectedSize + ', ' : ''}${it.selectedColor ? 'Color: ' + it.selectedColor + ', ' : ''}Qty: ${it.quantity})`).join('\n- ');
+      }
+
+      const codBalance = o.codAmount !== undefined ? Number(o.codAmount) : Math.max(0, (Number(o.totalAmount) || 0) - (Number(o.advancePaid) || 0));
+      
+      let copyText = `Name: ${o.customerName || ''}\nPhone: ${o.phone || ''}\nAddress: ${o.address || ''}${o.district ? ', ' + o.district : ''}\nCOD Amount: ${codBalance} BDT\nItems:\n- ${itemDetails}`;
+      if (o.orderNote) {
+        copyText += `\nOrder Note: ${o.orderNote}`;
+      }
+
+      navigator.clipboard.writeText(copyText).then(() => {
+        showToast('Full courier details copied!');
+      }).catch(() => {
+        showToast('Failed to copy', true);
+      });
+    }
+
+    // ==================== LUXURY PRINTABLE INVOICE GENERATOR ====================
+    function printOrderInvoice(orderId) {
+      const o = allOrdersData[orderId];
+      if (!o) return showToast('Order not found', true);
+
+      const storeName = currentStoreSettings.storeName || 'Style Forever';
+      const storePhone = currentStoreSettings.phone || '';
+      const invoiceDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString();
+      const codDue = o.codAmount !== undefined ? Number(o.codAmount) : Math.max(0, (Number(o.totalAmount) || 0) - (Number(o.advancePaid) || 0));
+
+      let itemsRows = '';
+      if (o.items && Array.isArray(o.items)) {
+        itemsRows = o.items.map((it, idx) => `
+          <tr>
+            <td style="padding: 10px 8px; border-bottom: 1px solid #e4e4e7; font-size: 12px; color: #71717a;">${idx + 1}</td>
+            <td style="padding: 10px 8px; border-bottom: 1px solid #e4e4e7; font-size: 12px; color: #18181b;">
+              <strong>${it.name}</strong>
+              <div style="font-size: 10px; color: #71717a; margin-top: 2px;">
+                ${it.selectedSize ? 'Size: ' + it.selectedSize + ' &bull; ' : ''}
+                ${it.selectedColor ? 'Color: ' + it.selectedColor : ''}
+              </div>
+            </td>
+            <td style="padding: 10px 8px; border-bottom: 1px solid #e4e4e7; font-size: 12px; text-align: center; color: #18181b;">${it.quantity}</td>
+            <td style="padding: 10px 8px; border-bottom: 1px solid #e4e4e7; font-size: 12px; text-align: right; color: #18181b;">৳${it.price}</td>
+            <td style="padding: 10px 8px; border-bottom: 1px solid #e4e4e7; font-size: 12px; text-align: right; font-weight: 700; color: #18181b;">৳${it.price * it.quantity}</td>
+          </tr>
+        `).join('');
+      }
+
+      const invoiceHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Invoice #${orderId.slice(-6).toUpperCase()} - ${storeName}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+            body {
+              font-family: 'Plus Jakarta Sans', sans-serif;
+              color: #18181b;
+              margin: 0;
+              padding: 40px;
+              background: #fff;
+            }
+            @media print {
+              body { padding: 15px; }
+              @page { size: A4 portrait; margin: 12mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div style="max-width: 720px; margin: 0 auto; border: 1px solid #e4e4e7; border-radius: 20px; padding: 36px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+            
+            <!-- Invoice Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f4f4f5; padding-bottom: 24px;">
+              <div>
+                <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #09090b; letter-spacing: -0.5px;">${storeName}</h1>
+                <p style="margin: 4px 0 0; font-size: 11px; color: #71717a;">Hotline: ${storePhone} &bull; Official Store</p>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #a1a1aa; display: block;">INVOICE</span>
+                <span style="font-family: 'Space Grotesk', monospace; font-size: 15px; font-weight: 700; color: #09090b;">#${orderId.slice(-6).toUpperCase()}</span>
+                <span style="display: block; font-size: 11px; color: #71717a; margin-top: 2px;">Date: ${invoiceDate}</span>
+              </div>
+            </div>
+
+            <!-- Recipient & Payment Meta -->
+            <div style="display: flex; justify-content: space-between; gap: 20px; padding: 20px 0; border-bottom: 1px solid #f4f4f5;">
+              <div style="flex: 1;">
+                <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a1a1aa; letter-spacing: 0.5px;">Bill To / Delivery Details</span>
+                <div style="font-size: 13px; font-weight: 700; color: #09090b; margin-top: 4px;">${o.customerName || 'Customer'}</div>
+                <div style="font-size: 12px; color: #3f3f46; margin-top: 2px;">Phone: <b>${o.phone || ''}</b></div>
+                <div style="font-size: 12px; color: #52525b; margin-top: 2px; line-height: 1.4;">${o.address || ''}${o.district ? ', ' + o.district : ''}</div>
+                ${o.orderNote ? `<div style="font-size: 11px; color: #b45309; background: #fffbeb; padding: 6px 10px; border-radius: 8px; margin-top: 6px;"><b>Note:</b> ${o.orderNote}</div>` : ''}
+              </div>
+
+              <div style="width: 200px; text-align: right;">
+                <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #a1a1aa; letter-spacing: 0.5px;">Payment Summary</span>
+                <div style="font-size: 12px; font-weight: 700; color: #09090b; margin-top: 4px;">${o.paymentMethod || 'Cash on Delivery'}</div>
+                ${o.trxId ? `<div style="font-size: 10px; font-family: monospace; color: #71717a; margin-top: 2px;">TrxID: ${o.trxId}</div>` : ''}
+                <div style="margin-top: 8px; display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; ${codDue === 0 ? 'background: #dcfce7; color: #166534;' : 'background: #f4f4f5; color: #27272a;'}">
+                  ${codDue === 0 ? 'FULL PAID ONLINE' : 'COD: ৳' + codDue}
+                </div>
+              </div>
+            </div>
+
+            <!-- Items Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <thead>
+                <tr style="border-bottom: 2px solid #e4e4e7; text-align: left;">
+                  <th style="padding: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #71717a; width: 30px;">#</th>
+                  <th style="padding: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #71717a;">Product Details</th>
+                  <th style="padding: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #71717a; text-align: center; width: 50px;">Qty</th>
+                  <th style="padding: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #71717a; text-align: right; width: 90px;">Price</th>
+                  <th style="padding: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #71717a; text-align: right; width: 90px;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsRows}
+              </tbody>
+            </table>
+
+            <!-- Calculation Stack -->
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <div style="width: 240px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #71717a;">
+                  <span>Subtotal:</span>
+                  <span style="font-weight: 600; color: #18181b;">৳${o.subtotal || o.totalAmount}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #71717a;">
+                  <span>Delivery Charge:</span>
+                  <span style="font-weight: 600; color: #18181b;">৳${o.deliveryFee || 0}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #71717a;">
+                  <span>Advance Paid:</span>
+                  <span style="font-weight: 600; color: #166534;">৳${o.advancePaid || 0}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid #e4e4e7; margin-top: 6px; font-size: 14px; font-weight: 800; color: #09090b;">
+                  <span>Collectable COD:</span>
+                  <span style="font-family: 'Space Grotesk', monospace; color: #09090b;">৳${codDue}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="margin-top: 36px; padding-top: 16px; border-top: 1px dashed #e4e4e7; text-align: center; font-size: 11px; color: #a1a1aa;">
+              Thank you for shopping with ${storeName}. For support or queries, contact ${storePhone}.
+            </div>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(invoiceHtml);
+        printWindow.document.close();
+      } else {
+        alert('Please allow popups in your browser to view and print invoices.');
+      }
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+      db.ref(`${PATHS.orders}/${orderId}`).update({
+        status: newStatus,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        showToast(`Order marked as: ${newStatus}`);
+      }).catch(() => {
+        showToast('Status update failed', true);
+      });
+    }
+
+    async function dispatchToSteadfast(orderId) {
+      const o = allOrdersData[orderId];
+      if (!o) return showToast('Order not found', true);
+
+      const apiKey = currentStoreSettings.steadfastApiKey;
+      const secretKey = currentStoreSettings.steadfastSecretKey;
+
+      if (!apiKey || !secretKey) {
+        alert('Please enter your Steadfast API Key and Secret Key in the "Courier & Payments" settings tab first!');
+        switchTab('settings');
+        return;
+      }
+
+      const codToCollect = o.codAmount !== undefined ? Number(o.codAmount) : Math.max(0, (Number(o.totalAmount) || 0) - (Number(o.advancePaid) || 0));
+
+      showLoader('Sending order to Steadfast Courier...');
+
+      try {
+        const payload = {
+          invoice: orderId,
+          recipient_name: o.customerName || 'Customer',
+          recipient_phone: o.phone || '',
+          recipient_address: `${o.address || ''}${o.district ? ', ' + o.district : ''}`,
+          cod_amount: Number(codToCollect),
+          note: `Style Forever Order #${orderId.slice(-6).toUpperCase()}`
+        };
+
+        const res = await fetch('https://portal.steadfast.com.bd/api/v1/create_order', {
+          method: 'POST',
+          headers: {
+            'Api-Key': apiKey,
+            'Secret-Key': secretKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const resData = await res.json();
+
+        if (res.ok && resData.status === 200 && resData.consignment) {
+          const consignmentId = resData.consignment.consignment_id;
+          const trackingCode = resData.consignment.tracking_code;
+
+          await db.ref(`${PATHS.orders}/${orderId}`).update({
+            status: 'Dispatched',
+            steadfastConsignmentId: consignmentId,
+            steadfastTracking: trackingCode,
+            dispatchedAt: firebase.database.ServerValue.TIMESTAMP
+          });
+
+          showToast(`Order dispatched! Consignment ID: ${consignmentId}`);
+        } else {
+          const manualCid = prompt(`Steadfast API responded: ${resData.message || 'Check credentials'}.\nIf you booked manually, enter the Consignment ID below to save:`);
+          if (manualCid) {
+            await db.ref(`${PATHS.orders}/${orderId}`).update({
+              status: 'Dispatched',
+              steadfastConsignmentId: manualCid,
+              dispatchedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+            showToast('Order saved as Dispatched with CID');
+          }
+        }
+      } catch (err) {
+        const manualCid = prompt(`Courier dispatch connection error (Steadfast API).\nYou can enter the Consignment ID manually to mark as dispatched:`);
+        if (manualCid) {
+          await db.ref(`${PATHS.orders}/${orderId}`).update({
+            status: 'Dispatched',
+            steadfastConsignmentId: manualCid,
+            dispatchedAt: firebase.database.ServerValue.TIMESTAMP
+          });
+          showToast('Order updated with Consignment ID');
+        }
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // ==================== 2. FASHION SIZING & ADVANCE PAYMENT ====================
+    function applySizePreset(type) {
+      const input = document.getElementById('prodSizes');
+      if (type === 'tops') {
+        input.value = 'S, M, L, XL, XXL';
+      } else if (type === 'pants') {
+        input.value = '28, 30, 32, 34, 36, 38';
+      } else if (type === 'shoes') {
+        input.value = '39, 40, 41, 42, 43, 44';
+      } else if (type === 'freesize') {
+        input.value = 'Free Size';
+      }
+    }
+
+    function toggleAdvanceAmount(cb) {
+      const wrapper = document.getElementById('advanceAmountWrapper');
+      if (cb.checked) {
+        wrapper.classList.remove('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+      }
+    }
+
+    function addColorGroup() {
+      const input = document.getElementById('newColorInput');
+      const colorName = input.value.trim();
+
+      if (!colorName) return showToast('Please enter a color name', true);
+      if (activeColorGalleries[colorName]) return showToast('This color variant already exists!', true);
+
+      activeColorGalleries[colorName] = [];
+      renderColorGroupDOM(colorName);
+      input.value = '';
+      lucide.createIcons();
+    }
+
+    function renderColorGroupDOM(colorName) {
+      const container = document.getElementById('colorGalleriesContainer');
+      const div = document.createElement('div');
+      const safeId = colorName.replace(/[^a-zA-Z0-9_-]/g, '-');
+      div.id = `colorGroup-${safeId}`;
+      div.className = 'bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3';
+
+      div.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-black"></span>
+            <span class="text-xs font-bold text-slate-900">${colorName}</span>
+          </div>
+          <button type="button" onclick="removeColorGroup('${colorName}')" class="text-slate-400 hover:text-rose-600 text-xs font-semibold flex items-center gap-1">
+            <i data-lucide="trash" class="w-3.5 h-3.5"></i> Remove
+          </button>
+        </div>
+
+        <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-black bg-white rounded-xl p-3.5 cursor-pointer transition text-center">
+          <i data-lucide="upload-cloud" class="w-5 h-5 text-slate-400"></i>
+          <span class="text-xs font-bold text-slate-700 mt-1">Upload ${colorName} Photos</span>
+          <span class="text-[10px] text-slate-400">Multiple selection supported</span>
+          <input type="file" multiple accept="image/*" class="hidden" onchange="uploadColorPhotos(this, '${colorName}')">
+        </label>
+
+        <div id="thumbs-${safeId}" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
+      `;
+      container.appendChild(div);
+      lucide.createIcons();
+    }
+
+    function removeColorGroup(colorName) {
+      delete activeColorGalleries[colorName];
+      const safeId = colorName.replace(/[^a-zA-Z0-9_-]/g, '-');
+      const el = document.getElementById(`colorGroup-${safeId}`);
+      if (el) el.remove();
+    }
+
+    async function uploadColorPhotos(input, colorName) {
+      const files = Array.from(input.files);
+      if (!files.length) return;
+
+      showLoader(`Uploading ${files.length} images...`);
+      try {
+        for (const file of files) {
+          const url = await uploadFileToCloudinary(file);
+          if (!activeColorGalleries[colorName]) activeColorGalleries[colorName] = [];
+          activeColorGalleries[colorName].push(url);
+        }
+        renderColorThumbnails(colorName);
+        showToast(`${files.length} images uploaded!`);
+      } catch (err) {
+        showToast('Image upload failed', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    function renderColorThumbnails(colorName) {
+      const safeId = colorName === 'General' ? 'General' : colorName.replace(/[^a-zA-Z0-9_-]/g, '-');
+      const grid = document.getElementById(`thumbs-${safeId}`);
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      (activeColorGalleries[colorName] || []).forEach((url, idx) => {
+        grid.innerHTML += `
+          <div class="relative rounded-xl overflow-hidden border border-slate-200 aspect-square group bg-white shadow-sm">
+            <img src="${url}" class="w-full h-full object-cover">
+            <button type="button" onclick="deleteColorPhoto('${colorName}', ${idx})" class="absolute top-1 right-1 bg-rose-600 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition shadow">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function deleteColorPhoto(colorName, index) {
+      if (activeColorGalleries[colorName]) {
+        activeColorGalleries[colorName].splice(index, 1);
+        renderColorThumbnails(colorName);
+      }
+    }
+
+    // ==================== 3. PRODUCT CRUD ====================
+    function populateCategoryDropdown(selectedCategory = '') {
+      const select = document.getElementById('prodCategory');
+      if (!select) return;
+      select.innerHTML = '<option value="">Select Category</option>';
+      Object.values(cachedCategories).forEach(c => {
+        const isSel = c.name === selectedCategory ? 'selected' : '';
+        select.innerHTML += `<option value="${c.name}" ${isSel}>${c.name}</option>`;
+      });
+      if (selectedCategory) select.value = selectedCategory;
+    }
+
+    function openProductModal(prodId = null) {
+      editingProductId = prodId;
+      const modal = document.getElementById('productModal');
+      modal.classList.remove('hidden');
+      activeModalsStack.push('productModal');
+      history.pushState({ modalId: 'productModal' }, '');
+
+      // Clean old dynamic color DOM elements
+      document.querySelectorAll("[id^='colorGroup-']:not(#colorGroup-default)").forEach(el => el.remove());
+
+      if (!prodId) {
+        document.getElementById('prodModalTitle').innerText = 'Add Product';
+        document.getElementById('prodName').value = '';
+        populateCategoryDropdown('');
+        document.getElementById('prodDescription').value = '';
+        document.getElementById('prodRegularPrice').value = '';
+        document.getElementById('prodDiscountPrice').value = '';
+        document.getElementById('prodStock').value = '';
+        document.getElementById('prodSizes').value = '';
+        document.getElementById('prodCodEnabled').checked = true;
+        document.getElementById('prodAdvanceRequired').checked = false;
+        document.getElementById('prodAdvanceAmount').value = '';
+        document.getElementById('advanceAmountWrapper').classList.add('hidden');
+        document.getElementById('prodFreeDelivery').checked = false;
+
+        activeColorGalleries = { 'General': [] };
+        renderColorThumbnails('General');
+      } else {
+        document.getElementById('prodModalTitle').innerText = 'Edit Product';
+        const p = cachedProducts[prodId];
+        if (p) {
+          document.getElementById('prodName').value = p.name || '';
+          populateCategoryDropdown(p.category || '');
+          document.getElementById('prodDescription').value = p.description || '';
+          document.getElementById('prodRegularPrice').value = p.regularPrice || '';
+          document.getElementById('prodDiscountPrice').value = p.discountPrice || '';
+          document.getElementById('prodStock').value = p.stock || '';
+          document.getElementById('prodSizes').value = (p.sizes || []).join(', ');
+          document.getElementById('prodCodEnabled').checked = p.codEnabled !== false;
+          document.getElementById('prodAdvanceRequired').checked = !!p.advanceRequired;
+          document.getElementById('prodAdvanceAmount').value = p.advanceAmount || '';
+          if (p.advanceRequired) document.getElementById('advanceAmountWrapper').classList.remove('hidden');
+          else document.getElementById('advanceAmountWrapper').classList.add('hidden');
+
+          document.getElementById('prodFreeDelivery').checked = !!p.isFreeDelivery;
+
+          activeColorGalleries = {
+            'General': p.generalGallery ? [...p.generalGallery] : (p.colorImages ? (p.gallery || []).filter(url => !Object.values(p.colorImages).flat().includes(url)) : [...(p.gallery || [])])
+          };
+          renderColorThumbnails('General');
+
+          if (p.colorImages) {
+            Object.entries(p.colorImages).forEach(([cName, urls]) => {
+              activeColorGalleries[cName] = [...urls];
+              renderColorGroupDOM(cName);
+              renderColorThumbnails(cName);
+            });
+          }
+        }
+      }
+      lucide.createIcons();
+    }
+
+    function closeProductModal(triggeredByBack = false) {
+      document.getElementById('productModal').classList.add('hidden');
+      editingProductId = null;
+      
+      const index = activeModalsStack.indexOf('productModal');
+      if (index > -1) {
+        activeModalsStack.splice(index, 1);
+      }
+
+      if (!triggeredByBack && window.history.state && window.history.state.modalId === 'productModal') {
+        window.history.back();
+      }
+    }
+
+    function saveProduct() {
+      const name = document.getElementById('prodName').value.trim();
+      const category = document.getElementById('prodCategory').value;
+      const description = document.getElementById('prodDescription').value.trim();
+      const regularPrice = document.getElementById('prodRegularPrice').value;
+      const discountPrice = document.getElementById('prodDiscountPrice').value;
+      const stock = document.getElementById('prodStock').value;
+      const sizes = document.getElementById('prodSizes').value.split(',').map(s => s.trim()).filter(Boolean);
+      const isFreeDelivery = document.getElementById('prodFreeDelivery').checked;
+      const codEnabled = document.getElementById('prodCodEnabled').checked;
+      const advanceRequired = document.getElementById('prodAdvanceRequired').checked;
+      const advanceAmount = document.getElementById('prodAdvanceAmount').value;
+
+      const generalPhotos = activeColorGalleries['General'] || [];
+      const colorImagesMap = {};
+      const activeColorsList = [];
+      const allImages = [...generalPhotos];
+
+      Object.entries(activeColorGalleries).forEach(([color, urls]) => {
+        if (color !== 'General' && urls && urls.length > 0) {
+          colorImagesMap[color] = [...urls];
+          activeColorsList.push(color);
+          allImages.push(...urls);
+        }
+      });
+
+      if (!name || !category || !regularPrice) return showToast('Name, Category & Regular Price are required', true);
+      if (allImages.length === 0) return showToast('Upload at least one image', true);
+
+      const productPayload = {
+        name,
+        category,
+        description,
+        regularPrice: Number(regularPrice),
+        discountPrice: discountPrice ? Number(discountPrice) : null,
+        stock: stock ? Number(stock) : 0,
+        sizes,
+        colors: activeColorsList,
+        colorImages: colorImagesMap,
+        generalGallery: generalPhotos,
+        imageUrl: allImages[0],
+        gallery: allImages,
+        isFreeDelivery,
+        codEnabled,
+        advanceRequired,
+        advanceAmount: advanceRequired ? Number(advanceAmount || 0) : 0,
+        updatedAt: Date.now()
+      };
+
+      if (editingProductId) {
+        db.ref(`${PATHS.products}/${editingProductId}`).update(productPayload);
+        showToast('Product updated successfully!');
+      } else {
+        productPayload.createdAt = Date.now();
+        db.ref(PATHS.products).push(productPayload);
+        showToast('Product published to catalog!');
+      }
+
+      closeProductModal();
+    }
+
+    db.ref(PATHS.products).on('value', snap => {
+      cachedProducts = snap.val() || {};
+      const statP = document.getElementById('statProducts');
+      if (statP) statP.innerText = Object.keys(cachedProducts).length;
+      renderProducts(cachedProducts);
+      renderCampaignProductSelector();
+    });
+
+    function renderProducts(data) {
+      const grid = document.getElementById('productsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const keys = Object.keys(data);
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-16 text-center text-xs text-slate-400 font-medium">No products found in catalog.</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const p = data[key];
+        let totalPhotos = p.gallery ? p.gallery.length : 0;
+
+        let badges = '';
+        if (p.advanceRequired) {
+          badges += `<span class="bg-purple-100 text-purple-700 text-[9px] font-bold px-1.5 py-0.5 rounded">Advance: BDT ${p.advanceAmount}</span>`;
+        }
+        if (p.codEnabled === false) {
+          badges += `<span class="bg-rose-100 text-rose-700 text-[9px] font-bold px-1.5 py-0.5 rounded">No COD</span>`;
+        }
+
+        grid.innerHTML += `
+          <div class="bg-white rounded-3xl border border-slate-200/80 p-4 flex gap-3.5 items-center hover:border-slate-300 transition group shadow-sm">
+            <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 border border-slate-100 shrink-0">
+              <img src="${p.imageUrl}" class="w-full h-full object-cover" onerror="this.src='${LOGO_PLACEHOLDER}'">
+              ${totalPhotos > 1 ? `<span class="absolute bottom-1 right-1 bg-black/75 text-white text-[9px] font-bold px-1 rounded">${totalPhotos}</span>` : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${p.category || 'General'}</span>
+              <h4 class="text-xs font-bold text-slate-900 truncate">${p.name}</h4>
+              <div class="flex items-center gap-1.5 text-xs mt-0.5">
+                <span class="font-extrabold text-black font-mono">BDT ${p.discountPrice || p.regularPrice}</span>
+                ${p.discountPrice ? `<span class="text-[11px] text-slate-400 line-through font-mono">BDT ${p.regularPrice}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1 mt-1 flex-wrap">
+                ${badges}
+              </div>
+            </div>
+            <div class="flex flex-col gap-1 shrink-0">
+              <button onclick="openProductModal('${key}')" class="p-1.5 text-slate-400 hover:text-black hover:bg-slate-100 rounded-lg transition" title="Edit">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteItem('${PATHS.products}/${key}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function filterProducts() {
+      const q = (document.getElementById('productSearch')?.value || '').toLowerCase();
+      const filtered = {};
+      Object.entries(cachedProducts).forEach(([k, p]) => {
+        if (p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q))) {
+          filtered[k] = p;
+        }
+      });
+      renderProducts(filtered);
+    }
+
+    // ==================== 4. CAMPAIGNS & COMBOS ====================
+    function renderCampaignProductSelector() {
+      const container = document.getElementById('campaignProductSelector');
+      const countLabel = document.getElementById('comboSelectedCount');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (countLabel) {
+        countLabel.innerText = `${selectedCampaignProducts.size} Items Selected`;
+      }
+
+      const keys = Object.keys(cachedProducts);
+      if (keys.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-8 text-center text-xs text-slate-400 font-medium">Add products to your catalog first</div>';
+        return;
+      }
+
+      keys.forEach(id => {
+        const p = cachedProducts[id];
+        const isSelected = selectedCampaignProducts.has(id);
+
+        const card = document.createElement('div');
+        card.className = `relative cursor-pointer rounded-2xl border p-2 transition-all duration-200 flex flex-col justify-between ${
+          isSelected 
+            ? 'bg-slate-950 text-white border-black shadow-md ring-2 ring-black ring-offset-2' 
+            : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400 hover:shadow-sm'
+        }`;
+        card.onclick = () => toggleCampaignProduct(id);
+
+        card.innerHTML = `
+          <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2">
+            <img src="${p.imageUrl}" class="w-full h-full object-cover">
+            ${isSelected ? `
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span class="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center text-xs font-black shadow-lg">✓</span>
+              </div>
+            ` : ''}
+          </div>
+          <div class="min-w-0">
+            <h5 class="text-[10px] font-extrabold truncate ${isSelected ? 'text-white' : 'text-slate-900'}">${p.name}</h5>
+            <span class="text-[9px] font-bold ${isSelected ? 'text-slate-300' : 'text-slate-500'} font-mono">BDT ${p.discountPrice || p.regularPrice}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function toggleCampaignProduct(id) {
+      if (selectedCampaignProducts.has(id)) {
+        selectedCampaignProducts.delete(id);
+      } else {
+        selectedCampaignProducts.add(id);
+      }
+      renderCampaignProductSelector();
+    }
+
+    function createCampaign() {
+      const title = document.getElementById('campTitle').value.trim();
+      const badge = document.getElementById('campBadge').value.trim();
+      const comboPrice = document.getElementById('campPrice').value;
+      const isFreeDelivery = document.getElementById('campFreeDelivery').checked;
+
+      if (!title) return showToast('Campaign title is required', true);
+      if (selectedCampaignProducts.size < 1) return showToast('Select at least 1 or more products for the combo', true);
+
+      const itemsList = Array.from(selectedCampaignProducts).map(id => {
+        const p = cachedProducts[id];
+        return {
+          id,
+          name: p.name,
+          price: p.discountPrice || p.regularPrice,
+          imageUrl: p.imageUrl
+        };
+      });
+
+      db.ref(PATHS.campaigns).push({
+        title,
+        badge: badge || 'Special Offer',
+        comboPrice: comboPrice ? Number(comboPrice) : null,
+        isFreeDelivery,
+        products: itemsList,
+        createdAt: Date.now()
+      }).then(() => {
+        showToast('Campaign launched successfully!');
+        document.getElementById('campTitle').value = '';
+        document.getElementById('campBadge').value = '';
+        document.getElementById('campPrice').value = '';
+        document.getElementById('campFreeDelivery').checked = false;
+        selectedCampaignProducts.clear();
+        renderCampaignProductSelector();
+      });
+    }
+
+    db.ref(PATHS.campaigns).on('value', snap => {
+      allCampaignsData = snap.val() || {};
+      const keys = Object.keys(allCampaignsData);
+      const statC = document.getElementById('statCampaigns');
+      if (statC) statC.innerText = keys.length;
+      const grid = document.getElementById('campaignsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-8 text-center text-xs text-slate-400 font-medium">No active campaigns running.</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const c = allCampaignsData[key];
+        const products = c.products || [];
+        const prodCount = products.length;
+
+        let prodThumbnails = products.slice(0, 4).map(p => `
+          <div class="w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-sm -ml-2.5 first:ml-0 bg-slate-100 flex-shrink-0" title="${p.name}">
+            <img src="${p.imageUrl}" class="w-full h-full object-cover">
+          </div>
+        `).join('');
+
+        if (prodCount > 4) {
+          prodThumbnails += `
+            <div class="w-10 h-10 rounded-xl border-2 border-white shadow-sm -ml-2.5 bg-slate-900 text-white text-[10px] font-extrabold flex items-center justify-center flex-shrink-0">
+              +${prodCount - 4}
+            </div>
+          `;
+        }
+
+        grid.innerHTML += `
+          <div class="relative bg-white border border-slate-200/90 hover:border-black/70 rounded-3xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="inline-flex items-center gap-1 bg-black text-white text-[10px] font-black tracking-wider uppercase px-3 py-1 rounded-full shadow-sm">
+                    <i data-lucide="tag" class="w-3 h-3"></i>
+                    <span>${c.badge || 'Combo Deal'}</span>
+                  </span>
+                  ${c.isFreeDelivery ? `
+                    <span class="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full">
+                      <i data-lucide="truck" class="w-3 h-3"></i> Free Shipping
+                    </span>
+                  ` : ''}
+                </div>
+                
+                <button onclick="deleteItem('${PATHS.campaigns}/${key}')" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all opacity-80 group-hover:opacity-100" title="Delete Combo">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <h4 class="text-sm font-black text-slate-900 tracking-tight leading-snug line-clamp-2 mt-1">
+                ${c.title}
+              </h4>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100/80 flex items-center justify-between gap-2">
+              <div class="flex items-center pl-2">
+                ${prodThumbnails}
+                <span class="ml-3 text-[11px] font-bold text-slate-500">${prodCount} Items Bundle</span>
+              </div>
+
+              <div class="text-right">
+                <span class="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Combo Price</span>
+                <span class="text-base font-black text-slate-900 tracking-tight font-mono">
+                  ${c.comboPrice ? `BDT ${Number(c.comboPrice).toLocaleString()}` : 'Custom'}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    // ==================== 5. ANNOUNCEMENT & SETTINGS ====================
+    db.ref(PATHS.announcement).on('value', snap => {
+      const aInput = document.getElementById('announcementInput');
+      if (aInput && snap.val()) aInput.value = snap.val();
+    });
+
+    function saveAnnouncement() {
+      const val = document.getElementById('announcementInput').value.trim();
+      db.ref(PATHS.announcement).set(val);
+      showToast('Announcement updated on storefront');
+    }
+
+    let activeEditingPayment = 'bkash';
+
+    function openModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (!el) return;
+
+      if (modalId === 'storeInfoModal') {
+        document.getElementById('setStoreName').value = currentStoreSettings.storeName || 'Style Forever';
+        document.getElementById('setStorePhone').value = currentStoreSettings.phone || '';
+        document.getElementById('setDelInside').value = currentStoreSettings.delInside || 60;
+        document.getElementById('setDelOutside').value = currentStoreSettings.delOutside || 130;
+      } else if (modalId === 'courierModal') {
+        document.getElementById('steadfastApiKey').value = currentStoreSettings.steadfastApiKey || '';
+        document.getElementById('steadfastSecretKey').value = currentStoreSettings.steadfastSecretKey || '';
+      }
+
+      el.classList.remove('hidden');
+      activeModalsStack.push(modalId);
+      history.pushState({ modalId: modalId }, '');
+      lucide.createIcons();
+    }
+
+    function closeModal(modalId, triggeredByBack = false) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.add('hidden');
+      
+      const index = activeModalsStack.indexOf(modalId);
+      if (index > -1) {
+        activeModalsStack.splice(index, 1);
+      }
+
+      if (!triggeredByBack && window.history.state && window.history.state.modalId === modalId) {
+        window.history.back();
+      }
+    }
+
+    window.addEventListener('popstate', () => {
+      if (activeModalsStack.length > 0) {
+        const topModalId = activeModalsStack.pop();
+        const el = document.getElementById(topModalId);
+        if (el) el.classList.add('hidden');
+        if (topModalId === 'productModal') editingProductId = null;
+      }
+    });
+
+    function openPaymentConfig(channel) {
+      activeEditingPayment = channel;
+      const title = document.getElementById('paymentModalTitle');
+      const iconWrap = document.getElementById('paymentModalIconWrap');
+      const mobileFields = document.getElementById('mobileWalletFields');
+      const bankFields = document.getElementById('bankFields');
+
+      if (channel === 'bank') {
+        title.innerText = 'Bank Account Details';
+        iconWrap.innerHTML = '<i data-lucide="building-2" class="w-5 h-5 text-slate-800"></i>';
+        mobileFields.classList.add('hidden');
+        bankFields.classList.remove('hidden');
+        document.getElementById('payBankNoteInput').value = currentStoreSettings.bankNote || '';
+      } else {
+        mobileFields.classList.remove('hidden');
+        bankFields.classList.add('hidden');
+
+        const logos = {
+          bkash: 'https://static.vecteezy.com/system/resources/previews/039/340/798/non_2x/bkash-logo-free-vector.jpg',
+          nagad: 'https://play-lh.googleusercontent.com/tFk8R3Fkav7fZEY8e7VJtMwtRCowaWU2Us-AmWaKnTOWBer427fPjWetoOnhrUM4nWeZb0AOEJ6lnlwJ9HRu',
+          rocket: 'https://static.vecteezy.com/system/resources/thumbnails/068/706/013/small/rocket-color-logo-mobile-banking-icon-free-png.png'
+        };
+
+        title.innerText = `${channel.toUpperCase()} Configuration`;
+        iconWrap.innerHTML = `<img src="${logos[channel]}" class="w-8 h-8 rounded-lg object-contain bg-white border border-slate-100 p-0.5">`;
+        document.getElementById('paymentNumberLabel').innerText = `${channel.toUpperCase()} Number`;
+
+        const val = currentStoreSettings[channel] || '';
+        const match = val.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+        const savedNumber = match && match[1] ? match[1].trim() : '';
+        const savedType = match && match[2] ? match[2].trim() : 'Personal (Send Money)';
+
+        document.getElementById('paymentNumberInput').value = savedNumber;
+        const typeSelect = document.getElementById('paymentTypeSelect');
+        if (typeSelect) {
+          typeSelect.value = Array.from(typeSelect.options).some(o => o.value === savedType) ? savedType : 'Personal (Send Money)';
+        }
+      }
+
+      openModal('paymentModal');
+    }
+
+    function saveCourierConfig() {
+      const apiKey = document.getElementById('steadfastApiKey').value.trim();
+      const secretKey = document.getElementById('steadfastSecretKey').value.trim();
+
+      db.ref(PATHS.settings).update({
+        steadfastApiKey: apiKey,
+        steadfastSecretKey: secretKey
+      }).then(() => {
+        closeModal('courierModal');
+        showToast('Steadfast credentials saved!');
+      });
+    }
+
+    function savePaymentConfig() {
+      const updateData = {};
+      if (activeEditingPayment === 'bank') {
+        updateData.bankNote = document.getElementById('payBankNoteInput').value.trim();
+      } else {
+        const num = document.getElementById('paymentNumberInput').value.trim();
+        const type = document.getElementById('paymentTypeSelect').value;
+        updateData[activeEditingPayment] = num ? `${num} (${type})` : '';
+      }
+
+      db.ref(PATHS.settings).update(updateData).then(() => {
+        closeModal('paymentModal');
+        showToast(`${activeEditingPayment.toUpperCase()} settings saved!`);
+      });
+    }
+
+    function saveStoreInfoConfig() {
+      const sName = document.getElementById('setStoreName').value.trim() || 'Style Forever';
+      const sPhone = document.getElementById('setStorePhone').value.trim();
+      const delInside = document.getElementById('setDelInside').value || 60;
+      const delOutside = document.getElementById('setDelOutside').value || 130;
+
+      db.ref(PATHS.settings).update({
+        storeName: sName,
+        phone: sPhone,
+        delInside: Number(delInside),
+        delOutside: Number(delOutside)
+      }).then(() => {
+        closeModal('storeInfoModal');
+        showToast('Store details and delivery fees updated!');
+      });
+    }
+
+    // ==================== 6. CATEGORIES ====================
+    async function previewCategoryFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('Uploading category cover...');
+      try {
+        pendingCategoryImg = await uploadFileToCloudinary(file);
+        document.getElementById('catPreviewImg').src = pendingCategoryImg;
+        document.getElementById('catPreviewBox').classList.remove('hidden');
+        document.getElementById('catUploadLabel').innerText = 'Change Image';
+        showToast('Image uploaded!');
+      } catch (err) {
+        showToast('Image upload failed', true);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function addCategory() {
+      const name = document.getElementById('catName').value.trim();
+      if (!name || !pendingCategoryImg) return showToast('Name & Image are required', true);
+
+      db.ref(PATHS.categories).push({ name, imageUrl: pendingCategoryImg });
+      document.getElementById('catName').value = '';
+      pendingCategoryImg = '';
+      document.getElementById('catPreviewBox').classList.add('hidden');
+      document.getElementById('catUploadLabel').innerText = 'Choose Image';
+      showToast('Category created successfully');
+    }
+
+    db.ref(PATHS.categories).on('value', snap => {
+      cachedCategories = snap.val() || {};
+      const grid = document.getElementById('categoriesGrid');
+      const keys = Object.keys(cachedCategories);
+
+      populateCategoryDropdown(document.getElementById('prodCategory')?.value || '');
+
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400 font-medium">No categories found</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const c = cachedCategories[key];
+        grid.innerHTML += `
+          <div class="relative group rounded-2xl overflow-hidden border border-slate-200 aspect-square bg-slate-100 shadow-sm">
+            <img src="${c.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent p-3 flex flex-col justify-between">
+              <div class="flex justify-end opacity-0 group-hover:opacity-100 transition">
+                <button onclick="deleteItem('${PATHS.categories}/${key}')" class="p-1.5 bg-white rounded-lg text-rose-600 hover:bg-rose-50 shadow">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <span class="text-xs font-bold text-white truncate">${c.name}</span>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    // ==================== 7. MEDIA STUDIO ====================
+    function addBannerFromUrl() {
+      const input = document.getElementById('bannerUrlInput');
+      if (!input) return;
+      const url = input.value.trim();
+      if (!url) return showToast('Please enter banner image URL', true);
+
+      db.ref(PATHS.banners).push({ imageUrl: url, createdAt: Date.now() })
+        .then(() => {
+          input.value = '';
+          showToast('Slider banner added from URL!');
+        })
+        .catch(() => showToast('Failed to add banner', true));
+    }
+
+    async function uploadBannerDirect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('Uploading hero banner...');
+      try {
+        const url = await uploadFileToCloudinary(file);
+        await db.ref(PATHS.banners).push({ imageUrl: url, createdAt: Date.now() });
+        showToast('Slider banner uploaded!');
+      } catch (err) {
+        showToast('Banner upload failed', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    db.ref(PATHS.banners).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('bannersGrid');
+      const statB = document.getElementById('statBanners');
+      const keys = Object.keys(data);
+      if (statB) statB.innerText = keys.length;
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400 font-medium">No hero banners</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const b = data[key];
+        grid.innerHTML += `
+          <div class="relative group rounded-2xl overflow-hidden border border-slate-200 aspect-video bg-slate-100 shadow-sm">
+            <img src="${b.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <button onclick="deleteItem('${PATHS.banners}/${key}')" class="p-2 bg-white rounded-xl text-rose-600 hover:bg-rose-50 shadow">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    function addShortFromUrl() {
+      const input = document.getElementById('shortUrlInput');
+      if (!input) return;
+      const url = input.value.trim();
+      if (!url) return showToast('Please enter video URL', true);
+
+      db.ref(PATHS.shorts).push({ url, createdAt: Date.now() })
+        .then(() => {
+          input.value = '';
+          showToast('Reel added successfully!');
+        })
+        .catch(() => showToast('Failed to add reel', true));
+    }
+
+    async function uploadShortDirect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('Uploading vertical reel (Cloudinary)...');
+      try {
+        const url = await uploadFileToCloudinary(file);
+        await db.ref(PATHS.shorts).push({ url, createdAt: Date.now() });
+        showToast('Reel video published!');
+      } catch (err) {
+        showToast('Video upload failed. Try a smaller MP4 or use direct URL', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    db.ref(PATHS.shorts).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('shortsGrid');
+      const statS = document.getElementById('statShorts');
+      const keys = Object.keys(data);
+
+      if (statS) statS.innerText = keys.length;
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400 font-medium">No active reels</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const s = data[key];
+        const vUrl = typeof s === 'object' ? s.url : s;
+        grid.innerHTML += `
+          <div class="relative group rounded-2xl overflow-hidden border border-slate-200 aspect-[9/16] bg-black shadow-sm">
+            <video src="${vUrl}" class="w-full h-full object-cover pointer-events-none" muted playsinline preload="metadata"></video>
+            <div class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center p-2">
+              <button onclick="deleteItem('${PATHS.shorts}/${key}')" class="p-2 bg-white rounded-xl text-rose-600 hover:bg-rose-50 shadow transition active:scale-95" title="Delete">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div class="absolute bottom-2 left-2 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">Reel</div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    async function uploadAdDirect(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      showLoader('Uploading promotional ad...');
+      try {
+        const url = await uploadFileToCloudinary(file);
+        await db.ref(PATHS.ads).push({ imageUrl: url, createdAt: Date.now() });
+        showToast('Promo banner published!');
+      } catch (err) {
+        showToast('Ad upload failed', true);
+      } finally {
+        hideLoader();
+        input.value = '';
+      }
+    }
+
+    db.ref(PATHS.ads).on('value', snap => {
+      const data = snap.val() || {};
+      const grid = document.getElementById('adsGrid');
+      const keys = Object.keys(data);
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (keys.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-6 text-center text-xs text-slate-400 font-medium">No promo ads</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const ad = data[key];
+        grid.innerHTML += `
+          <div class="relative group rounded-2xl overflow-hidden border border-slate-200 h-28 bg-slate-100 shadow-sm">
+            <img src="${ad.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <button onclick="deleteItem('${PATHS.ads}/${key}')" class="p-2 bg-white rounded-xl text-rose-600 hover:bg-rose-50 shadow">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    });
+
+    function deleteItem(path) {
+      if (confirm('Are you sure you want to permanently delete this item?')) {
+        db.ref(path).remove();
+        showToast('Item deleted');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      switchTab('dashboard');
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
