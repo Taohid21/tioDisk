@@ -41,17 +41,37 @@
     .step-badge{background:linear-gradient(135deg,#5c24ff,#2563eb);}
     @keyframes subtlePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
     .pulse-btn{animation:subtlePulse 3s infinite ease-in-out;}
+    @keyframes shimmerSweep {
+      0% { transform: translateX(-150%) skewX(-20deg); }
+      40%, 100% { transform: translateX(250%) skewX(-20deg); }
+    }
+    .shimmer-effect {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer-effect::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+      animation: shimmerSweep 3.2s infinite ease-in-out;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
-  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-blue-100/70 px-6 sm:px-12 lg:px-20 py-4 flex items-center justify-between transition-all">
-    <div class="flex items-center gap-2.5">
-      <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="tioDisk" class="w-8 h-8 rounded-xl object-cover shadow-sm">
-      <span class="text-2xl font-black tracking-tight text-slate-900">tio<span class="text-brand-500">Disk</span></span>
+  <header id="mainHeader" class="sticky top-0 z-50 bg-transparent px-4 sm:px-12 lg:px-20 py-3 sm:py-4 flex items-center justify-between transition-all duration-300">
+    <div class="flex items-center gap-2">
+      <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="tioDisk" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl object-cover shadow-sm">
+      <span class="text-xl sm:text-2xl font-black tracking-tight text-slate-900">tio<span class="text-brand-500">Disk</span></span>
     </div>
-    <div class="flex items-center gap-3">
-      <button onclick="goToDash()" class="text-xs sm:text-sm font-bold text-slate-600 hover:text-brand-500 px-3 py-1.5 rounded-xl transition">Sign In</button>
-      <button onclick="goToDash()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-brand-500/30 transition active:scale-95">Merchant Console</button>
+    <div>
+      <button onclick="goToDash()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-1.5 sm:py-2 rounded-full shadow-sm shadow-brand-500/30 transition active:scale-95">
+        Sign In
+      </button>
     </div>
   </header>
   <main class="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-8 sm:pt-14 pb-16 space-y-12 sm:space-y-20">
@@ -64,9 +84,9 @@
         Empower your e-commerce journey with <strong class="text-slate-900 font-bold">tioDisk</strong>. Built-in instant courier delivery, automated payment gateways, and lightning-fast storefronts.
       </p>
       <div data-aos="zoom-in" data-aos-delay="200" class="pt-3">
-        <button onclick="goToDash()" class="pulse-btn inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm sm:text-base px-8 sm:px-10 py-3.5 sm:py-4 rounded-full shadow-xl shadow-brand-500/40 transition active:scale-95">
+        <button onclick="goToDash()" class="pulse-btn shimmer-effect group inline-flex items-center gap-2.5 bg-gradient-to-r from-brand-500 via-brand-600 to-blue-600 hover:from-brand-600 hover:to-blue-700 text-white font-bold text-sm sm:text-base px-8 sm:px-10 py-3.5 sm:py-4 rounded-full shadow-xl shadow-brand-500/40 hover:shadow-brand-500/60 transition active:scale-95">
           <span>Start for Free</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300"></i>
         </button>
         <p class="text-[11px] sm:text-xs text-slate-400 mt-2.5 font-medium">(No credit card required. Launch your shop in 60 seconds)</p>
       </div>
@@ -277,7 +297,9 @@
           </p>
           <div class="flex items-center gap-3 pt-2">
             <a href="https://www.facebook.com/share/1dVfpAJtLH/" target="_blank" class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition shadow-sm" title="Facebook Page">
-              <i data-lucide="facebook" class="w-5 h-5"></i>
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
             </a>
             <a href="https://wa.me/8801704609401?text=Hello%20tioDisk%20Support" target="_blank" class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition shadow-sm" title="WhatsApp Support">
               <i data-lucide="message-circle" class="w-5 h-5"></i>
@@ -457,10 +479,24 @@
         }
       });
     }
+    function handleHeaderScroll(){
+      const header = document.getElementById('mainHeader');
+      if(!header) return;
+      if(window.scrollY > 20){
+        header.classList.add('bg-white/85','backdrop-blur-md','border-b','border-slate-100','shadow-sm');
+        header.classList.remove('bg-transparent');
+      }else{
+        header.classList.remove('bg-white/85','backdrop-blur-md','border-b','border-slate-100','shadow-sm');
+        header.classList.add('bg-transparent');
+      }
+    }
+    window.addEventListener('scroll', handleHeaderScroll);
+
     document.addEventListener("DOMContentLoaded",()=>{
       lucide.createIcons();
       AOS.init({duration:750,easing:'ease-out',once:true});
       initCharts();
+      handleHeaderScroll();
     });
   </script>
 </body>
