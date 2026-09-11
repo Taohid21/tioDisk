@@ -1,1 +1,467 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>tioDisk</title>
+  <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#5c24ff',
+              600: '#4f17e0',
+              blue: '#2563eb',
+              emerald: '#10b981',
+              dark: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#eff6ff 16%,#f8fafc 100%);-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+    .card-shadow{box-shadow:0 16px 36px -8px rgba(15,23,42,0.07),0 4px 12px -2px rgba(15,23,42,0.03);}
+    .step-badge{background:linear-gradient(135deg,#5c24ff,#2563eb);}
+    @keyframes subtlePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+    .pulse-btn{animation:subtlePulse 3s infinite ease-in-out;}
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-blue-100/70 px-6 sm:px-12 lg:px-20 py-4 flex items-center justify-between transition-all">
+    <div class="flex items-center gap-2.5">
+      <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="tioDisk" class="w-8 h-8 rounded-xl object-cover shadow-sm">
+      <span class="text-2xl font-black tracking-tight text-slate-900">tio<span class="text-brand-500">Disk</span></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="goToDash()" class="text-xs sm:text-sm font-bold text-slate-600 hover:text-brand-500 px-3 py-1.5 rounded-xl transition">Sign In</button>
+      <button onclick="goToDash()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md shadow-brand-500/30 transition active:scale-95">Merchant Console</button>
+    </div>
+  </header>
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-8 sm:pt-14 pb-16 space-y-12 sm:space-y-20">
+    <section class="max-w-4xl mx-auto text-center space-y-4">
+      <h1 data-aos="fade-up" class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.2]">
+        One Platform <br class="hidden sm:inline"> Thousands of <br class="hidden sm:inline">
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-blue-600">Success Stories</span>
+      </h1>
+      <p data-aos="fade-up" data-aos-delay="100" class="text-xs sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        Empower your e-commerce journey with <strong class="text-slate-900 font-bold">tioDisk</strong>. Built-in instant courier delivery, automated payment gateways, and lightning-fast storefronts.
+      </p>
+      <div data-aos="zoom-in" data-aos-delay="200" class="pt-3">
+        <button onclick="goToDash()" class="pulse-btn inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm sm:text-base px-8 sm:px-10 py-3.5 sm:py-4 rounded-full shadow-xl shadow-brand-500/40 transition active:scale-95">
+          <span>Start for Free</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+        <p class="text-[11px] sm:text-xs text-slate-400 mt-2.5 font-medium">(No credit card required. Launch your shop in 60 seconds)</p>
+      </div>
+    </section>
+    <section class="w-full space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div data-aos="fade-up" class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-7 border border-slate-100 card-shadow space-y-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide" id="ordersLabel">Total Weekly Orders</span>
+              <div class="text-2xl sm:text-4xl font-black text-slate-900 mt-0.5 tracking-tight" id="ordersValue">1,482</div>
+            </div>
+            <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+              <button id="btnFilterToday" onclick="filterData('today')" class="px-3 sm:px-4 py-1.5 text-slate-500 rounded-lg transition hover:text-slate-900">Today</button>
+              <button id="btnFilterWeek" onclick="filterData('week')" class="px-3 sm:px-4 py-1.5 bg-brand-500 text-white rounded-lg shadow-sm transition">This Week</button>
+            </div>
+          </div>
+          <div>
+            <div class="text-[11px] sm:text-xs font-semibold text-slate-400 mb-3 flex items-center justify-between">
+              <span id="chartHeading">Orders Trajectory</span>
+              <span class="text-emerald-600 font-bold text-[10px] sm:text-xs bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +14.8% growth
+              </span>
+            </div>
+            <div class="h-56 sm:h-72 w-full relative">
+              <canvas id="ordersBarChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="100" class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-3xl p-5 sm:p-7 border border-slate-100 card-shadow space-y-5">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm sm:text-base font-black text-slate-900" id="salesCardTitle">Weekly Settlement Overview</h3>
+                <p class="text-[11px] text-slate-400">Automated payouts & split</p>
+              </div>
+              <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+            </div>
+            <div class="relative w-44 h-44 sm:w-52 sm:h-52 mx-auto flex items-center justify-center">
+              <canvas id="salesDonutChart"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-xl sm:text-2xl font-black text-slate-900" id="donutTotalText">৳ 48.5K</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Gross Volume</span>
+              </div>
+            </div>
+            <div class="space-y-2.5 text-xs sm:text-sm font-semibold">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                  <span class="text-slate-600 text-[11px] sm:text-xs">Instant Online (bKash/Cards)</span>
+                </div>
+                <span class="font-bold text-slate-900" id="txtOnlinePay">৳ 18,200</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <span class="text-slate-600 text-[11px] sm:text-xs">Cash On Delivery (COD)</span>
+                </div>
+                <span class="font-bold text-slate-900" id="txtCodPay">৳ 30,300</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-aos="fade-up" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-7 border border-slate-100 card-shadow space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs sm:text-sm font-bold text-slate-800">Sales Trend Curve</span>
+              <p class="text-[11px] text-slate-400">Revenue performance matrix</p>
+            </div>
+            <span class="text-xs sm:text-sm font-black text-brand-500" id="lineStatTag">Average Daily ৳7,000+</span>
+          </div>
+          <div class="h-44 sm:h-52 w-full relative">
+            <canvas id="salesLineChart"></canvas>
+          </div>
+        </div>
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-7 border border-slate-100 card-shadow flex flex-col justify-between space-y-5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center -space-x-2">
+              <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&q=80" alt="Avatar">
+              <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80" alt="Avatar">
+              <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&auto=format&fit=crop&q=80" alt="Avatar">
+              <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=80&auto=format&fit=crop&q=80" alt="Avatar">
+            </div>
+            <span class="bg-indigo-50 text-[10px] sm:text-xs font-bold text-brand-500 rounded-full px-2.5 py-1 border border-indigo-100">Active Merchants</span>
+          </div>
+          <div class="grid grid-cols-2 gap-4 py-2 border-y border-slate-50">
+            <div>
+              <div class="text-2xl sm:text-3xl font-black text-slate-900">4,200+</div>
+              <div class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase">Shops Created</div>
+            </div>
+            <div class="border-l border-slate-100 pl-4">
+              <div class="text-2xl sm:text-3xl font-black text-slate-900">185K+</div>
+              <div class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase">Orders Dispatched</div>
+            </div>
+          </div>
+          <button onclick="goToDash()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2">
+            <span>Explore Merchant Ecosystem</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+    <section class="space-y-8">
+      <div class="text-center max-w-xl mx-auto">
+        <span class="text-[10px] sm:text-xs font-black uppercase text-brand-500 tracking-wider">Why Choose tioDisk</span>
+        <h2 class="text-xl sm:text-3xl font-black text-slate-900 mt-1">Everything Runs on Autopilot</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">No technical hassle. Focus strictly on selling while our platform handles fulfillment.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div data-aos="fade-up" class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-3">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-brand-500 flex items-center justify-center shadow-sm">
+            <i data-lucide="truck" class="w-6 h-6"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-900">Direct Courier Dispatch</h4>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            No need to fill courier slips manually! Orders sync straight to courier hubs with automatic consignment IDs and live customer SMS tracking.
+          </p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="100" class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-3">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+            <i data-lucide="credit-card" class="w-6 h-6"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-900">Seamless Instant Checkout</h4>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            Customers pay securely with bKash, Nagad, or Debit/Credit Cards. Payments automatically verify and update inventory in real-time.
+          </p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="200" class="bg-white p-6 rounded-3xl border border-slate-100 card-shadow space-y-3">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+            <i data-lucide="globe" class="w-6 h-6"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-900">Custom Domain Ready</h4>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            Connect your own .com or .top branded domain with 1-click SSL encryption. Enjoy sub-second loading speeds on any network.
+          </p>
+        </div>
+      </div>
+    </section>
+    <section class="space-y-8">
+      <div class="text-center max-w-xl mx-auto">
+        <span class="text-[10px] sm:text-xs font-black uppercase text-brand-500 tracking-wider">Effortless Setup</span>
+        <h2 class="text-xl sm:text-3xl font-black text-slate-900 mt-1">Start Selling in 3 Easy Steps</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div data-aos="fade-up" class="bg-white rounded-3xl p-6 border border-slate-100 card-shadow space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="step-badge text-white text-[10px] font-black px-3 py-1 rounded-lg shadow">Step 01</span>
+            <i data-lucide="user-plus" class="w-5 h-5 text-brand-500"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-900">Create an Account</h4>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            Welcome to <strong>tioDisk</strong>! Sign up to launch your online store and access powerful tools to grow your business effortlessly.
+          </p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="100" class="bg-white rounded-3xl p-6 border border-slate-100 card-shadow space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="step-badge text-white text-[10px] font-black px-3 py-1 rounded-lg shadow">Step 02</span>
+            <i data-lucide="settings" class="w-5 h-5 text-brand-500"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-900">Set Up Your Store</h4>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            Add your store name, customize your slug URL, and select your category to launch your online storefront in minutes.
+          </p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="200" class="bg-white rounded-3xl p-6 border border-slate-100 card-shadow space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="step-badge text-white text-[10px] font-black px-3 py-1 rounded-lg shadow">Step 03</span>
+            <i data-lucide="badge-dollar-sign" class="w-5 h-5 text-brand-500"></i>
+          </div>
+          <h4 class="text-sm sm:text-base font-bold text-slate-900">Start Your Sales</h4>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            Start selling by adding your product. Enter details like name, price, and photos to showcase what you're offering to eager customers.
+          </p>
+          <div class="w-full rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 mt-2 p-2 flex justify-center">
+            <img src="https://assets-v2.lottiefiles.com/a/698bb126-1178-11ee-a798-935fb6c693c9/OPG6E31oMy.gif" alt="Product Listing Animation" class="w-full h-36 sm:h-44 object-contain rounded-xl hover:scale-105 transition duration-300">
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="sm:hidden fixed bottom-3 left-4 right-4 z-40 max-w-md mx-auto pointer-events-auto">
+    <div class="bg-slate-900/90 backdrop-blur-md text-white p-2.5 pl-4 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-800">
+      <div class="flex items-center gap-2">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <span class="text-xs font-bold tracking-tight">Deploy your store today</span>
+      </div>
+      <button onclick="goToDash()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-brand-500/30">
+        <span>Start for Free</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </div>
+  <footer class="bg-white border-t border-slate-200/80 pt-12 pb-24 sm:pb-12 text-xs sm:text-sm text-slate-600">
+    <div class="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 space-y-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-5 space-y-4">
+          <div class="flex items-center gap-2.5">
+            <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="tioDisk" class="w-8 h-8 rounded-xl object-cover">
+            <span class="text-xl font-black text-slate-900">tio<span class="text-brand-500">Disk</span></span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-sm">
+            The next-generation smart e-commerce platform empowering micro-merchants, local brands, and global entrepreneurs with automated logistics & checkout tools.
+          </p>
+          <div class="flex items-center gap-3 pt-2">
+            <a href="https://www.facebook.com/share/1dVfpAJtLH/" target="_blank" class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition shadow-sm" title="Facebook Page">
+              <i data-lucide="facebook" class="w-5 h-5"></i>
+            </a>
+            <a href="https://wa.me/8801704609401?text=Hello%20tioDisk%20Support" target="_blank" class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition shadow-sm" title="WhatsApp Support">
+              <i data-lucide="message-circle" class="w-5 h-5"></i>
+            </a>
+            <a href="mailto:support@tiodisk.top" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-900 hover:text-white flex items-center justify-center transition shadow-sm" title="Email Us">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+            </a>
+          </div>
+        </div>
+        <div class="lg:col-span-3 space-y-3">
+          <h4 class="font-black text-slate-900 uppercase text-xs tracking-wider">Quick Actions</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-slate-500">
+            <li><button onclick="goToDash()" class="hover:text-brand-500 transition">Create Storefront</button></li>
+            <li><button onclick="goToDash()" class="hover:text-brand-500 transition">Merchant Portal</button></li>
+            <li><a href="https://tiodisk.top" target="_blank" class="hover:text-brand-500 transition">Official Domain</a></li>
+            <li><a href="https://wa.me/8801704609401" target="_blank" class="hover:text-brand-500 transition">Contact Developer</a></li>
+          </ul>
+        </div>
+        <div class="lg:col-span-4 space-y-3">
+          <h4 class="font-black text-slate-900 uppercase text-xs tracking-wider">Corporate Hub</h4>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2.5 text-xs text-slate-600">
+            <div class="flex items-start gap-2.5">
+              <i data-lucide="map-pin" class="w-4 h-4 text-brand-500 shrink-0 mt-0.5"></i>
+              <span>Patukhali, Bauphal, Golabari Mor</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="phone" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+              <span>+880 1704-609401</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-blue-500 shrink-0"></i>
+              <span>Verified Merchant Infrastructure</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center text-xs text-slate-400 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span>© 2026 tioDisk Technologies. All Rights Reserved.</span>
+        <span>Empowering Bangladeshi Digital Commerce</span>
+      </div>
+    </div>
+  </footer>
+  <script>
+    let barChartInstance=null;
+    let donutChartInstance=null;
+    let lineChartInstance=null;
+    function goToDash(){
+      window.location.href="dash.html";
+    }
+    const datasets={
+      today:{
+        totalOrders:"184",
+        chartLabel:"Today's Hourly Orders",
+        barLabels:['10 AM','1 PM','4 PM','7 PM','10 PM'],
+        barData:[22,38,45,52,27],
+        salesTitle:"Today's Settlement Overview",
+        donutTotal:"৳ 8.4K",
+        onlinePay:"৳ 3,100",
+        codPay:"৳ 5,300",
+        donutData:[5.3,3.1],
+        lineStat:"Peak Hourly Sell ৳2,200",
+        lineLabels:['10 AM','1 PM','4 PM','7 PM','10 PM'],
+        lineData:[1.2,2.1,1.8,2.2,1.1]
+      },
+      week:{
+        totalOrders:"1,482",
+        chartLabel:"Weekly Orders Trajectory",
+        barLabels:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'],
+        barData:[190,210,240,260,215,235,132],
+        salesTitle:"Weekly Settlement Overview",
+        donutTotal:"৳ 48.5K",
+        onlinePay:"৳ 18,200",
+        codPay:"৳ 30,300",
+        donutData:[30.3,18.2],
+        lineStat:"Average Daily ৳7,000+",
+        lineLabels:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'],
+        lineData:[6.2,6.8,7.5,8.4,7.1,7.9,4.6]
+      }
+    };
+    function filterData(period){
+      const btnToday=document.getElementById('btnFilterToday');
+      const btnWeek=document.getElementById('btnFilterWeek');
+      if(period==='today'){
+        btnToday.className="px-3 sm:px-4 py-1.5 bg-brand-500 text-white rounded-lg shadow-sm transition";
+        btnWeek.className="px-3 sm:px-4 py-1.5 text-slate-500 rounded-lg transition hover:text-slate-900";
+        applyDataset(datasets.today);
+      }else{
+        btnWeek.className="px-3 sm:px-4 py-1.5 bg-brand-500 text-white rounded-lg shadow-sm transition";
+        btnToday.className="px-3 sm:px-4 py-1.5 text-slate-500 rounded-lg transition hover:text-slate-900";
+        applyDataset(datasets.week);
+      }
+    }
+    function applyDataset(data){
+      document.getElementById('ordersValue').innerText=data.totalOrders;
+      document.getElementById('chartHeading').innerText=data.chartLabel;
+      document.getElementById('salesCardTitle').innerText=data.salesTitle;
+      document.getElementById('donutTotalText').innerText=data.donutTotal;
+      document.getElementById('txtOnlinePay').innerText=data.onlinePay;
+      document.getElementById('txtCodPay').innerText=data.codPay;
+      document.getElementById('lineStatTag').innerText=data.lineStat;
+      barChartInstance.data.labels=data.barLabels;
+      barChartInstance.data.datasets[0].data=data.barData;
+      barChartInstance.update();
+      donutChartInstance.data.datasets[0].data=data.donutData;
+      donutChartInstance.update();
+      lineChartInstance.data.labels=data.lineLabels;
+      lineChartInstance.data.datasets[0].data=data.lineData;
+      lineChartInstance.update();
+    }
+    function initCharts(){
+      const ctxBar=document.getElementById('ordersBarChart').getContext('2d');
+      barChartInstance=new Chart(ctxBar,{
+        type:'bar',
+        data:{
+          labels:datasets.week.barLabels,
+          datasets:[{
+            data:datasets.week.barData,
+            backgroundColor:'#5c24ff',
+            borderRadius:8,
+            borderSkipped:false,
+            barThickness:24
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:11,family:'Plus Jakarta Sans'},color:'#94a3b8'}},
+            y:{border:{dash:[4,4]},grid:{color:'#f1f5f9'},ticks:{font:{size:11,family:'Plus Jakarta Sans'},color:'#94a3b8'}}
+          }
+        }
+      });
+      const ctxDonut=document.getElementById('salesDonutChart').getContext('2d');
+      donutChartInstance=new Chart(ctxDonut,{
+        type:'doughnut',
+        data:{
+          datasets:[{
+            data:datasets.week.donutData,
+            backgroundColor:['#10b981','#5c24ff'],
+            borderWidth:0,
+            cutout:'78%'
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          animation:{animateScale:true}
+        }
+      });
+      const ctxLine=document.getElementById('salesLineChart').getContext('2d');
+      lineChartInstance=new Chart(ctxLine,{
+        type:'line',
+        data:{
+          labels:datasets.week.lineLabels,
+          datasets:[{
+            data:datasets.week.lineData,
+            borderColor:'#5c24ff',
+            borderWidth:3,
+            fill:false,
+            tension:0.4,
+            pointBackgroundColor:'#ffffff',
+            pointBorderColor:'#5c24ff',
+            pointBorderWidth:2,
+            pointRadius:4
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:11,family:'Plus Jakarta Sans'},color:'#94a3b8'}},
+            y:{grid:{color:'#f8fafc'},ticks:{font:{size:11,family:'Plus Jakarta Sans'},color:'#94a3b8',callback:v=>'৳'+v+'K'}}
+          }
+        }
+      });
+    }
+    document.addEventListener("DOMContentLoaded",()=>{
+      lucide.createIcons();
+      AOS.init({duration:750,easing:'ease-out',once:true});
+      initCharts();
+    });
+  </script>
+</body>
+</html>
