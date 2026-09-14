@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Switch</title>
+<style>
+body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#111;color:#fff;font-family:sans-serif;}
+.box{background:#222;padding:25px;border-radius:8px;width:320px;text-align:center;}
+input,button{width:100%;padding:10px;margin-top:10px;box-sizing:border-box;border:none;border-radius:5px;font-size:15px;}
+input{background:#333;color:#fff;}
+button{cursor:pointer;font-weight:bold;}
+.on{background:#16a34a;color:#fff;}
+.off{background:#dc2626;color:#fff;}
+.status{padding:5px 10px;display:inline-block;border-radius:4px;margin-bottom:15px;font-size:13px;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div id="auth">
+    <input type="password" id="pwd" placeholder="Password">
+    <button class="on" onclick="auth()">Login</button>
+  </div>
+  <div id="panel" style="display:none;">
+    <div id="st" class="status"></div>
+    <div id="btn"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD2txpRBwRAtKisXlsslm2BosSJ3rxrXQg",
+  authDomain: "tiodisk-d97c1.firebaseapp.com",
+  databaseURL: "https://tiodisk-d97c1-default-rtdb.firebaseio.com",
+  projectId: "tiodisk-d97c1",
+  storageBucket: "tiodisk-d97c1.firebasestorage.app",
+  messagingSenderId: "874244971549",
+  appId: "1:874244971549:web:7bf9532a6b6dcb1f8bbaf4"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const pass = "1234";
+
+window.auth = function() {
+  if (document.getElementById("pwd").value === pass) {
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    load();
+  }
+};
+
+function load() {
+  get(ref(db, "websites/earthclothbd/status")).then(s => {
+    const isLive = s.exists() ? s.val() : true;
+    updateUI(isLive);
+  });
+}
+
+function updateUI(live) {
+  const st = document.getElementById("st");
+  const btn = document.getElementById("btn");
+  if (live) {
+    st.style.background = "#16a34a";
+    st.innerText = "ONLINE";
+    btn.innerHTML = '<button class="off" onclick="toggle(false)">TURN OFF</button>';
+  } else {
+    st.style.background = "#dc2626";
+    st.innerText = "OFFLINE (404)";
+    btn.innerHTML = '<button class="on" onclick="toggle(true)">TURN ON</button>';
+  }
+}
+
+window.toggle = function(status) {
+  update(ref(db, "websites/earthclothbd"), { status }).then(() => {
+    updateUI(status);
+  });
+};
+</script>
+</body>
+</html>
