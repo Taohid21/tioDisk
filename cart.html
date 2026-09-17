@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title id="cartPageTitle">Shopping Basket | Online Store</title>
+  
+  <!-- Favicon -->
+  <link id="pageFavicon" rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><circle cx='12' cy='12' r='10'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase SDK (Exact Same Config) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              600: '#059669',
+              700: '#047857'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scroll::-webkit-scrollbar { height: 4px; width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-emerald-600 selection:text-white">
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-8 h-16 sm:h-18 flex items-center justify-between">
+      
+      <!-- Back Button & Brand Title -->
+      <div class="flex items-center gap-3">
+        <button onclick="handleBackNavigation()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-800 hover:bg-slate-100 transition active:scale-95 shadow-xs" title="Go Back">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div class="flex items-center gap-2.5">
+          <div id="cartLogoWrap" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+            <span id="cartLogoFallback" class="text-xs font-black text-slate-700 uppercase">S</span>
+            <img id="cartHeaderLogo" src="" alt="Logo" class="w-full h-full object-cover hidden">
+          </div>
+          <div>
+            <h1 class="text-xs sm:text-base font-extrabold text-slate-900 flex items-center gap-1.5">
+              <span id="cartStoreTitle">Shopping Basket</span>
+              <span class="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold font-mono" id="cartCountHeader">0</span>
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clear Action -->
+      <button onclick="clearCart()" class="text-xs font-bold text-slate-400 hover:text-rose-600 transition flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-rose-50">
+        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Empty Basket</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTAINER ==================== -->
+  <main class="max-w-[1600px] mx-auto px-4 sm:px-8 py-6 sm:py-8 flex-1 w-full">
+    
+    <!-- Empty State -->
+    <div id="cartEmptyState" class="hidden text-center py-20 bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs max-w-md mx-auto mt-8">
+      <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200">
+        <i data-lucide="shopping-basket" class="w-8 h-8 text-emerald-600"></i>
+      </div>
+      <h3 class="text-base font-black text-slate-900 mb-1">Your basket is empty</h3>
+      <p class="text-xs text-slate-400 mb-6 max-w-xs mx-auto font-medium">Explore our store to find fresh groceries, daily essentials, and package deals.</p>
+      <button onclick="handleBackNavigation()" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl text-xs font-bold transition shadow-sm active:scale-95">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Start Shopping</span>
+      </button>
+    </div>
+
+    <!-- Active Cart: 2 Column Desktop Wide & Clean Stack on Mobile -->
+    <div id="cartContent" class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+      
+      <!-- Left: Items List (lg: 8 Cols) -->
+      <div class="lg:col-span-7 xl:col-span-8 space-y-3" id="cartItemsList">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Right: Summary Card (lg: 4 Cols Sticky) -->
+      <div class="lg:col-span-5 xl:col-span-4 sticky top-24">
+        <div class="bg-white p-5 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+          
+          <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-3">Basket Summary</h2>
+
+          <div class="space-y-2.5 text-xs sm:text-sm">
+            <div class="flex justify-between text-slate-600">
+              <span>Items (<span id="summaryTotalItems" class="font-mono">0</span>):</span>
+              <span class="font-bold text-slate-900 font-mono" id="subtotalPrice">BDT 0</span>
+            </div>
+            
+            <div class="flex justify-between text-slate-600">
+              <span>Estimated Delivery:</span>
+              <span class="text-emerald-700 font-bold" id="deliveryFeeNotice">Calculated at Checkout</span>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-100 pt-3.5 flex justify-between items-baseline text-base font-black text-slate-900">
+            <span>Subtotal Payable</span>
+            <span class="text-xl text-slate-900 font-mono" id="grandTotalPrice">BDT 0</span>
+          </div>
+
+          <button onclick="proceedToCheckout()" class="w-full bg-slate-900 hover:bg-emerald-600 text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition active:scale-[0.99] shadow-sm flex items-center justify-center gap-2">
+            <span>Proceed to Checkout</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+
+          <button onclick="handleBackNavigation()" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl font-bold text-xs transition active:scale-[0.99] flex items-center justify-center gap-1.5 border border-slate-200">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span>Continue Shopping</span>
+          </button>
+
+          <div class="pt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            <span>Cash on Delivery Available</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ==================== APPLICATION SCRIPTS ==================== -->
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentShop = urlParams.get('shop') || 'lowbudget';
+    const CART_STORAGE_KEY = `cart_${currentShop}`;
+    const STORE_CACHE_NAME = `store_name_${currentShop}`;
+    const STORE_CACHE_LOGO = `store_logo_${currentShop}`;
+
+    // Smart Back Navigation to store.html
+    function handleBackNavigation() {
+      if (document.referrer && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = `store.html?shop=${encodeURIComponent(currentShop)}`;
+      }
+    }
+
+    // Instant Brand Hydration from Local Cache (0ms No-Flicker)
+    const cachedName = localStorage.getItem(STORE_CACHE_NAME);
+    const cachedLogo = localStorage.getItem(STORE_CACHE_LOGO);
+
+    if (cachedName) {
+      document.title = `Basket | ${cachedName}`;
+      document.getElementById('cartStoreTitle').innerText = `${cachedName} Basket`;
+    }
+    if (cachedLogo) {
+      const img = document.getElementById('cartHeaderLogo');
+      const fallback = document.getElementById('cartLogoFallback');
+      img.src = cachedLogo;
+      img.classList.remove('hidden');
+      fallback.classList.add('hidden');
+      document.getElementById('pageFavicon').href = cachedLogo;
+    }
+
+    // Exact Synchronized Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2txpRBwRAtKisXlsslm2BosSJ3rxrXQg",
+      authDomain: "tiodisk-d97c1.firebaseapp.com",
+      databaseURL: "https://tiodisk-d97c1-default-rtdb.firebaseio.com",
+      projectId: "tiodisk-d97c1",
+      storageBucket: "tiodisk-d97c1.firebasestorage.app",
+      messagingSenderId: "874244971549",
+      appId: "1:874244971549:web:7bf9532a6b6dcb1f8bbaf4",
+      measurementId: "G-3ZQWMQ2G8B"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Live Sync Settings
+    db.ref(`stores/${currentShop}/settings`).on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+
+      if (s.storeName) {
+        document.title = `Basket | ${s.storeName}`;
+        document.getElementById('cartStoreTitle').innerText = `${s.storeName} Basket`;
+        localStorage.setItem(STORE_CACHE_NAME, s.storeName);
+      }
+
+      if (s.logo) {
+        const img = document.getElementById('cartHeaderLogo');
+        const fallback = document.getElementById('cartLogoFallback');
+        img.src = s.logo;
+        img.classList.remove('hidden');
+        fallback.classList.add('hidden');
+        document.getElementById('pageFavicon').href = s.logo;
+        localStorage.setItem(STORE_CACHE_LOGO, s.logo);
+      }
+    });
+
+    let cart = [];
+
+    function loadCart() {
+      cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+      renderCart();
+    }
+
+    function renderCart() {
+      const emptyState = document.getElementById('cartEmptyState');
+      const content = document.getElementById('cartContent');
+      const list = document.getElementById('cartItemsList');
+      const headerCount = document.getElementById('cartCountHeader');
+      const summaryItems = document.getElementById('summaryTotalItems');
+
+      const totalItems = cart.reduce((acc, it) => acc + (it.quantity || 1), 0);
+      headerCount.innerText = totalItems;
+      if (summaryItems) summaryItems.innerText = totalItems;
+
+      if (cart.length === 0) {
+        emptyState.classList.remove('hidden');
+        content.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      content.classList.remove('hidden');
+      list.innerHTML = '';
+
+      let subtotal = 0;
+
+      cart.forEach((item, index) => {
+        const itemPrice = Number(item.price) || 0;
+        const itemQty = Number(item.quantity) || 1;
+        subtotal += itemPrice * itemQty;
+
+        const el = document.createElement('div');
+        el.className = "bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 flex gap-3.5 items-center shadow-xs hover:border-slate-300 transition";
+
+        // Size / Unit Weight Selector
+        let sizeSelect = '';
+        if (item.sizes && item.sizes.length > 0) {
+          sizeSelect = `
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] text-slate-400 font-bold uppercase">Unit:</span>
+              <select onchange="updateVariant(${index}, 'selectedSize', this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 outline-none font-semibold cursor-pointer">
+                ${item.sizes.map(s => {
+                  const val = typeof s === 'object' ? s.size : s;
+                  return `<option value="${val}" ${val === item.selectedSize ? 'selected' : ''}>${val}</option>`;
+                }).join('')}
+              </select>
+            </div>
+          `;
+        }
+
+        // Color Selector
+        let colorSelect = '';
+        if (item.colors && item.colors.length > 0) {
+          colorSelect = `
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] text-slate-400 font-bold uppercase">Color:</span>
+              <select onchange="updateVariant(${index}, 'selectedColor', this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 outline-none font-semibold cursor-pointer">
+                ${item.colors.map(c => `<option value="${c}" ${c === item.selectedColor ? 'selected' : ''}>${c}</option>`).join('')}
+              </select>
+            </div>
+          `;
+        }
+
+        el.innerHTML = `
+          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-xl border border-slate-100 p-1 shrink-0 flex items-center justify-center">
+            <img 
+              src="${item.imageUrl || ''}" 
+              alt="${item.name}" 
+              class="w-full h-full object-contain"
+            >
+          </div>
+          
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start gap-2">
+              <h4 class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">${item.name}</h4>
+              <button onclick="removeItem(${index})" class="text-slate-300 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition shrink-0" title="Remove Item">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            
+            <div class="flex items-baseline gap-2 mt-0.5">
+              <span class="text-xs sm:text-sm font-black text-slate-900 font-mono">BDT ${itemPrice}</span>
+              ${item.regularPrice && item.regularPrice > itemPrice ? `<span class="text-[10px] text-slate-400 line-through font-mono">BDT ${item.regularPrice}</span>` : ''}
+              ${item.isFreeDelivery ? `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">Free Delivery</span>` : ''}
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+              ${sizeSelect}
+              ${colorSelect}
+            </div>
+
+            <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100">
+              <div class="flex items-center border border-slate-200 rounded-lg bg-slate-50 overflow-hidden">
+                <button onclick="changeQty(${index}, -1)" class="w-7 h-7 flex items-center justify-center font-bold text-xs text-slate-600 hover:bg-slate-200 transition active:scale-95">-</button>
+                <span class="text-xs font-bold w-6 text-center select-none text-slate-900 font-mono">${itemQty}</span>
+                <button onclick="changeQty(${index}, 1)" class="w-7 h-7 flex items-center justify-center font-bold text-xs text-slate-600 hover:bg-slate-200 transition active:scale-95">+</button>
+              </div>
+              <span class="text-xs font-black text-slate-800 font-mono">BDT ${itemPrice * itemQty}</span>
+            </div>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+
+      document.getElementById('subtotalPrice').innerText = `BDT ${subtotal}`;
+      document.getElementById('grandTotalPrice').innerText = `BDT ${subtotal}`;
+      lucide.createIcons();
+    }
+
+    function changeQty(index, delta) {
+      cart[index].quantity += delta;
+      if (cart[index].quantity <= 0) {
+        if (confirm('Remove this product from basket?')) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].quantity = 1;
+        }
+      }
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      renderCart();
+    }
+
+    function updateVariant(index, key, val) {
+      cart[index][key] = val;
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    }
+
+    function removeItem(index) {
+      cart.splice(index, 1);
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      renderCart();
+    }
+
+    function clearCart() {
+      if (confirm('Empty all items from your basket?')) {
+        cart = [];
+        localStorage.removeItem(CART_STORAGE_KEY);
+        renderCart();
+      }
+    }
+
+    function proceedToCheckout() {
+      if (cart.length === 0) return;
+      window.location.href = `checkout.html?fromCart=true&shop=${encodeURIComponent(currentShop)}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadCart();
+    });
+  </script>
+</body>
+</html>
