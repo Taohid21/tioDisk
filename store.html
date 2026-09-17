@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title id="pageTitle">tioDisk</title>
+
+  <!-- Favicon & SEO Meta -->
+  <link id="pageFavicon" rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><circle cx='12' cy='12' r='10'/></svg>">
+  <meta id="ogTitle" property="og:title" content="Daily Grocery & Modern Essentials">
+  <meta id="ogDescription" property="og:description" content="Shop fresh groceries, daily essentials and quality lifestyle products at the best prices.">
+  <meta id="ogImage" property="og:image" content="">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Swiper.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <!-- Firebase SDK (Matched with Admin Console) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    /* Performance friendly image skeletons */
+    .skeleton-box {
+      background: #e2e8f0;
+      animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+
+    /* Swiper Dots */
+    .swiper-pagination-bullet {
+      background: #ffffff !important;
+      opacity: 0.6 !important;
+      transition: all 0.25s ease;
+      width: 6px;
+      height: 6px;
+    }
+    .swiper-pagination-bullet-active {
+      opacity: 1 !important;
+      width: 20px !important;
+      border-radius: 9999px;
+      background: #10b981 !important;
+    }
+  </style>
+</head>
+<body class="selection:bg-emerald-600 selection:text-white">
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed top-4 right-4 z-[9999] bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl border border-slate-800 flex items-center gap-2 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMessage">Item added to cart!</span>
+  </div>
+
+  <!-- 1. Dynamic Announcement Bar (Starts Hidden by default) -->
+  <div id="announcementBar" class="hidden bg-emerald-600 text-white text-[11px] sm:text-xs py-2 px-4 text-center font-semibold tracking-wide transition-all">
+    <span id="announcementText"></span>
+  </div>
+
+  <!-- 2. Header Bar (Full-Width Responsive for PC & Mobile) -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40">
+    <div class="max-w-[1700px] mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between gap-4 sm:gap-8">
+      
+      <!-- Logo & Store Name -->
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMenu()" class="lg:hidden w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-800 transition">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+
+        <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-2.5 select-none">
+          <div id="logoWrapper" class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+            <span id="logoFallback" class="text-xs sm:text-sm font-black text-slate-800 uppercase">S</span>
+            <img id="headerBrandLogo" src="" alt="Logo" class="w-full h-full object-cover hidden">
+          </div>
+          <div>
+            <span id="headerBrandTitle" class="tracking-tight font-extrabold text-base sm:text-xl text-slate-900 block leading-tight truncate max-w-[150px] sm:max-w-[260px]">Online Store</span>
+            <span class="text-[10px] sm:text-[11px] font-semibold text-emerald-600 tracking-wide uppercase block">Fresh & Fast</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Live Search Bar (Full on PC) -->
+      <div class="flex-1 max-w-2xl hidden md:block">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+          <input 
+            type="text" 
+            id="desktopQuickSearch"
+            placeholder="Search fresh groceries, rice, oil, essentials or snacks..."
+            oninput="handleSearchInput(event)"
+            onfocus="if(currentView !== 'search') navigateTo('search');"
+            class="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-emerald-600 focus:bg-white text-slate-900 rounded-2xl py-2.5 pl-11 pr-10 text-xs sm:text-sm outline-none transition font-medium"
+          >
+          <button id="clearSearchBtnDesktop" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions (Mobile Search, Phone, Cart) -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <button onclick="navigateTo('search')" class="md:hidden w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-800 transition">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </button>
+
+        <a id="headerCallBtn" href="tel:" class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-emerald-600 bg-white text-slate-700 hover:text-emerald-700 text-xs font-bold transition">
+          <i data-lucide="phone-call" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span id="headerPhoneText">Support</span>
+        </a>
+
+        <!-- Cart Trigger Button -->
+        <a id="headerCartLink" href="cart.html" class="flex items-center gap-2.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-900 hover:bg-emerald-700 text-white transition shadow-sm">
+          <div class="relative">
+            <i data-lucide="shopping-basket" class="w-5 h-5"></i>
+            <span id="headerCartBadge" class="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] bg-emerald-500 text-white text-[10px] font-mono font-bold rounded-full flex items-center justify-center px-1">0</span>
+          </div>
+          <span class="hidden sm:inline text-xs font-bold font-mono" id="headerCartTotal">BDT 0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. Mobile Navigation Drawer -->
+  <div id="sideMenuBackdrop" onclick="toggleMenu()" class="fixed inset-0 bg-slate-950/60 z-50 opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xs"></div>
+  <aside id="sideMenu" class="fixed top-0 left-0 bottom-0 w-4/5 max-w-xs bg-white border-r border-slate-200 z-50 shadow-2xl transform -translate-x-full transition-transform duration-300 flex flex-col justify-between overflow-y-auto">
+    <div>
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          </div>
+          <span class="font-extrabold text-sm text-slate-900 store-name-text">Store Menu</span>
+        </div>
+        <button onclick="toggleMenu()" class="w-8 h-8 rounded-lg hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-black">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-6">
+        <div>
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Explore</h4>
+          <ul class="space-y-1 text-xs font-bold text-slate-700">
+            <li>
+              <a href="javascript:void(0)" onclick="navigateTo('home'); toggleMenu();" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 hover:text-emerald-600 transition">
+                <i data-lucide="home" class="w-4 h-4 text-slate-400"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" onclick="navigateTo('catalog', 'All Products'); toggleMenu();" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 hover:text-emerald-600 transition">
+                <i data-lucide="package" class="w-4 h-4 text-slate-400"></i>
+                <span>All Products</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" onclick="navigateTo('collections'); toggleMenu();" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 hover:text-emerald-600 transition">
+                <i data-lucide="layout-grid" class="w-4 h-4 text-slate-400"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+            <li>
+              <a id="drawerCartLink" href="cart.html" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 hover:text-emerald-600 transition">
+                <i data-lucide="shopping-cart" class="w-4 h-4 text-slate-400"></i>
+                <span>My Basket</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="border-t border-slate-100 pt-4">
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Categories</h4>
+          <div id="drawerCategories" class="space-y-1">
+            <div class="text-xs text-slate-400 p-2">Loading categories...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-slate-100 bg-slate-50">
+      <a id="drawerCallBtn" href="tel:" class="w-full bg-slate-900 hover:bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+        <i data-lucide="phone" class="w-4 h-4"></i>
+        <span id="drawerCallText">Call Store</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN APPLICATION CONTENT ==================== -->
+  <main id="appContent" class="min-h-screen pb-16">
+
+    <!-- VIEW 1: HOME VIEW -->
+    <section id="view-home" class="spa-view block">
+      
+      <!-- 1. FULL WIDTH HERO BANNER -->
+      <div class="max-w-[1700px] mx-auto px-4 sm:px-8 pt-4 sm:pt-6">
+        <div class="swiper myHeroSwiper w-full h-44 sm:h-72 md:h-96 lg:h-[440px] xl:h-[480px] rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-200 relative shadow-sm">
+          <div class="swiper-wrapper" id="bannerSliderWrapper">
+            <div class="swiper-slide skeleton-box w-full h-full"></div>
+          </div>
+          <div class="swiper-pagination !bottom-3"></div>
+        </div>
+      </div>
+
+      <!-- 2. QUICK CATEGORY BAR (Pill / Circular Icons) -->
+      <div class="max-w-[1700px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8">
+        <div class="flex items-center justify-between mb-3.5">
+          <h2 class="text-sm sm:text-base font-extrabold text-slate-900 uppercase tracking-wider">Top Categories</h2>
+          <button onclick="navigateTo('collections')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+            <span>View All</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <div class="swiper myCategorySwiper overflow-hidden pb-2">
+          <div class="swiper-wrapper" id="homeCategorySliderWrapper">
+            <div class="swiper-slide !w-24 sm:!w-32 skeleton-box h-28 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. COMBO PACKAGES & BUNDLE DEALS (Direct Sync with Admin Campaigns) -->
+      <div id="comboSectionContainer" class="max-w-[1700px] mx-auto px-4 sm:px-8 pt-8 hidden">
+        <div class="bg-gradient-to-r from-emerald-900 to-slate-900 rounded-3xl p-5 sm:p-8 text-white">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <span class="text-[10px] font-bold tracking-widest text-emerald-300 uppercase block">Save More Money</span>
+              <h2 class="text-lg sm:text-2xl font-black">Value Combos & Family Packs</h2>
+            </div>
+            <span class="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-400/30 hidden sm:inline-block">Special Discounts</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="comboGridWrapper"></div>
+        </div>
+      </div>
+
+      <!-- 4. VIDEO REELS & SHORTS -->
+      <div id="shortsContainer" class="max-w-[1700px] mx-auto px-4 sm:px-8 pt-8 hidden">
+        <div class="flex items-center justify-between mb-3.5">
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></div>
+            <h2 class="text-sm sm:text-base font-extrabold text-slate-900 uppercase tracking-wider">Video Showcase</h2>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="shortsPrev" class="w-7 h-7 rounded-full border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-900 hover:text-white transition">
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+            </button>
+            <button id="shortsNext" class="w-7 h-7 rounded-full border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-900 hover:text-white transition">
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="swiper myShortsSwiper overflow-hidden">
+          <div class="swiper-wrapper" id="shortsSliderWrapper"></div>
+        </div>
+      </div>
+
+      <!-- 5. DYNAMIC CATEGORY PRODUCT SECTIONS (Wide Screen 5-6 Columns) -->
+      <div id="dynamicSectionsContainer" class="space-y-8 sm:space-y-12 pt-8"></div>
+
+      <!-- Store Footer -->
+      <footer class="bg-white border-t border-slate-200 pt-12 pb-8 mt-16 text-slate-600">
+        <div class="max-w-[1700px] mx-auto px-4 sm:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 pb-10">
+          
+          <div class="space-y-3 md:col-span-2 max-w-md">
+            <div class="flex items-center gap-2.5 text-lg font-black text-slate-900">
+              <div class="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
+                <i data-lucide="store" class="w-4 h-4"></i>
+              </div>
+              <span class="store-name-text">Online Store</span>
+            </div>
+            <p id="footerStoreDesc" class="text-xs leading-relaxed text-slate-500">
+              Fast reliable grocery delivery and daily household essentials delivered safely to your doorstep.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-2 text-[11px] text-slate-500 font-semibold">
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">Inside Dhaka: <b class="text-slate-800" id="footerDelInside">BDT 60</b></span>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">Sub-Urban: <b class="text-slate-800" id="footerDelSub">BDT 100</b></span>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">Outside Dhaka: <b class="text-slate-800" id="footerDelOutside">BDT 130</b></span>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Quick Links</h3>
+            <ul class="space-y-2 text-xs font-semibold">
+              <li><a href="javascript:void(0)" onclick="navigateTo('home')" class="hover:text-emerald-600 transition">Home</a></li>
+              <li><a href="javascript:void(0)" onclick="navigateTo('catalog', 'All Products')" class="hover:text-emerald-600 transition">All Products</a></li>
+              <li><a href="javascript:void(0)" onclick="navigateTo('collections')" class="hover:text-emerald-600 transition">All Categories</a></li>
+              <li><a id="footerCartLink" href="cart.html" class="hover:text-emerald-600 transition">View Shopping Basket</a></li>
+            </ul>
+          </div>
+
+          <div class="space-y-2.5">
+            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Customer Service</h3>
+            <div class="flex items-center gap-2 text-xs">
+              <i data-lucide="phone" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+              <a id="footerPhone" href="tel:" class="text-slate-700 hover:text-black font-semibold">Support Number</a>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+              <span>Cash on Delivery Available</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <i data-lucide="truck" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+              <span>Steadfast Express Delivery</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-[1700px] mx-auto px-4 sm:px-8 border-t border-slate-100 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+          <div>© <span id="footerYear">2026</span> <span class="store-name-text font-bold text-slate-700">Online Store</span>. All rights reserved.</div>
+          <div>Powered by <a href="https://tiodisk.top" target="_blank" class="text-slate-800 font-bold hover:underline">tioDisk Console</a></div>
+        </div>
+      </footer>
+
+    </section>
+
+    <!-- VIEW 2: ALL COLLECTIONS PAGE -->
+    <section id="view-collections" class="spa-view hidden max-w-[1700px] mx-auto px-4 sm:px-8 py-6">
+      <div class="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
+        <button onclick="goBack()" class="w-9 h-9 rounded-xl hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900">All Collections</h1>
+          <p class="text-xs text-slate-400 font-medium">Select a category to view items</p>
+        </div>
+      </div>
+      <div id="allCollectionsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"></div>
+    </section>
+
+    <!-- VIEW 3: CATALOG VIEW -->
+    <section id="view-catalog" class="spa-view hidden max-w-[1700px] mx-auto px-4 sm:px-8 py-6">
+      <div class="flex items-center justify-between gap-3 mb-6 border-b border-slate-200 pb-4">
+        <div class="flex items-center gap-3">
+          <button onclick="goBack()" class="w-9 h-9 rounded-xl hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <h1 class="text-base sm:text-lg font-extrabold text-slate-900" id="catalogViewTitle">Products</h1>
+            <p class="text-xs text-slate-400 font-medium" id="catalogViewSubtitle">Browsing catalog</p>
+          </div>
+        </div>
+      </div>
+      <div id="catalogProductGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"></div>
+    </section>
+
+    <!-- VIEW 4: CATEGORY VIEW -->
+    <section id="view-category" class="spa-view hidden max-w-[1700px] mx-auto px-4 sm:px-8 py-6">
+      <div class="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
+        <button onclick="goBack()" class="w-9 h-9 rounded-xl hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900" id="categoryViewTitle">Category</h1>
+          <p class="text-xs text-slate-400 font-medium" id="categoryViewSubtitle">Items list</p>
+        </div>
+      </div>
+      <div id="categoryProductGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"></div>
+    </section>
+
+    <!-- VIEW 5: SEARCH PAGE -->
+    <section id="view-search" class="spa-view hidden max-w-[1700px] mx-auto px-4 sm:px-8 py-6 min-h-[80vh]">
+      <div class="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
+        <button onclick="goBack()" class="w-9 h-9 rounded-xl hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 transition shrink-0">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+
+        <div class="relative flex-1 max-w-2xl">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search groceries, staples, oil, snacks..." 
+            oninput="handleSearchInput(event)"
+            class="w-full bg-white border border-slate-200 focus:border-emerald-600 text-slate-900 rounded-xl py-2.5 pl-10 pr-9 text-xs sm:text-sm outline-none transition font-medium"
+            autocomplete="off"
+          >
+          <button id="clearSearchBtnMobile" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-black">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mb-4 px-1">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500" id="searchResultSummary">All Products</h3>
+        <span class="text-xs text-slate-500 font-mono font-bold" id="searchResultCount">0 items</span>
+      </div>
+
+      <div id="searchProductGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"></div>
+    </section>
+
+  </main>
+
+  <!-- Floating WhatsApp Contact Button -->
+  <div class="fixed bottom-5 right-5 z-40">
+    <a id="floatingWaBtn" href="#" target="_blank" class="w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition">
+      <i data-lucide="message-circle" class="w-6 h-6"></i>
+    </a>
+  </div>
+
+  <!-- ==================== APPLICATION SCRIPTS ==================== -->
+  <script>
+    // 1. URL & Multi-store params
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentShop = urlParams.get('shop') || 'lowbudget';
+
+    const CART_STORAGE_KEY = `cart_${currentShop}`;
+    const CACHE_NAME_KEY = `store_name_${currentShop}`;
+    const CACHE_LOGO_KEY = `store_logo_${currentShop}`;
+
+    // Instant Branding from Local Cache (Prevents any visual flickering)
+    const cachedName = localStorage.getItem(CACHE_NAME_KEY);
+    const cachedLogo = localStorage.getItem(CACHE_LOGO_KEY);
+
+    if (cachedName) {
+      document.querySelectorAll('.store-name-text').forEach(el => el.innerText = cachedName);
+      document.getElementById('headerBrandTitle').innerText = cachedName;
+    }
+    if (cachedLogo) {
+      applyLogoToDOM(cachedLogo);
+    }
+
+    function applyLogoToDOM(url) {
+      if (!url) return;
+      const img = document.getElementById('headerBrandLogo');
+      const fallback = document.getElementById('logoFallback');
+      if (img && fallback) {
+        img.src = url;
+        img.classList.remove('hidden');
+        fallback.classList.add('hidden');
+      }
+      const fav = document.getElementById('pageFavicon');
+      if (fav) fav.href = url;
+    }
+
+    // Set link query parameters for multi-store support
+    const cartUrlWithShop = `cart.html?shop=${encodeURIComponent(currentShop)}`;
+    document.getElementById('headerCartLink').href = cartUrlWithShop;
+    document.getElementById('drawerCartLink').href = cartUrlWithShop;
+    document.getElementById('footerCartLink').href = cartUrlWithShop;
+
+    // 2. Exact Firebase Configuration (Matched with Admin Console)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2txpRBwRAtKisXlsslm2BosSJ3rxrXQg",
+      authDomain: "tiodisk-d97c1.firebaseapp.com",
+      databaseURL: "https://tiodisk-d97c1-default-rtdb.firebaseio.com",
+      projectId: "tiodisk-d97c1",
+      storageBucket: "tiodisk-d97c1.firebasestorage.app",
+      messagingSenderId: "874244971549",
+      appId: "1:874244971549:web:7bf9532a6b6dcb1f8bbaf4",
+      measurementId: "G-3ZQWMQ2G8B"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const PATHS = {
+      settings: `stores/${currentShop}/settings`,
+      announcement: `stores/${currentShop}/announcement`,
+      banners: `stores/${currentShop}/banners`,
+      categories: `stores/${currentShop}/categories`,
+      products: `stores/${currentShop}/products`,
+      campaigns: `stores/${currentShop}/campaigns`,
+      ads: `stores/${currentShop}/ads`,
+      shorts: `stores/${currentShop}/shorts`
+    };
+
+    let storeSettings = {
+      storeName: cachedName || 'Online Store',
+      phone: '',
+      delInside: 60,
+      delSub: 100,
+      delOutside: 130
+    };
+
+    let allProducts = [];
+    let allCategories = [];
+    let allCampaigns = [];
+    let allAds = [];
+    let currentView = 'home';
+
+    let heroSwiper = null;
+    let categorySwiper = null;
+    let shortsSwiper = null;
+
+    // UI Toast
+    function triggerToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').innerText = msg;
+      toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-[-100px]', 'opacity-0');
+      }, 2000);
+    }
+
+    // Load Settings
+    db.ref(PATHS.settings).on('value', snap => {
+      const s = snap.val();
+      if (!s) return;
+
+      storeSettings = { ...storeSettings, ...s };
+
+      if (s.storeName) {
+        document.title = `${s.storeName} | Daily Grocery & Essentials`;
+        document.querySelectorAll('.store-name-text').forEach(el => el.innerText = s.storeName);
+        document.getElementById('headerBrandTitle').innerText = s.storeName;
+        localStorage.setItem(CACHE_NAME_KEY, s.storeName);
+      }
+
+      if (s.logo) {
+        applyLogoToDOM(s.logo);
+        localStorage.setItem(CACHE_LOGO_KEY, s.logo);
+      }
+
+      if (s.phone) {
+        const phoneFormatted = s.phone.trim();
+        document.getElementById('headerPhoneText').innerText = phoneFormatted;
+        document.getElementById('headerCallBtn').href = `tel:${phoneFormatted}`;
+        document.getElementById('drawerCallBtn').href = `tel:${phoneFormatted}`;
+        document.getElementById('drawerCallText').innerText = `Call: ${phoneFormatted}`;
+        document.getElementById('footerPhone').innerText = phoneFormatted;
+        document.getElementById('footerPhone').href = `tel:${phoneFormatted}`;
+
+        const cleanWa = phoneFormatted.replace(/[^0-9]/g, '');
+        const waLink = `https://wa.me/${cleanWa}?text=Hello%20${encodeURIComponent(s.storeName || 'Store')},%20I%20want%20to%20place%20an%20order`;
+        document.getElementById('floatingWaBtn').href = waLink;
+      }
+
+      if (s.delInside !== undefined) document.getElementById('footerDelInside').innerText = `BDT ${s.delInside}`;
+      if (s.delSub !== undefined) document.getElementById('footerDelSub').innerText = `BDT ${s.delSub}`;
+      if (s.delOutside !== undefined) document.getElementById('footerDelOutside').innerText = `BDT ${s.delOutside}`;
+    });
+
+    // Load Announcement (Fix: Hide completely if empty)
+    db.ref(PATHS.announcement).on('value', snap => {
+      const bar = document.getElementById('announcementBar');
+      const textEl = document.getElementById('announcementText');
+      const val = (snap.val() || '').trim();
+
+      if (val && val.length > 0) {
+        textEl.innerText = val;
+        bar.classList.remove('hidden');
+      } else {
+        bar.classList.add('hidden');
+        textEl.innerText = '';
+      }
+    });
+
+    // Load Slider Banners
+    db.ref(PATHS.banners).on('value', snap => {
+      const data = snap.val();
+      const wrapper = document.getElementById('bannerSliderWrapper');
+      wrapper.innerHTML = '';
+
+      if (!data) {
+        wrapper.innerHTML = `
+          <div class="swiper-slide w-full h-full relative bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-semibold">
+            Fresh grocers and essentials delivered to your door
+          </div>
+        `;
+      } else {
+        Object.values(data).forEach((b, idx) => {
+          const slide = document.createElement('div');
+          slide.className = 'swiper-slide w-full h-full relative overflow-hidden bg-slate-100';
+          slide.innerHTML = `
+            <img src="${b.imageUrl}" alt="Banner" class="w-full h-full object-cover" ${idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+          `;
+          wrapper.appendChild(slide);
+        });
+      }
+
+      if (heroSwiper) heroSwiper.destroy(true, true);
+      heroSwiper = new Swiper('.myHeroSwiper', {
+        loop: true,
+        speed: 450,
+        autoplay: { delay: 3500, disableOnInteraction: false },
+        pagination: { el: '.swiper-pagination', clickable: true },
+      });
+      lucide.createIcons();
+    });
+
+    // Load Categories
+    db.ref(PATHS.categories).on('value', snap => {
+      const data = snap.val();
+      const sliderWrapper = document.getElementById('homeCategorySliderWrapper');
+      const allGrid = document.getElementById('allCollectionsGrid');
+      const drawerList = document.getElementById('drawerCategories');
+
+      sliderWrapper.innerHTML = '';
+      allGrid.innerHTML = '';
+      drawerList.innerHTML = '';
+      allCategories = [];
+
+      if (!data) {
+        sliderWrapper.innerHTML = '<div class="text-xs text-slate-400 py-3">No categories found</div>';
+        return;
+      }
+
+      Object.entries(data).forEach(([key, cat]) => {
+        allCategories.push(cat);
+
+        // Circular / Grocery friendly category pill
+        const slide = document.createElement('div');
+        slide.className = "swiper-slide !w-24 sm:!w-28 flex flex-col items-center text-center cursor-pointer group select-none";
+        slide.onclick = () => navigateTo('category', cat.name);
+        slide.innerHTML = `
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-slate-200 overflow-hidden p-1.5 shadow-xs group-hover:border-emerald-500 transition">
+            <img src="${cat.imageUrl}" alt="${cat.name}" class="w-full h-full object-contain rounded-xl group-hover:scale-105 transition duration-200" loading="lazy">
+          </div>
+          <span class="text-xs font-bold text-slate-800 mt-2 truncate w-full group-hover:text-emerald-600 transition">${cat.name}</span>
+        `;
+        sliderWrapper.appendChild(slide);
+
+        // Grid in Collections
+        const gridCard = document.createElement('div');
+        gridCard.className = "bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-emerald-600 cursor-pointer text-center group transition shadow-xs";
+        gridCard.onclick = () => navigateTo('category', cat.name);
+        gridCard.innerHTML = `
+          <div class="aspect-square rounded-xl overflow-hidden bg-slate-50 mb-2">
+            <img src="${cat.imageUrl}" alt="${cat.name}" class="w-full h-full object-contain group-hover:scale-105 transition duration-200">
+          </div>
+          <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-600 truncate">${cat.name}</h3>
+        `;
+        allGrid.appendChild(gridCard);
+
+        // Drawer
+        const drawerItem = document.createElement('a');
+        drawerItem.href = "javascript:void(0)";
+        drawerItem.className = "block p-2 text-xs font-semibold text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-xl transition";
+        drawerItem.innerText = cat.name;
+        drawerItem.onclick = () => {
+          toggleMenu();
+          navigateTo('category', cat.name);
+        };
+        drawerList.appendChild(drawerItem);
+      });
+
+      if (categorySwiper) categorySwiper.destroy(true, true);
+      categorySwiper = new Swiper('.myCategorySwiper', {
+        slidesPerView: 'auto',
+        spaceBetween: 14,
+      });
+
+      buildHomeSections();
+      lucide.createIcons();
+    });
+
+    // Load Combos & Campaigns
+    db.ref(PATHS.campaigns).on('value', snap => {
+      const data = snap.val();
+      const container = document.getElementById('comboSectionContainer');
+      const grid = document.getElementById('comboGridWrapper');
+      grid.innerHTML = '';
+      allCampaigns = [];
+
+      if (!data || Object.keys(data).length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      Object.entries(data).forEach(([id, c]) => {
+        allCampaigns.push({ id, ...c });
+
+        const card = document.createElement('div');
+        card.className = "bg-white/10 backdrop-blur-md rounded-2xl border border-white/15 p-4 flex flex-col justify-between";
+
+        const itemsThumbs = (c.products || []).slice(0, 4).map(it => `
+          <div class="w-10 h-10 rounded-lg overflow-hidden bg-white/20 border border-white/20 shrink-0">
+            <img src="${it.imageUrl}" class="w-full h-full object-cover">
+          </div>
+        `).join('');
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white px-2 py-0.5 rounded-md">${c.badge || 'Value Deal'}</span>
+              ${c.isFreeDelivery ? '<span class="text-[10px] font-bold text-emerald-300">Free Delivery</span>' : ''}
+            </div>
+            <h3 class="text-sm font-bold text-white mb-2">${c.title}</h3>
+            <div class="flex items-center gap-1.5 mb-4">${itemsThumbs}</div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-white/15">
+            <div>
+              <span class="text-[10px] text-emerald-200 block uppercase font-bold">Package Price</span>
+              <span class="text-base font-black font-mono text-white">BDT ${c.comboPrice || 0}</span>
+            </div>
+            <button onclick="addComboToCart('${id}')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-xl transition shadow-md">
+              Buy Combo
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    });
+
+    function addComboToCart(comboId) {
+      const combo = allCampaigns.find(c => c.id === comboId);
+      if (!combo) return;
+
+      let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+      const firstImg = (combo.products && combo.products[0]) ? combo.products[0].imageUrl : '';
+
+      cart.push({
+        id: `combo_${combo.id}`,
+        name: combo.title,
+        price: Number(combo.comboPrice) || 0,
+        regularPrice: Number(combo.comboPrice) || 0,
+        imageUrl: firstImg,
+        isFreeDelivery: !!combo.isFreeDelivery,
+        quantity: 1,
+        isCombo: true
+      });
+
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      updateCartBadge();
+      triggerToast('Combo added to basket!');
+    }
+
+    // Load Shorts
+    db.ref(PATHS.shorts).on('value', snap => {
+      const data = snap.val();
+      const container = document.getElementById('shortsContainer');
+      const wrapper = document.getElementById('shortsSliderWrapper');
+      
+      if (!data) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      const list = Array.isArray(data) ? data : Object.values(data);
+      if (list.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      wrapper.innerHTML = '';
+
+      list.forEach((item, idx) => {
+        const videoSrc = typeof item === 'object' ? (item.url || item.videoUrl) : item;
+        if (!videoSrc) return;
+
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide !w-36 sm:!w-48 aspect-[9/16] rounded-2xl overflow-hidden bg-black relative border border-slate-200 select-none shadow-xs';
+        slide.innerHTML = `
+          <video 
+            id="vid-${idx}" 
+            playsinline 
+            muted 
+            loop 
+            preload="metadata"
+            class="w-full h-full object-cover"
+            src="${videoSrc}"
+          ></video>
+          <button onclick="toggleShortAudio(${idx}, event)" class="absolute top-2.5 right-2.5 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm z-10 transition">
+            <i data-lucide="volume-x" id="vid-icon-${idx}" class="w-3.5 h-3.5"></i>
+          </button>
+        `;
+        wrapper.appendChild(slide);
+      });
+
+      if (shortsSwiper) shortsSwiper.destroy(true, true);
+      shortsSwiper = new Swiper('.myShortsSwiper', {
+        slidesPerView: 'auto',
+        spaceBetween: 12,
+        navigation: { nextEl: '#shortsNext', prevEl: '#shortsPrev' },
+        on: {
+          init: function () { autoPlayShort(this); },
+          slideChange: function () { autoPlayShort(this); }
+        }
+      });
+      lucide.createIcons();
+    });
+
+    function autoPlayShort(swiper) {
+      document.querySelectorAll('.myShortsSwiper video').forEach(v => v.pause());
+      const active = swiper.slides[swiper.activeIndex];
+      if (active) {
+        const vid = active.querySelector('video');
+        if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+      }
+    }
+
+    function toggleShortAudio(idx, e) {
+      if (e) e.stopPropagation();
+      const vid = document.getElementById(`vid-${idx}`);
+      const icon = document.getElementById(`vid-icon-${idx}`);
+      if (!vid) return;
+
+      vid.muted = !vid.muted;
+      icon.setAttribute('data-lucide', vid.muted ? 'volume-x' : 'volume-2');
+      lucide.createIcons();
+    }
+
+    // Load Products
+    db.ref(PATHS.products).on('value', snap => {
+      const data = snap.val();
+      allProducts = [];
+      if (data) {
+        Object.entries(data).forEach(([id, item]) => allProducts.push({ id, ...item }));
+      }
+      buildHomeSections();
+    });
+
+    // Product Card Creation (Clean Grocery & Fashion Friendly)
+    function createProductCard(p) {
+      const card = document.createElement('div');
+      card.className = "flex flex-col bg-white border border-slate-200/90 rounded-2xl overflow-hidden hover:border-emerald-600 hover:shadow-sm transition-all duration-200 group";
+
+      const hasDiscount = p.discountPrice && Number(p.discountPrice) < Number(p.regularPrice);
+      const discountPercent = hasDiscount ? Math.round(((p.regularPrice - p.discountPrice) / p.regularPrice) * 100) : null;
+      
+      const currentPrice = Number(p.discountPrice || p.regularPrice) || 0;
+      const isOutOfStock = p.stock !== undefined && Number(p.stock) <= 0;
+
+      // Grocery Unit / Apparel Size Badges
+      let unitBadge = '';
+      if (p.sizes && Array.isArray(p.sizes) && p.sizes.length > 0) {
+        const firstUnit = typeof p.sizes[0] === 'object' ? p.sizes[0].size : p.sizes[0];
+        unitBadge = `<span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${firstUnit}${p.sizes.length > 1 ? ` (+${p.sizes.length - 1})` : ''}</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="relative w-full aspect-square bg-slate-50 overflow-hidden cursor-pointer flex items-center justify-center p-2" onclick="buyNowDirect('${p.id}')">
+          <img 
+            src="${p.imageUrl}" 
+            alt="${p.name}" 
+            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+            loading="lazy"
+          >
+
+          <div class="absolute top-2 left-2 flex flex-col gap-1 z-10">
+            ${discountPercent ? `<span class="bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-xs">-${discountPercent}%</span>` : ''}
+            ${p.isFreeDelivery ? `<span class="bg-emerald-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-xs">Free Del</span>` : ''}
+          </div>
+
+          ${isOutOfStock ? `
+            <div class="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center">
+              <span class="text-[11px] font-black text-rose-600 uppercase border border-rose-200 bg-rose-50 px-2 py-0.5 rounded-md">Out of Stock</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="p-3 sm:p-3.5 flex flex-col justify-between flex-1 bg-white">
+          <div>
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${p.category || 'Grocery'}</span>
+              ${unitBadge}
+            </div>
+
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 hover:text-emerald-700 cursor-pointer transition" onclick="buyNowDirect('${p.id}')">
+              ${p.name}
+            </h3>
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-slate-900 font-mono tracking-tight tabular-nums">
+                BDT ${currentPrice}
+              </div>
+              ${hasDiscount ? `<div class="text-[10px] text-slate-400 line-through font-mono">BDT ${p.regularPrice}</div>` : ''}
+            </div>
+
+            <!-- Instant Add Button -->
+            <button 
+              onclick="addToCart(${JSON.stringify(p).replace(/"/g, '&quot;')}, event)" 
+              ${isOutOfStock ? 'disabled' : ''}
+              class="h-8 sm:h-9 px-3 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}"
+            >
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add</span>
+            </button>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    // Build Home Dynamic Sections
+    function buildHomeSections() {
+      const container = document.getElementById('dynamicSectionsContainer');
+      container.innerHTML = '';
+
+      if (allProducts.length === 0) return;
+
+      // Group items by category
+      allCategories.forEach((cat, idx) => {
+        const catProducts = allProducts.filter(p => p.category === cat.name);
+        if (catProducts.length === 0) return;
+
+        const sec = document.createElement('div');
+        sec.className = "max-w-[1700px] mx-auto px-4 sm:px-8";
+        sec.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">Fresh Picks</span>
+              <h2 class="text-base sm:text-lg font-extrabold text-slate-900">${cat.name}</h2>
+            </div>
+            <button onclick="navigateTo('category', '${cat.name}')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+              <span>See All (${catProducts.length})</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- 2 Col mobile, 3 tablet, 5-6 desktop -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4" id="catGrid-${idx}"></div>
+        `;
+        container.appendChild(sec);
+
+        const grid = sec.querySelector(`#catGrid-${idx}`);
+        catProducts.slice(0, 12).forEach(p => grid.appendChild(createProductCard(p)));
+      });
+
+      lucide.createIcons();
+    }
+
+    // Cart Handlers
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+      const count = cart.reduce((acc, it) => acc + (it.quantity || 1), 0);
+      const total = cart.reduce((acc, it) => acc + ((Number(it.price) || 0) * (it.quantity || 1)), 0);
+
+      const badge = document.getElementById('headerCartBadge');
+      const totalEl = document.getElementById('headerCartTotal');
+      if (badge) badge.innerText = count;
+      if (totalEl) totalEl.innerText = `BDT ${total}`;
+    }
+
+    function addToCart(p, e) {
+      if (e) e.stopPropagation();
+      let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+
+      const defaultUnit = (p.sizes && p.sizes.length > 0) ? (typeof p.sizes[0] === 'object' ? p.sizes[0].size : p.sizes[0]) : '';
+      const defaultColor = (p.colors && p.colors.length > 0) ? p.colors[0] : '';
+
+      const existIdx = cart.findIndex(it => it.id === p.id && it.selectedSize === defaultUnit && it.selectedColor === defaultColor);
+
+      if (existIdx > -1) {
+        cart[existIdx].quantity += 1;
+      } else {
+        cart.push({
+          id: p.id,
+          name: p.name,
+          price: Number(p.discountPrice || p.regularPrice) || 0,
+          regularPrice: Number(p.regularPrice) || 0,
+          imageUrl: p.imageUrl,
+          isFreeDelivery: !!p.isFreeDelivery,
+          selectedSize: defaultUnit,
+          selectedColor: defaultColor,
+          quantity: 1
+        });
+      }
+
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      updateCartBadge();
+      triggerToast(`${p.name} added!`);
+    }
+
+    function buyNowDirect(productId) {
+      window.location.href = `checkout.html?id=${productId}&shop=${encodeURIComponent(currentShop)}`;
+    }
+
+    // View Routing
+    function navigateTo(viewName, param = null, pushState = true) {
+      currentView = viewName;
+      document.querySelectorAll('.spa-view').forEach(el => el.classList.add('hidden'));
+
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      if (pushState) {
+        window.history.pushState({ view: viewName, param }, '', `#${viewName}${param ? '=' + encodeURIComponent(param) : ''}`);
+      }
+
+      if (viewName === 'category' && param) {
+        renderCategoryView(param);
+      } else if (viewName === 'catalog') {
+        renderCatalogView(param || 'All Products');
+      } else if (viewName === 'search') {
+        const input = document.getElementById('searchInput');
+        input.value = param || '';
+        handleSearch(param || '');
+        setTimeout(() => input.focus(), 60);
+      }
+      lucide.createIcons();
+    }
+
+    function goBack() {
+      if (window.history.length > 1) window.history.back();
+      else navigateTo('home', null, false);
+    }
+
+    window.onpopstate = function (event) {
+      if (event.state && event.state.view) {
+        navigateTo(event.state.view, event.state.param, false);
+      } else {
+        navigateTo('home', null, false);
+      }
+    };
+
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      const backdrop = document.getElementById('sideMenuBackdrop');
+      const isOpen = !menu.classList.contains('-translate-x-full');
+
+      if (isOpen) {
+        menu.classList.add('-translate-x-full');
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+      } else {
+        menu.classList.remove('-translate-x-full');
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+      }
+    }
+
+    // Catalog & Category Renderers
+    function renderCatalogView(title) {
+      document.getElementById('catalogViewTitle').innerText = title;
+      document.getElementById('catalogViewSubtitle').innerText = `${allProducts.length} items available`;
+
+      const grid = document.getElementById('catalogProductGrid');
+      grid.innerHTML = '';
+
+      if (allProducts.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-16 text-center text-xs text-slate-400">No products found</div>';
+        return;
+      }
+      allProducts.forEach(p => grid.appendChild(createProductCard(p)));
+      lucide.createIcons();
+    }
+
+    function renderCategoryView(catName) {
+      document.getElementById('categoryViewTitle').innerText = catName;
+      const filtered = allProducts.filter(p => p.category === catName);
+      document.getElementById('categoryViewSubtitle').innerText = `${filtered.length} items found`;
+
+      const grid = document.getElementById('categoryProductGrid');
+      grid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-16 text-center text-xs text-slate-400">No items found in this category</div>';
+        return;
+      }
+      filtered.forEach(p => grid.appendChild(createProductCard(p)));
+      lucide.createIcons();
+    }
+
+    // Search
+    function handleSearchInput(e) {
+      const q = e.target.value;
+      const clearDesk = document.getElementById('clearSearchBtnDesktop');
+      const clearMob = document.getElementById('clearSearchBtnMobile');
+
+      if (q.trim().length > 0) {
+        if (clearDesk) clearDesk.classList.remove('hidden');
+        if (clearMob) clearMob.classList.remove('hidden');
+      } else {
+        if (clearDesk) clearDesk.classList.add('hidden');
+        if (clearMob) clearMob.classList.add('hidden');
+      }
+
+      handleSearch(q);
+    }
+
+    function clearSearch() {
+      const s1 = document.getElementById('desktopQuickSearch');
+      const s2 = document.getElementById('searchInput');
+      if (s1) s1.value = '';
+      if (s2) s2.value = '';
+
+      document.getElementById('clearSearchBtnDesktop')?.classList.add('hidden');
+      document.getElementById('clearSearchBtnMobile')?.classList.add('hidden');
+      handleSearch('');
+    }
+
+    function handleSearch(keyword) {
+      const clean = keyword.trim().toLowerCase();
+      let matched = allProducts;
+
+      if (clean !== '') {
+        matched = allProducts.filter(p => {
+          const name = (p.name || '').toLowerCase().includes(clean);
+          const cat = (p.category || '').toLowerCase().includes(clean);
+          return name || cat;
+        });
+      }
+
+      document.getElementById('searchResultSummary').innerText = clean === '' ? 'All Products' : `Search results for "${keyword}"`;
+      document.getElementById('searchResultCount').innerText = `${matched.length} items`;
+
+      const grid = document.getElementById('searchProductGrid');
+      grid.innerHTML = '';
+
+      if (matched.length === 0) {
+        grid.innerHTML = '<div class="col-span-full py-16 text-center text-xs text-slate-400">No matching items found</div>';
+        return;
+      }
+      matched.forEach(p => grid.appendChild(createProductCard(p)));
+      lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCartBadge();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
