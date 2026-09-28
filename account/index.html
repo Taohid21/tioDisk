@@ -17,7 +17,7 @@
     <meta property="og:description" content="Access your TioEarn account.">
     <meta property="og:image" content="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1790574009/oesmyecjmm95e35esejw.png">
 
-    <!-- Google Fonts (Plus Jakarta Sans & Noto Sans Bengali for crisp Bengali typography) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -68,7 +68,6 @@
             max-width: 380px;
         }
 
-        /* Top Bar with Language Selector */
         .header-bar {
             display: flex;
             align-items: center;
@@ -110,7 +109,6 @@
             color: var(--pure-white);
         }
 
-        /* Headings */
         .title-area {
             margin-bottom: 24px;
         }
@@ -122,7 +120,6 @@
             color: var(--black);
         }
 
-        /* Alerts */
         .notice-box {
             padding: 11px 14px;
             font-size: 13px;
@@ -145,7 +142,6 @@
             color: var(--success-text);
         }
 
-        /* Google Sign In */
         .btn-google {
             width: 100%;
             display: flex;
@@ -173,7 +169,6 @@
             height: 18px;
         }
 
-        /* Clean Separator */
         .separator {
             display: flex;
             align-items: center;
@@ -193,7 +188,6 @@
         .separator:not(:empty)::before { margin-right: 12px; }
         .separator:not(:empty)::after { margin-left: 12px; }
 
-        /* Form Inputs */
         .form-row {
             margin-bottom: 15px;
         }
@@ -222,17 +216,6 @@
             border-color: var(--border-focus);
         }
 
-        .form-row input::placeholder {
-            color: #94a3b8;
-        }
-
-        .form-row input:read-only {
-            background-color: var(--off-white);
-            color: #64748b;
-            cursor: not-allowed;
-        }
-
-        /* Action Buttons */
         .btn-action {
             width: 100%;
             padding: 13px;
@@ -256,7 +239,6 @@
             cursor: not-allowed;
         }
 
-        /* Mode Switch Link */
         .switch-mode {
             text-align: center;
             font-size: 13.5px;
@@ -274,10 +256,6 @@
             font-size: 13.5px;
         }
 
-        .switch-mode button:hover {
-            text-decoration: underline;
-        }
-
         .d-none {
             display: none !important;
         }
@@ -286,7 +264,6 @@
 <body>
 
     <div class="auth-container">
-        <!-- Top Navigation -->
         <div class="header-bar">
             <div class="logo-wrap">
                 <img src="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1790574009/oesmyecjmm95e35esejw.png" alt="TioEarn Logo">
@@ -297,10 +274,8 @@
             </div>
         </div>
 
-        <!-- Alert Notification -->
         <div id="noticeBox" class="notice-box"></div>
 
-        <!-- Continue with Google Button -->
         <button type="button" class="btn-google" id="googleBtn">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
             <span data-txt="google_btn">Continue with Google</span>
@@ -368,7 +343,6 @@
     </div>
 
     <script>
-        // High-Standard Bilingual Content
         const dictionary = {
             en: {
                 google_btn: "Continue with Google",
@@ -385,7 +359,6 @@
                 link_signup: "Create account",
                 has_acc: "Already have an account?",
                 link_signin: "Sign in",
-                msg_blocked: "An account is already associated with this device. Multiple accounts are not allowed.",
                 msg_login_ok: "Sign in successful. Redirecting...",
                 msg_reg_ok: "Account registered successfully. Redirecting..."
             },
@@ -404,7 +377,6 @@
                 link_signup: "নতুন অ্যাকাউন্ট",
                 has_acc: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
                 link_signin: "লগইন করুন",
-                msg_blocked: "এই ডিভাইসে ইতিমধ্যেই একটি অ্যাকাউন্ট খোলা হয়েছে। একাধিক অ্যাকাউন্ট সম্পূর্ণ নিষিদ্ধ।",
                 msg_login_ok: "সফলভাবে লগইন হয়েছে। অপেক্ষা করুন...",
                 msg_reg_ok: "অ্যাকাউন্ট তৈরি সম্পন্ন হয়েছে। অপেক্ষা করুন..."
             }
@@ -447,7 +419,7 @@
             document.getElementById('noticeBox').style.display = 'none';
         }
 
-        // Firebase Setup
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAb8YsPMOY53GxiycCL6G0MPZdgWe3nnyY",
             authDomain: "movie-92659.firebaseapp.com",
@@ -463,56 +435,23 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // Device Signature
         function getDeviceKey() {
             let key = localStorage.getItem('tio_dev_key');
             if (!key) {
-                const raw = [
-                    navigator.userAgent,
-                    screen.width + "x" + screen.height,
-                    navigator.hardwareConcurrency || 4,
-                    new Date().getTimezoneOffset()
-                ].join('|');
-
-                let hash = 0;
-                for (let i = 0; i < raw.length; i++) {
-                    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-                    hash |= 0;
-                }
-                key = "DEV_" + Math.abs(hash).toString(16);
+                key = "DEV_" + Math.random().toString(36).substring(2, 10);
                 localStorage.setItem('tio_dev_key', key);
             }
             return key;
         }
 
-        // Auto-detect referral code from URL: ?ref=CODE or ?refer=CODE
-        window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const referral = params.get('ref') || params.get('refer');
-            if (referral) {
-                const input = document.getElementById('regRefer');
-                input.value = referral.trim();
-                input.readOnly = true;
-                toggleView('register');
-            }
-        });
-
-        async function verifyAndLockDevice(uid) {
-            const devKey = getDeviceKey();
-            const devRef = database.ref('device_registry/' + devKey);
-            const snap = await devRef.once('value');
-
-            // ডিভাইসে আগের আইডি চেক
-            if (snap.exists() && snap.val() !== uid) {
-                console.warn("Device already associated with an account:", snap.val());
-            }
-            await devRef.set(uid);
-            return devKey;
-        }
-
-        // ইউজার ডাটাবেজে সঠিক প্রোপার্টি সহ সেভ করা
+        // ব্যবহারকারী ডেটাবেজে সংরক্ষণ করার নিরাপদ ফাংশন
         async function recordUser(user, name, refer) {
-            const devKey = await verifyAndLockDevice(user.uid);
+            const devKey = getDeviceKey();
+            try {
+                // ডিভাইস ট্র্যাকিং ব্যাকগ্রাউন্ডে সেভ হবে
+                database.ref('device_registry/' + devKey).set(user.uid).catch(() => {});
+            } catch (e) {}
+
             const refCode = user.uid.substring(0, 6).toUpperCase();
 
             const profileData = {
@@ -528,11 +467,12 @@
                 created_at: new Date().toISOString()
             };
 
+            // সরাসরি ইউজার টেবিলে ডাটা সেট
             await database.ref('users/' + user.uid).set(profileData);
             return profileData;
         }
 
-        // Email Login Submit (পুরানো ও নতুন উভয় ইউজারের জন্য সুরক্ষিত)
+        // Email Login Submit
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnLoginSubmit');
@@ -547,31 +487,20 @@
                     const userRef = database.ref('users/' + uid);
                     const snap = await userRef.once('value');
 
-                    if (snap.exists()) {
-                        const data = snap.val();
-                        if (data.is_blocked) {
-                            await auth.signOut();
-                            displayNotice(currentLang === 'bn' ? 'আপনার একাউন্টটি সাময়িকভাবে ব্লক করা হয়েছে।' : 'Your account is currently suspended.');
-                            btn.disabled = false;
-                            return;
-                        }
+                    if (snap.exists() && snap.val().is_blocked) {
+                        await auth.signOut();
+                        displayNotice(currentLang === 'bn' ? 'আপনার একাউন্টটি সাময়িকভাবে ব্লক করা হয়েছে।' : 'Your account is suspended.');
+                        btn.disabled = false;
+                        return;
+                    }
 
-                        // পুরানো ইউজারদের যেসব ডাটা মিসিং ছিল তা ব্যাকফিল / মেরামত করা
-                        const patch = {};
-                        if (data.balance === undefined) patch.balance = 0.00;
-                        if (!data.refer_code) patch.refer_code = uid.substring(0, 6).toUpperCase();
-                        if (data.is_blocked === undefined) patch.is_blocked = false;
-                        if (!data.device_id) patch.device_id = getDeviceKey();
-                        if (Object.keys(patch).length > 0) {
-                            await userRef.update(patch);
-                        }
-                    } else {
-                        // যদি আগে একাউন্ট অথেনটিকেশনে হয়েছিল কিন্তু ডাটাবেজে তৈরিই হয়নি, তাকে এখন রিকভার করা
+                    if (!snap.exists()) {
                         await recordUser(cred.user, cred.user.displayName || email.split('@')[0], '');
                     }
 
                     displayNotice(dictionary[currentLang].msg_login_ok, true);
-                    setTimeout(() => { window.location.href = "home.html"; }, 800);
+                    // ড্যাশবোর্ডে রিডাইরেক্ট
+                    setTimeout(() => { window.location.href = "dashboard.html"; }, 800);
                 })
                 .catch((err) => {
                     displayNotice(err.message);
@@ -595,18 +524,18 @@
                 await recordUser(cred.user, name, refer);
 
                 displayNotice(dictionary[currentLang].msg_reg_ok, true);
-                setTimeout(() => { window.location.href = "home.html"; }, 800);
+                // ড্যাশবোর্ডে রিডাইরেক্ট
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 800);
             } catch (err) {
                 displayNotice(err.message);
                 btn.disabled = false;
             }
         });
 
-        // Google Authentication (Fixed, Auto-Healing For Old Users)
+        // Google Authentication (Fixed & Reliable)
         document.getElementById('googleBtn').addEventListener('click', async function() {
             clearNotice();
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
                 const res = await auth.signInWithPopup(provider);
@@ -616,37 +545,24 @@
                 const userSnap = await userRef.once('value');
 
                 if (!userSnap.exists()) {
-                    // ১. ব্র্যান্ড নিউ ইউজার অথবা আগের মিসিং ইউজার যার ডাটাবেজ এন্ট্রিই হয়নি
+                    // নতুন গুগল ইউজার হলে অ্যাডমিন ডাটাবেজে এন্ট্রি করা হচ্ছে
                     const refer = document.getElementById('regRefer') ? document.getElementById('regRefer').value.trim() : '';
                     await recordUser(user, user.displayName, refer);
                 } else {
-                    // ২. পুরানো ইউজার: ব্যালেন্স নষ্ট না করে মিসিং ফিল্ডগুলো সিঙ্ক করা
                     const data = userSnap.val();
                     if (data.is_blocked) {
                         await auth.signOut();
                         displayNotice(currentLang === 'bn' ? 'আপনার একাউন্টটি সাময়িকভাবে ব্লক করা হয়েছে।' : 'Your account is suspended.');
                         return;
                     }
-
-                    const updates = {
-                        name: user.displayName || data.name || 'User',
-                        email: user.email || data.email || ''
-                    };
-
-                    // পুরানো ফিল্ড মেরামত
-                    if (data.balance === undefined) updates.balance = 0.00;
-                    if (!data.refer_code) updates.refer_code = user.uid.substring(0, 6).toUpperCase();
-                    if (data.is_blocked === undefined) updates.is_blocked = false;
-                    if (!data.device_id) updates.device_id = getDeviceKey();
-
-                    await userRef.update(updates);
                 }
 
                 displayNotice(dictionary[currentLang].msg_login_ok, true);
-                setTimeout(() => { window.location.href = "home.html"; }, 800);
+                // ড্যাশবোর্ডে রিডাইরেক্ট
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 800);
             } catch (err) {
                 console.error("Google Sign-In Error:", err);
-                displayNotice(err.message || (currentLang === 'bn' ? "গুগল লগইনে সমস্যা হয়েছে।" : "Google sign in error."));
+                displayNotice(err.message);
             }
         });
     </script>
