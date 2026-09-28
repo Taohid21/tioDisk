@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>tioFlight - Realtime Crash</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #151d30;
+            --surface-border: #1f2a44;
+            --accent-red: #f43f5e;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            width: 100%;
+            max-width: 480px;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+            position: relative;
+        }
+
+        /* Top Header */
+        .top-nav {
+            padding: 10px 14px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--surface-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .brand-title i {
+            color: var(--accent-red);
+        }
+
+        .balance-badge {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Multiplier History */
+        .history-bar {
+            display: flex;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #0b0f19;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--surface-border);
+        }
+        .history-bar::-webkit-scrollbar { display: none; }
+
+        .hist-chip {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--surface-color);
+            color: #94a3b8;
+        }
+        .hist-chip.blue { color: #38bdf8; }
+        .hist-chip.purple { color: #c084fc; }
+        .hist-chip.gold { color: #fbbf24; }
+
+        /* Canvas Stage */
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            min-height: 220px;
+            background: radial-gradient(circle at center, #1b273f 0%, #090d16 100%);
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .multiplier-overlay {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .multiplier-text {
+            font-size: 46px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .flight-status {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: -4px;
+        }
+
+        .status-starting { color: var(--accent-yellow); }
+        .status-flying { color: var(--accent-green); }
+        .status-crashed { color: var(--accent-red); }
+
+        .countdown-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent-yellow);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* Bet Controls Area */
+        .control-panel {
+            background: var(--surface-color);
+            padding: 14px;
+            border-top: 1px solid var(--surface-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .bet-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stepper-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid var(--surface-border);
+            background: #0f172a;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .stepper-btn:active { background: #1e293b; }
+
+        .bet-input {
+            flex: 1;
+            height: 44px;
+            background: #0b0f19;
+            border: 1.5px solid var(--surface-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 800;
+            text-align: center;
+            outline: none;
+        }
+        .bet-input:focus { border-color: var(--accent-red); }
+
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .quick-btn {
+            background: #0f172a;
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            padding: 8px 0;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+        }
+        .quick-btn:active { background: #1e293b; color: #fff; }
+
+        /* Main Big Action Button */
+        .action-btn {
+            width: 100%;
+            height: 54px;
+            border-radius: 12px;
+            border: none;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-bet {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+        }
+
+        .btn-cashout {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #000000;
+            animation: pulse-glow 1s infinite alternate;
+        }
+
+        .btn-disabled {
+            background: #334155 !important;
+            color: #64748b !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+            to { box-shadow: 0 0 22px rgba(245, 158, 11, 0.9); }
+        }
+
+        /* Real Players Bets Panel */
+        .bets-panel {
+            background: #0b0f19;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid var(--surface-border);
+        }
+
+        .bets-header {
+            padding: 8px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #172033;
+        }
+
+        .bets-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 10px;
+        }
+        .bets-list::-webkit-scrollbar { width: 3px; }
+        .bets-list::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+
+        .bet-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 4px;
+            border-bottom: 1px solid #111a2d;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bet-user {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #e2e8f0;
+        }
+
+        .bet-user i {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .bet-win-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bet-win-amt {
+            color: var(--accent-green);
+            font-weight: 800;
+        }
+
+        .exit-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <!-- Top Bar -->
+    <div class="top-nav">
+        <button class="exit-btn" onclick="window.location.href='index.html'">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="brand-title">
+            <i class="fa-solid fa-plane-up"></i>
+            <span>tioFlight</span>
+        </div>
+        <div class="balance-badge">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="userBalanceText">৳ 0.00</span>
+        </div>
+    </div>
+
+    <!-- Multiplier Chips -->
+    <div class="history-bar" id="historyBar">
+        <span class="hist-chip blue">1.32x</span>
+        <span class="hist-chip purple">2.45x</span>
+        <span class="hist-chip blue">1.10x</span>
+        <span class="hist-chip gold">12.50x</span>
+        <span class="hist-chip blue">1.84x</span>
+    </div>
+
+    <!-- Canvas Simulation Area -->
+    <div class="canvas-container" id="canvasContainer">
+        <canvas id="flightCanvas"></canvas>
+        <div class="multiplier-overlay">
+            <div class="multiplier-text" id="multiText">1.00x</div>
+            <div class="flight-status status-starting" id="flightStatus">WAITING NEXT ROUND</div>
+        </div>
+        <div class="countdown-progress" id="countdownBar"></div>
+    </div>
+
+    <!-- Bet Actions Form -->
+    <div class="control-panel">
+        <div class="bet-input-row">
+            <button class="stepper-btn" onclick="adjustStake(-10)">-</button>
+            <input type="number" class="bet-input" id="betAmountInput" value="50" min="10" step="10">
+            <button class="stepper-btn" onclick="adjustStake(10)">+</button>
+        </div>
+
+        <div class="quick-amounts">
+            <div class="quick-btn" onclick="setStake(50)">50</div>
+            <div class="quick-btn" onclick="setStake(100)">100</div>
+            <div class="quick-btn" onclick="setStake(200)">200</div>
+            <div class="quick-btn" onclick="setStake(500)">500</div>
+        </div>
+
+        <!-- Big Dynamic Button -->
+        <button class="action-btn btn-bet" id="mainActionBtn" onclick="handleActionButton()">
+            <span>BET</span>
+        </button>
+    </div>
+
+    <!-- Live Real Players Section -->
+    <div class="bets-panel">
+        <div class="bets-header">
+            <span>LIVE PLAYERS</span>
+            <span id="livePlayersCount">0 Players</span>
+        </div>
+        <div class="bets-list" id="realBetsList">
+            <!-- Dynamically populated from real Firebase bets -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAb8YsPMOY53GxiycCL6G0MPZdgWe3nnyY",
+        authDomain: "movie-92659.firebaseapp.com",
+        databaseURL: "https://movie-92659-default-rtdb.firebaseio.com",
+        projectId: "movie-92659",
+        storageBucket: "movie-92659.firebasestorage.app",
+        messagingSenderId: "1090734362509",
+        appId: "1:1090734362509:web:86be5583f6e8fcfdfa77c4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let currentUser = null;
+    let userBalance = 0;
+    let userName = 'Player';
+
+    // Game State Engine
+    const GAME_STATES = { STARTING: 'STARTING', FLYING: 'FLYING', CRASHED: 'CRASHED' };
+    let gameState = GAME_STATES.STARTING;
+    let currentMultiplier = 1.00;
+    let crashMultiplier = 1.00;
+    let roundId = Date.now();
+    let roundStartTime = null;
+
+    let hasBetThisRound = false;
+    let betAmount = 50;
+    let hasCashedOut = false;
+
+    // Canvas references
+    const canvas = document.getElementById('flightCanvas');
+    const ctx = canvas.getContext('2d');
+    let canvasWidth, canvasHeight;
+    let planeX = 0, planeY = 0;
+    let gridOffset = 0;
+
+    // Listen Auth
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            currentUser = user;
+            database.ref('users/' + user.uid).on('value', (snap) => {
+                if (snap.exists()) {
+                    const data = snap.val();
+                    userBalance = Number(data.balance || 0);
+                    userName = data.name || 'Player';
+                    document.getElementById('userBalanceText').innerText = `৳ ${userBalance.toFixed(2)}`;
+                }
+            });
+            initLiveGame();
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
+    // Resize Canvas Responsively
+    function resizeCanvas() {
+        const container = document.getElementById('canvasContainer');
+        const dpr = window.devicePixelRatio || 1;
+        canvasWidth = container.clientWidth;
+        canvasHeight = container.clientHeight;
+        canvas.width = canvasWidth * dpr;
+        canvas.height = canvasHeight * dpr;
+        ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // -------------------------------------------------------------
+    // Game Synchronization Loop
+    // -------------------------------------------------------------
+    function initLiveGame() {
+        // Master synchronizer on Firebase Realtime Database
+        database.ref('crash_game/active_round').on('value', (snap) => {
+            const data = snap.val();
+            if (!data) {
+                // Initialize if empty
+                startNewRoundAsHost();
+                return;
+            }
+
+            roundId = data.roundId;
+            gameState = data.state;
+            crashMultiplier = data.crashPoint;
+
+            if (gameState === GAME_STATES.STARTING) {
+                handleStartingState(data.remainingMs);
+            } else if (gameState === GAME_STATES.FLYING) {
+                roundStartTime = data.startTime;
+            } else if (gameState === GAME_STATES.CRASHED) {
+                handleCrashedState(data.crashPoint);
+            }
+        });
+
+        // Listen for Real Betters in this round
+        database.ref('crash_bets').on('value', (snap) => {
+            renderLiveBets(snap.val() || {});
+        });
+
+        // Start local animation loop
+        requestAnimationFrame(gameRenderLoop);
+    }
+
+    // Host generator (auto keeps games running)
+    function startNewRoundAsHost() {
+        const newRoundId = Date.now();
+        // Generate realistic crash point with 5% immediate edge
+        let rand = Math.random();
+        let targetCrash = (rand < 0.05) ? 1.00 : parseFloat((0.98 / (1 - rand)).toFixed(2));
+        if (targetCrash > 80) targetCrash = 80;
+
+        database.ref('crash_game/active_round').set({
+            roundId: newRoundId,
+            state: GAME_STATES.STARTING,
+            crashPoint: targetCrash,
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // Clear previous bets
+        database.ref('crash_bets').remove();
+
+        // 5 Seconds Countdown
+        let countdown = 5000;
+        let countdownInterval = setInterval(() => {
+            countdown -= 100;
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                // Launch
+                database.ref('crash_game/active_round').update({
+                    state: GAME_STATES.FLYING,
+                    startTime: Date.now()
+                });
+            } else {
+                database.ref('crash_game/active_round').update({
+                    remainingMs: countdown
+                });
+            }
+        }, 100);
+    }
+
+    function handleStartingState(remainingMs) {
+        document.getElementById('flightStatus').className = 'flight-status status-starting';
+        document.getElementById('flightStatus').innerText = 'STARTING IN A FEW SECONDS';
+        document.getElementById('multiText').innerText = '1.00x';
+        document.getElementById('multiText').style.color = '#ffffff';
+
+        // Progress bar
+        const pct = Math.max(0, Math.min(100, (remainingMs / 5000) * 100));
+        document.getElementById('countdownBar').style.width = pct + '%';
+
+        updateActionButton();
+    }
+
+    function handleCrashedState(crashAt) {
+        document.getElementById('flightStatus').className = 'flight-status status-crashed';
+        document.getElementById('flightStatus').innerText = 'FLEW AWAY!';
+        document.getElementById('multiText').innerText = crashAt.toFixed(2) + 'x';
+        document.getElementById('multiText').style.color = 'var(--accent-red)';
+        document.getElementById('countdownBar').style.width = '0%';
+
+        if (hasBetThisRound && !hasCashedOut) {
+            // Lost Bet
+            hasBetThisRound = false;
+        }
+
+        updateActionButton();
+    }
+
+    // -------------------------------------------------------------
+    // Main Visual Rendering Loop (Smooth Jet Physics)
+    // -------------------------------------------------------------
+    function gameRenderLoop(timestamp) {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw Motion Grid lines
+        drawBackgroundGrid();
+
+        if (gameState === GAME_STATES.FLYING) {
+            const elapsedSeconds = (Date.now() - roundStartTime) / 1000;
+            // Smooth multiplier formula: starts slow, accelerates
+            currentMultiplier = parseFloat(Math.pow(Math.E, 0.06 * elapsedSeconds).toFixed(2));
+
+            // Check if crashed
+            if (currentMultiplier >= crashMultiplier) {
+                currentMultiplier = crashMultiplier;
+                gameState = GAME_STATES.CRASHED;
+                handleCrashedState(crashMultiplier);
+                addMultiplierToHistory(crashMultiplier);
+
+                // Auto restart after 3 seconds
+                setTimeout(() => {
+                    startNewRoundAsHost();
+                    hasBetThisRound = false;
+                    hasCashedOut = false;
+                }, 3000);
+            } else {
+                document.getElementById('flightStatus').className = 'flight-status status-flying';
+                document.getElementById('flightStatus').innerText = 'FLYING...';
+                document.getElementById('multiText').innerText = currentMultiplier.toFixed(2) + 'x';
+                document.getElementById('multiText').style.color = '#ffffff';
+                updateActionButton();
+            }
+
+            // Calculate Plane Screen Position - ALWAYS STAYS IN MOBILE BOUNDS
+            const progress = Math.min(1, elapsedSeconds / 7);
+            const targetX = canvasWidth * 0.72;
+            const targetY = canvasHeight * 0.32;
+
+            planeX = 50 + (targetX - 50) * progress;
+            planeY = (canvasHeight - 50) - ((canvasHeight - 50) - targetY) * progress;
+            // Hover wiggle
+            planeY += Math.sin(timestamp / 120) * 4;
+
+            // Draw Red Neon Trail
+            drawTrajectory(planeX, planeY);
+
+            // Draw Fighter Jet
+            drawJet(planeX, planeY);
+
+        } else if (gameState === GAME_STATES.STARTING) {
+            planeX = 50;
+            planeY = canvasHeight - 55;
+            drawJet(planeX, planeY);
+        } else if (gameState === GAME_STATES.CRASHED) {
+            // Jet flies rapidly away up and right
+            planeX += 14;
+            planeY -= 8;
+            drawJet(planeX, planeY);
+        }
+
+        requestAnimationFrame(gameRenderLoop);
+    }
+
+    function drawBackgroundGrid() {
+        ctx.strokeStyle = '#152033';
+        ctx.lineWidth = 1;
+        gridOffset = (gridOffset + 1.2) % 40;
+
+        for (let x = -gridOffset; x < canvasWidth; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasHeight);
+            ctx.stroke();
+        }
+        for (let y = 0; y < canvasHeight; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvasWidth, y);
+            ctx.stroke();
+        }
+    }
+
+    function drawTrajectory(curX, curY) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(40, canvasHeight - 40);
+        ctx.quadraticCurveTo(curX * 0.5, canvasHeight - 40, curX, curY);
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = '#f43f5e';
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+
+        // Gradient fill under curve
+        ctx.lineTo(curX, canvasHeight - 40);
+        ctx.lineTo(40, canvasHeight - 40);
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.08)';
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function drawJet(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-18 * Math.PI / 180);
+
+        // Jet Body
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 18, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Jet Wing
+        ctx.fillStyle = '#b91c1c';
+        ctx.beginPath();
+        ctx.moveTo(-4, 0);
+        ctx.lineTo(-12, 14);
+        ctx.lineTo(4, 0);
+        ctx.fill();
+
+        // Jet Cockpit
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.ellipse(6, -2, 5, 2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Jet Engine Fire Trail
+        if (gameState === GAME_STATES.FLYING) {
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(-18, -2);
+            ctx.lineTo(-28 + Math.random() * -6, 0);
+            ctx.lineTo(-18, 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    // -------------------------------------------------------------
+    // Bet & Cashout Actions
+    // -------------------------------------------------------------
+    function updateActionButton() {
+        const btn = document.getElementById('mainActionBtn');
+
+        if (gameState === GAME_STATES.STARTING) {
+            if (hasBetThisRound) {
+                btn.className = 'action-btn btn-disabled';
+                btn.innerHTML = `<span>BET PLACED (৳${betAmount})</span>`;
+            } else {
+                btn.className = 'action-btn btn-bet';
+                btn.innerHTML = `<span>BET ৳${betAmount}</span>`;
+            }
+        } else if (gameState === GAME_STATES.FLYING) {
+            if (hasBetThisRound && !hasCashedOut) {
+                const potentialWin = (betAmount * currentMultiplier).toFixed(2);
+                btn.className = 'action-btn btn-cashout';
+                btn.innerHTML = `<span>CASH OUT</span><span style="font-size: 13px;">৳${potentialWin}</span>`;
+            } else if (hasCashedOut) {
+                btn.className = 'action-btn btn-disabled';
+                btn.innerHTML = `<span>CASHED OUT</span>`;
+            } else {
+                btn.className = 'action-btn btn-disabled';
+                btn.innerHTML = `<span>WAITING FOR NEXT ROUND</span>`;
+            }
+        } else if (gameState === GAME_STATES.CRASHED) {
+            btn.className = 'action-btn btn-disabled';
+            btn.innerHTML = `<span>FLEW AWAY</span>`;
+        }
+    }
+
+    function handleActionButton() {
+        if (gameState === GAME_STATES.STARTING) {
+            if (!hasBetThisRound) {
+                placeBet();
+            }
+        } else if (gameState === GAME_STATES.FLYING) {
+            if (hasBetThisRound && !hasCashedOut) {
+                cashOut();
+            }
+        }
+    }
+
+    function placeBet() {
+        const inputVal = Number(document.getElementById('betAmountInput').value);
+        if (isNaN(inputVal) || inputVal < 10) {
+            Swal.fire({ icon: 'warning', title: 'Minimum Bet', text: 'Minimum bet is ৳10', confirmButtonColor: '#f43f5e' });
+            return;
+        }
+        if (inputVal > userBalance) {
+            Swal.fire({ icon: 'error', title: 'Insufficient Balance', text: 'Please add funds to your wallet.', confirmButtonColor: '#f43f5e' });
+            return;
+        }
+
+        betAmount = inputVal;
+        const newBalance = userBalance - betAmount;
+
+        // Deduct balance from Firebase
+        database.ref('users/' + currentUser.uid).update({ balance: newBalance });
+
+        // Record Live Bet in Firebase
+        database.ref('crash_bets/' + currentUser.uid).set({
+            name: userName,
+            amount: betAmount,
+            cashedOut: false,
+            multiplier: 0
+        });
+
+        hasBetThisRound = true;
+        hasCashedOut = false;
+        updateActionButton();
+    }
+
+    function cashOut() {
+        if (!hasBetThisRound || hasCashedOut) return;
+
+        hasCashedOut = true;
+        const winMultiplier = currentMultiplier;
+        const winAmount = parseFloat((betAmount * winMultiplier).toFixed(2));
+        const finalBalance = userBalance + winAmount;
+
+        // Credit won amount to Firebase
+        database.ref('users/' + currentUser.uid).update({ balance: finalBalance });
+
+        // Update Bet status on Firebase
+        database.ref('crash_bets/' + currentUser.uid).update({
+            cashedOut: true,
+            multiplier: winMultiplier,
+            winAmount: winAmount
+        });
+
+        updateActionButton();
+
+        Swal.fire({
+            icon: 'success',
+            title: `Won ৳${winAmount}!`,
+            text: `Multiplier: ${winMultiplier.toFixed(2)}x`,
+            timer: 1600,
+            showConfirmButton: false
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Live Players Table Rendering (100% Real from Firebase)
+    // -------------------------------------------------------------
+    function renderLiveBets(betsData) {
+        const container = document.getElementById('realBetsList');
+        const keys = Object.keys(betsData);
+        document.getElementById('livePlayersCount').innerText = `${keys.length} Players`;
+
+        if (keys.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: #475569; font-size: 11px; padding: 16px;">Waiting for bets...</div>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        keys.forEach((uid) => {
+            const b = betsData[uid];
+            const div = document.createElement('div');
+            div.className = 'bet-row';
+            div.innerHTML = `
+                <div class="bet-user">
+                    <i class="fa-solid fa-user"></i>
+                    <span>${b.name || 'Player'}</span>
+                </div>
+                <div class="bet-win-info">
+                    <span style="color: #94a3b8;">৳${b.amount}</span>
+                    ${b.cashedOut 
+                        ? `<span class="bet-win-amt">৳${b.winAmount} (${b.multiplier}x)</span>`
+                        : `<span style="color: #f59e0b; font-size: 11px;">IN PLAY</span>`
+                    }
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addMultiplierToHistory(val) {
+        const historyBar = document.getElementById('historyBar');
+        const chip = document.createElement('span');
+        chip.className = 'hist-chip ' + (val >= 10 ? 'gold' : val >= 2 ? 'purple' : 'blue');
+        chip.innerText = val.toFixed(2) + 'x';
+        historyBar.insertBefore(chip, historyBar.firstChild);
+        if (historyBar.children.length > 15) {
+            historyBar.removeChild(historyBar.lastChild);
+        }
+    }
+
+    function setStake(amount) {
+        betAmount = amount;
+        document.getElementById('betAmountInput').value = amount;
+        updateActionButton();
+    }
+
+    function adjustStake(delta) {
+        let cur = Number(document.getElementById('betAmountInput').value) || 50;
+        cur = Math.max(10, cur + delta);
+        document.getElementById('betAmountInput').value = cur;
+        betAmount = cur;
+        updateActionButton();
+    }
+</script>
+</body>
+</html>
