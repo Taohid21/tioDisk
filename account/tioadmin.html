@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TioEarn - Professional Admin</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans+Bengali:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #d32f2f;
+            --primary-hover: #b71c1c;
+            --danger: #ef4444;
+            --success: #10b981;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .brand-zone {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .brand-zone img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .brand-zone h2 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .nav-links {
+            padding: 20px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .nav-tab i {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        .sidebar-bottom {
+            padding: 18px 14px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .btn-wipe-all {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-wipe-all:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .top-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .live-tag {
+            font-size: 12px;
+            font-weight: 700;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background: #15803d;
+            border-radius: 50%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-meta h4 {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .stat-meta h2 {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .bg-red { background: #fee2e2; color: var(--primary); }
+        .bg-yellow { background: #fef3c7; color: #d97706; }
+        .bg-blue { background: #e0f2fe; color: #0284c7; }
+
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px 18px;
+            color: var(--text-muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .form-grid {
+            padding: 22px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .input-item label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .input-item input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 13.5px;
+            outline: none;
+            background: #fdfdfd;
+        }
+
+        .input-item input:focus {
+            border-color: var(--text-dark);
+            background: #fff;
+        }
+
+        .btn-act {
+            padding: 7px 11px;
+            border-radius: 7px;
+            border: none;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+
+        .btn-act:hover {
+            opacity: 0.85;
+        }
+
+        .btn-edit { background: #e2e8f0; color: #0f172a; }
+        .btn-block { background: #fee2e2; color: #b91c1c; }
+        .btn-unblock { background: #dcfce7; color: #15803d; }
+        .btn-del { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+
+        .btn-post {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13.5px;
+            cursor: pointer;
+            margin-left: 22px;
+            margin-bottom: 22px;
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status-pending { background: #fef3c7; color: #b45309; }
+        .status-approved { background: #dcfce7; color: #15803d; }
+        .status-rejected { background: #fee2e2; color: #b91c1c; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand-zone">
+            <img src="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1790574009/oesmyecjmm95e35esejw.png" alt="Logo">
+            <h2>TioEarn Admin</h2>
+        </div>
+
+        <nav class="nav-links">
+            <div class="nav-tab active" onclick="navigate('tab-overview', this)">
+                <i class="fa-solid fa-chart-pie"></i> ড্যাশবোর্ড
+            </div>
+            <div class="nav-tab" onclick="navigate('tab-users', this)">
+                <i class="fa-solid fa-users"></i> ইউজার কন্ট্রোল
+            </div>
+            <div class="nav-tab" onclick="navigate('tab-withdraw', this)">
+                <i class="fa-solid fa-money-bill-transfer"></i> উইথড্র রিকোয়েস্ট
+            </div>
+            <div class="nav-tab" onclick="navigate('tab-tasks', this)">
+                <i class="fa-solid fa-list-check"></i> টাস্ক ম্যানেজমেন্ট
+            </div>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button class="btn-wipe-all" onclick="purgeEntireDatabase()">
+                <i class="fa-solid fa-triangle-exclamation"></i> সব একাউন্ট ডিলিট
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 id="pageTitle">ড্যাশবোর্ড ওভারভিউ</h1>
+            <div class="live-tag">
+                <div class="live-dot"></div> সিস্টেম সক্রিয়
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-meta">
+                    <h4>মোট রেজিস্টার্ড ইউজার</h4>
+                    <h2 id="metricUsers">0</h2>
+                </div>
+                <div class="stat-icon bg-red">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-meta">
+                    <h4>পেন্ডিং উইথড্র</h4>
+                    <h2 id="metricWithdraws">0</h2>
+                </div>
+                <div class="stat-icon bg-yellow">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-meta">
+                    <h4>চলমান টাস্ক</h4>
+                    <h2 id="metricTasks">0</h2>
+                </div>
+                <div class="stat-icon bg-blue">
+                    <i class="fa-solid fa-tasks"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. OVERVIEW -->
+        <section id="tab-overview" class="content-panel active">
+            <div class="card">
+                <div class="card-header">
+                    <h3>সর্বশেষ ৫টি উইথড্র রিকোয়েস্ট</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>নাম</th>
+                                <th>মেথড</th>
+                                <th>টাকা</th>
+                                <th>স্ট্যাটাস</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overviewRecentWithdraws"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. USERS -->
+        <section id="tab-users" class="content-panel">
+            <div class="card">
+                <div class="card-header">
+                    <h3>সকল ইউজার তালিকা</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ইউজার</th>
+                                <th>ফোন/ইমেইল</th>
+                                <th>ব্যালেন্স</th>
+                                <th>ডিভাইস কি</th>
+                                <th>অবস্থা</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. WITHDRAW -->
+        <section id="tab-withdraw" class="content-panel">
+            <div class="card">
+                <div class="card-header">
+                    <h3>সকল উইথড্র রিকোয়েস্ট</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>নাম</th>
+                                <th>ফোন নম্বর</th>
+                                <th>মেথড</th>
+                                <th>পরিমাণ</th>
+                                <th>স্ট্যাটাস</th>
+                                <th>সিদ্ধান্ত</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. TASKS -->
+        <section id="tab-tasks" class="content-panel">
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3>নতুন টাস্ক পাবলিশ করুন</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="input-item">
+                        <label>টাস্কের নাম</label>
+                        <input type="text" id="newTaskTitle" placeholder="ইউটিউব চ্যানেল সাবস্ক্রাইব">
+                    </div>
+                    <div class="input-item">
+                        <label>টার্গেট লিংক</label>
+                        <input type="url" id="newTaskLink" placeholder="https://...">
+                    </div>
+                    <div class="input-item">
+                        <label>পুরস্কারের পরিমাণ (৳)</label>
+                        <input type="number" id="newTaskReward" placeholder="5">
+                    </div>
+                </div>
+                <button class="btn-post" onclick="publishTask()">টাস্ক যুক্ত করুন</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>বর্তমান সক্রিয় টাস্কসমূহ</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>টাস্ক শিরোনাম</th>
+                                <th>রিওয়ার্ড</th>
+                                <th>লিংক</th>
+                                <th>মুছে ফেলুন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasksTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAb8YsPMOY53GxiycCL6G0MPZdgWe3nnyY",
+            authDomain: "movie-92659.firebaseapp.com",
+            databaseURL: "https://movie-92659-default-rtdb.firebaseio.com",
+            projectId: "movie-92659",
+            storageBucket: "movie-92659.firebasestorage.app",
+            messagingSenderId: "1090734362509",
+            appId: "1:1090734362509:web:86be5583f6e8fcfdfa77c4",
+            measurementId: "G-XF1TEP0DSJ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function navigate(panelId, navEl) {
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(panelId).classList.add('active');
+            navEl.classList.add('active');
+
+            const titles = {
+                'tab-overview': 'ড্যাশবোর্ড ওভারভিউ',
+                'tab-users': 'ইউজার কন্ট্রোল ও ডাটাবেজ',
+                'tab-withdraw': 'উইথড্র রিকোয়েস্ট প্রসেসিং',
+                'tab-tasks': 'টাস্ক ম্যানেজমেন্ট'
+            };
+            document.getElementById('pageTitle').innerText = titles[panelId];
+        }
+
+        database.ref('users').on('value', (snap) => {
+            const table = document.getElementById('userTableBody');
+            table.innerHTML = '';
+            document.getElementById('metricUsers').innerText = snap.numChildren() || 0;
+
+            snap.forEach((child) => {
+                const u = child.val();
+                const uid = child.key;
+                const isBlocked = u.is_blocked === true;
+
+                table.innerHTML += `
+                    <tr>
+                        <td><strong>${u.name || 'User'}</strong></td>
+                        <td>${u.email || u.phone || 'N/A'}</td>
+                        <td>৳ ${(u.balance || 0).toFixed(2)}</td>
+                        <td><small style="color:#64748b;">${u.device_id || 'N/A'}</small></td>
+                        <td>
+                            <span class="badge-status ${isBlocked ? 'status-rejected' : 'status-approved'}">
+                                ${isBlocked ? 'Blocked' : 'Active'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-act btn-edit" onclick="modifyBalance('${uid}', ${u.balance || 0})">ব্যালেন্স</button>
+                            <button class="btn-act ${isBlocked ? 'btn-unblock' : 'btn-block'}" onclick="setUserBlock('${uid}', ${isBlocked})">
+                                ${isBlocked ? 'আনব্লক' : 'ব্লক'}
+                            </button>
+                            <button class="btn-act btn-del" onclick="deleteSingleAccount('${uid}')">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        database.ref('withdraw_requests').on('value', (snap) => {
+            const fullTable = document.getElementById('withdrawTableBody');
+            const recentTable = document.getElementById('overviewRecentWithdraws');
+            fullTable.innerHTML = '';
+            recentTable.innerHTML = '';
+
+            let pendingCount = 0;
+            let counter = 0;
+
+            snap.forEach((child) => {
+                const w = child.val();
+                const key = child.key;
+                if (w.status === 'PENDING') pendingCount++;
+
+                const statusBadge = `<span class="badge-status status-${w.status.toLowerCase()}">${w.status}</span>`;
+
+                fullTable.innerHTML += `
+                    <tr>
+                        <td>${w.name}</td>
+                        <td><strong>${w.phone}</strong></td>
+                        <td>${w.method}</td>
+                        <td>৳ ${w.amount}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            ${w.status === 'PENDING' ? `
+                                <button class="btn-act btn-unblock" onclick="resolveWithdraw('${key}', true)">Approve</button>
+                                <button class="btn-act btn-block" onclick="resolveWithdraw('${key}', false, '${w.uid}', ${w.amount})">Reject</button>
+                            ` : '-'}
+                        </td>
+                    </tr>
+                `;
+
+                if (counter < 5) {
+                    recentTable.innerHTML += `
+                        <tr>
+                            <td>${w.name}</td>
+                            <td>${w.method}</td>
+                            <td>৳ ${w.amount}</td>
+                            <td>${statusBadge}</td>
+                        </tr>
+                    `;
+                    counter++;
+                }
+            });
+            document.getElementById('metricWithdraws').innerText = pendingCount;
+        });
+
+        database.ref('tasks').on('value', (snap) => {
+            const table = document.getElementById('tasksTableBody');
+            table.innerHTML = '';
+            document.getElementById('metricTasks').innerText = snap.numChildren() || 0;
+
+            snap.forEach((child) => {
+                const t = child.val();
+                table.innerHTML += `
+                    <tr>
+                        <td><strong>${t.title}</strong></td>
+                        <td>৳ ${t.reward}</td>
+                        <td><a href="${t.link}" target="_blank" style="color:#0284c7; font-weight:600;">ভিজিট লিংক</a></td>
+                        <td>
+                            <button class="btn-act btn-del" onclick="removeTask('${child.key}')">
+                                <i class="fa-solid fa-trash"></i> মুছুন
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        function publishTask() {
+            const title = document.getElementById('newTaskTitle').value.trim();
+            const link = document.getElementById('newTaskLink').value.trim();
+            const reward = Number(document.getElementById('newTaskReward').value);
+
+            if (!title || !link || !reward) {
+                Swal.fire({ icon: 'warning', title: 'সব ঘর পূরণ করুন' });
+                return;
+            }
+
+            database.ref('tasks').push({ title, link, reward, created_at: new Date().toISOString() })
+                .then(() => {
+                    Swal.fire({ icon: 'success', title: 'টাস্ক সফলভাবে তৈরি হয়েছে' });
+                    document.getElementById('newTaskTitle').value = '';
+                    document.getElementById('newTaskLink').value = '';
+                    document.getElementById('newTaskReward').value = '';
+                });
+        }
+
+        function removeTask(key) {
+            database.ref('tasks/' + key).remove();
+        }
+
+        function resolveWithdraw(key, isApprove, uid, amount) {
+            if (isApprove) {
+                database.ref('withdraw_requests/' + key).update({ status: 'APPROVED' })
+                    .then(() => Swal.fire({ icon: 'success', title: 'পেমেন্ট অনুমোদিত!' }));
+            } else {
+                database.ref('users/' + uid + '/balance').transaction((bal) => (bal || 0) + amount);
+                database.ref('withdraw_requests/' + key).update({ status: 'REJECTED' })
+                    .then(() => Swal.fire({ icon: 'info', title: 'বাতিল ও রিফান্ড সম্পন্ন' }));
+            }
+        }
+
+        function setUserBlock(uid, currentStatus) {
+            database.ref('users/' + uid).update({ is_blocked: !currentStatus })
+                .then(() => Swal.fire({ icon: 'success', title: currentStatus ? 'আনব্লক হয়েছে' : 'ব্লক করা হয়েছে' }));
+        }
+
+        function modifyBalance(uid, currentBalance) {
+            Swal.fire({
+                title: 'ব্যালেন্স সম্পাদনা',
+                input: 'number',
+                inputValue: currentBalance,
+                showCancelButton: true,
+                confirmButtonText: 'আপডেট',
+                confirmButtonColor: '#d32f2f'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    database.ref('users/' + uid).update({ balance: Number(res.value) })
+                        .then(() => Swal.fire({ icon: 'success', title: 'ব্যালেন্স আপডেট হয়েছে' }));
+                }
+            });
+        }
+
+        function deleteSingleAccount(uid) {
+            Swal.fire({
+                title: 'আপনি কি নিশ্চিত?',
+                text: 'এই ইউজারের সমস্ত ডাটা সম্পূর্ণ মুছে ফেলা হবে!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'হ্যাঁ, ডিলিট করুন'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref('users/' + uid).remove()
+                        .then(() => database.ref('completed_tasks/' + uid).remove())
+                        .then(() => {
+                            Swal.fire({ icon: 'success', title: 'ইউজার মুছে ফেলা হয়েছে' });
+                        });
+                }
+            });
+        }
+
+        function purgeEntireDatabase() {
+            Swal.fire({
+                title: 'সকল একাউন্ট ডাটাবেজ থেকে মুছে ফেলবেন?',
+                text: 'সতর্কতা: এটি করলে ডাটাবেজে থাকা সকল ইউজারের প্রোফাইল, ডিভাইস ফিঙ্গারপ্রিন্ট রেজিস্ট্রি ও সম্পন্ন টাস্ক ডাটা স্থায়ীভাবে ডিলিট হয়ে যাবে!',
+                icon: 'error',
+                input: 'text',
+                inputPlaceholder: 'DELETE লিখে নিশ্চিত করুন',
+                showCancelButton: true,
+                confirmButtonColor: '#d32f2f',
+                cancelButtonColor: '#0f172a',
+                confirmButtonText: 'সব ডিলিট করুন'
+            }).then((result) => {
+                if (result.isConfirmed && result.value === 'DELETE') {
+                    Promise.all([
+                        database.ref('users').remove(),
+                        database.ref('device_registry').remove(),
+                        database.ref('completed_tasks').remove()
+                    ]).then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'সম্পূর্ণ ডাটাবেজ রিসেট সফল!',
+                            text: 'সকল একাউন্ট সফলভাবে মুছে ফেলা হয়েছে।'
+                        });
+                    });
+                } else if (result.isConfirmed) {
+                    Swal.fire({ icon: 'warning', title: 'সঠিকভাবে DELETE লিখেননি' });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
