@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TioEarn</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="title" content="TioEarn - Account">
+    <meta name="description" content="Sign in or register to TioEarn.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tioearn.tiodisk.top/account/">
+    <meta property="og:title" content="TioEarn">
+    <meta property="og:description" content="Access your TioEarn account.">
+    <meta property="og:image" content="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1790574009/oesmyecjmm95e35esejw.png">
+
+    <!-- Google Fonts (Plus Jakarta Sans & Noto Sans Bengali for crisp Bengali typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --pure-white: #ffffff;
+            --off-white: #f8fafc;
+            --black: #0f172a;
+            --muted-black: #475569;
+            --border: #e2e8f0;
+            --border-focus: #0f172a;
+            --crimson-red: #dc2626;
+            --crimson-red-hover: #b91c1c;
+            --error-bg: #fef2f2;
+            --error-border: #fecaca;
+            --success-bg: #f0fdf4;
+            --success-text: #15803d;
+            --font-family: 'Plus Jakarta Sans', 'Noto Sans Bengali', -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--pure-white);
+            color: var(--black);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        /* Top Bar with Language Selector */
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .logo-wrap img {
+            height: 48px;
+            width: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 4px;
+            background-color: var(--off-white);
+            border: 1px solid var(--border);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .lang-btn {
+            border: none;
+            background: transparent;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--muted-black);
+            transition: all 0.15s ease;
+        }
+
+        .lang-btn.active {
+            background-color: var(--black);
+            color: var(--pure-white);
+        }
+
+        /* Headings */
+        .title-area {
+            margin-bottom: 24px;
+        }
+
+        .title-area h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--black);
+        }
+
+        /* Alerts */
+        .notice-box {
+            padding: 11px 14px;
+            font-size: 13px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            display: none;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .notice-error {
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--crimson-red);
+        }
+
+        .notice-success {
+            background-color: var(--success-bg);
+            border: 1px solid #bbf7d0;
+            color: var(--success-text);
+        }
+
+        /* Google Sign In */
+        .btn-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background-color: var(--pure-white);
+            border: 1.5px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--black);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .btn-google:hover {
+            border-color: #cbd5e1;
+            background-color: var(--off-white);
+        }
+
+        .btn-google img {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Clean Separator */
+        .separator {
+            display: flex;
+            align-items: center;
+            margin: 22px 0;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .separator::before,
+        .separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .separator:not(:empty)::before { margin-right: 12px; }
+        .separator:not(:empty)::after { margin-left: 12px; }
+
+        /* Form Inputs */
+        .form-row {
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 6px;
+        }
+
+        .form-row input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 14px;
+            background-color: var(--pure-white);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--black);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-row input:focus {
+            border-color: var(--border-focus);
+        }
+
+        .form-row input::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-row input:read-only {
+            background-color: var(--off-white);
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            width: 100%;
+            padding: 13px;
+            background-color: var(--crimson-red);
+            color: var(--pure-white);
+            border: none;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: background-color 0.15s ease;
+        }
+
+        .btn-action:hover {
+            background-color: var(--crimson-red-hover);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Mode Switch Link */
+        .switch-mode {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--muted-black);
+            margin-top: 24px;
+        }
+
+        .switch-mode button {
+            background: none;
+            border: none;
+            color: var(--crimson-red);
+            font-weight: 700;
+            cursor: pointer;
+            padding-left: 4px;
+            font-size: 13.5px;
+        }
+
+        .switch-mode button:hover {
+            text-decoration: underline;
+        }
+
+        .d-none {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Top Navigation -->
+        <div class="header-bar">
+            <div class="logo-wrap">
+                <img src="https://res.cloudinary.com/dwgvvzbvn/image/upload/v1790574009/oesmyecjmm95e35esejw.png" alt="TioEarn Logo">
+            </div>
+            <div class="lang-switch">
+                <button type="button" class="lang-btn active" id="btnEn" onclick="switchLanguage('en')">ENG</button>
+                <button type="button" class="lang-btn" id="btnBn" onclick="switchLanguage('bn')">বাংলা</button>
+            </div>
+        </div>
+
+        <!-- Alert Notification -->
+        <div id="noticeBox" class="notice-box"></div>
+
+        <!-- Continue with Google Button -->
+        <button type="button" class="btn-google" id="googleBtn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            <span data-txt="google_btn">Continue with Google</span>
+        </button>
+
+        <div class="separator" data-txt="or_txt">OR</div>
+
+        <!-- 1. LOGIN FORM -->
+        <form id="loginForm">
+            <div class="title-area">
+                <h1 data-txt="login_title">Sign in</h1>
+            </div>
+
+            <div class="form-row">
+                <label data-txt="lbl_email">Email</label>
+                <input type="email" id="loginEmail" placeholder="name@domain.com" required>
+            </div>
+
+            <div class="form-row">
+                <label data-txt="lbl_password">Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-action" id="btnLoginSubmit" data-txt="btn_signin">Sign in</button>
+
+            <div class="switch-mode">
+                <span data-txt="no_acc">Don't have an account?</span>
+                <button type="button" onclick="toggleView('register')" data-txt="link_signup">Create account</button>
+            </div>
+        </form>
+
+        <!-- 2. REGISTER FORM -->
+        <form id="registerForm" class="d-none">
+            <div class="title-area">
+                <h1 data-txt="reg_title">Create account</h1>
+            </div>
+
+            <div class="form-row">
+                <label data-txt="lbl_name">Full Name</label>
+                <input type="text" id="regName" placeholder="Your Name" required>
+            </div>
+
+            <div class="form-row">
+                <label data-txt="lbl_email">Email</label>
+                <input type="email" id="regEmail" placeholder="name@domain.com" required>
+            </div>
+
+            <div class="form-row">
+                <label data-txt="lbl_password">Password</label>
+                <input type="password" id="regPassword" placeholder="Min. 6 characters" required>
+            </div>
+
+            <div class="form-row">
+                <label data-txt="lbl_refer">Referral Code</label>
+                <input type="text" id="regRefer" placeholder="Optional">
+            </div>
+
+            <button type="submit" class="btn-action" id="btnRegSubmit" data-txt="btn_signup">Create account</button>
+
+            <div class="switch-mode">
+                <span data-txt="has_acc">Already have an account?</span>
+                <button type="button" onclick="toggleView('login')" data-txt="link_signin">Sign in</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // High-Standard Bilingual Content
+        const dictionary = {
+            en: {
+                google_btn: "Continue with Google",
+                or_txt: "OR",
+                login_title: "Sign in",
+                reg_title: "Create account",
+                lbl_name: "Full Name",
+                lbl_email: "Email address",
+                lbl_password: "Password",
+                lbl_refer: "Referral code",
+                btn_signin: "Sign in",
+                btn_signup: "Create account",
+                no_acc: "Don't have an account?",
+                link_signup: "Create account",
+                has_acc: "Already have an account?",
+                link_signin: "Sign in",
+                msg_blocked: "An account is already associated with this device. Multiple accounts are not allowed.",
+                msg_login_ok: "Sign in successful. Redirecting...",
+                msg_reg_ok: "Account registered successfully. Redirecting..."
+            },
+            bn: {
+                google_btn: "গুগল দিয়ে প্রবেশ করুন",
+                or_txt: "অথবা",
+                login_title: "লগইন করুন",
+                reg_title: "নতুন অ্যাকাউন্ট খুলুন",
+                lbl_name: "আপনার পুরো নাম",
+                lbl_email: "ইমেইল ঠিকানা",
+                lbl_password: "পাসওয়ার্ড",
+                lbl_refer: "রেফার কোড",
+                btn_signin: "লগইন",
+                btn_signup: "অ্যাকাউন্ট তৈরি করুন",
+                no_acc: "অ্যাকাউন্ট নেই?",
+                link_signup: "নতুন অ্যাকাউন্ট",
+                has_acc: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+                link_signin: "লগইন করুন",
+                msg_blocked: "এই ডিভাইসে ইতিমধ্যেই একটি অ্যাকাউন্ট খোলা হয়েছে। একাধিক অ্যাকাউন্ট সম্পূর্ণ নিষিদ্ধ।",
+                msg_login_ok: "সফলভাবে লগইন হয়েছে। অপেক্ষা করুন...",
+                msg_reg_ok: "অ্যাকাউন্ট তৈরি সম্পন্ন হয়েছে। অপেক্ষা করুন..."
+            }
+        };
+
+        let currentLang = 'en';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+            document.getElementById('btnBn').classList.toggle('active', lang === 'bn');
+
+            document.querySelectorAll('[data-txt]').forEach(el => {
+                const key = el.getAttribute('data-txt');
+                if (dictionary[lang][key]) {
+                    el.textContent = dictionary[lang][key];
+                }
+            });
+        }
+
+        function toggleView(mode) {
+            clearNotice();
+            if (mode === 'register') {
+                document.getElementById('loginForm').classList.add('d-none');
+                document.getElementById('registerForm').classList.remove('d-none');
+            } else {
+                document.getElementById('registerForm').classList.add('d-none');
+                document.getElementById('loginForm').classList.remove('d-none');
+            }
+        }
+
+        function displayNotice(text, isSuccess = false) {
+            const box = document.getElementById('noticeBox');
+            box.style.display = 'block';
+            box.innerText = text;
+            box.className = isSuccess ? 'notice-box notice-success' : 'notice-box notice-error';
+        }
+
+        function clearNotice() {
+            document.getElementById('noticeBox').style.display = 'none';
+        }
+
+        // Firebase Setup
+        const firebaseConfig = {
+            apiKey: "AIzaSyAb8YsPMOY53GxiycCL6G0MPZdgWe3nnyY",
+            authDomain: "movie-92659.firebaseapp.com",
+            databaseURL: "https://movie-92659-default-rtdb.firebaseio.com",
+            projectId: "movie-92659",
+            storageBucket: "movie-92659.firebasestorage.app",
+            messagingSenderId: "1090734362509",
+            appId: "1:1090734362509:web:86be5583f6e8fcfdfa77c4",
+            measurementId: "G-XF1TEP0DSJ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Device Signature
+        function getDeviceKey() {
+            let key = localStorage.getItem('tio_dev_key');
+            if (!key) {
+                const raw = [
+                    navigator.userAgent,
+                    screen.width + "x" + screen.height,
+                    navigator.hardwareConcurrency || 4,
+                    new Date().getTimezoneOffset()
+                ].join('|');
+
+                let hash = 0;
+                for (let i = 0; i < raw.length; i++) {
+                    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+                    hash |= 0;
+                }
+                key = "DEV_" + Math.abs(hash).toString(16);
+                localStorage.setItem('tio_dev_key', key);
+            }
+            return key;
+        }
+
+        // Auto-detect referral code from URL: ?ref=CODE or ?refer=CODE
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const referral = params.get('ref') || params.get('refer');
+            if (referral) {
+                const input = document.getElementById('regRefer');
+                input.value = referral.trim();
+                input.readOnly = true;
+                toggleView('register');
+            }
+        });
+
+        async function verifyAndLockDevice(uid) {
+            const devKey = getDeviceKey();
+            const devRef = database.ref('device_registry/' + devKey);
+            const snap = await devRef.once('value');
+
+            if (snap.exists() && snap.val() !== uid) {
+                throw new Error(dictionary[currentLang].msg_blocked);
+            }
+            await devRef.set(uid);
+            return devKey;
+        }
+
+        async function recordUser(user, name, refer) {
+            const devKey = await verifyAndLockDevice(user.uid);
+            return database.ref('users/' + user.uid).set({
+                uid: user.uid,
+                name: name || user.displayName || 'User',
+                email: user.email,
+                referred_by: refer || '',
+                balance: 0.00,
+                device_id: devKey,
+                created_at: new Date().toISOString()
+            });
+        }
+
+        // Email Login Submit
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnLoginSubmit');
+            btn.disabled = true;
+
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => {
+                    displayNotice(dictionary[currentLang].msg_login_ok, true);
+                    setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+                })
+                .catch((err) => {
+                    displayNotice(err.message);
+                    btn.disabled = false;
+                });
+        });
+
+        // Email Registration Submit
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnRegSubmit');
+            btn.disabled = true;
+
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPassword').value;
+            const refer = document.getElementById('regRefer').value;
+
+            try {
+                // Pre-check if device is already registered to avoid creating ghost users
+                const devKey = getDeviceKey();
+                const devSnap = await database.ref('device_registry/' + devKey).once('value');
+                if (devSnap.exists()) {
+                    throw new Error(dictionary[currentLang].msg_blocked);
+                }
+
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await recordUser(cred.user, name, refer);
+
+                displayNotice(dictionary[currentLang].msg_reg_ok, true);
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+            } catch (err) {
+                displayNotice(err.message);
+                btn.disabled = false;
+            }
+        });
+
+        // Google Authentication
+        document.getElementById('googleBtn').addEventListener('click', async function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const res = await auth.signInWithPopup(provider);
+                const user = res.user;
+
+                const userSnap = await database.ref('users/' + user.uid).once('value');
+                if (!userSnap.exists()) {
+                    const refer = document.getElementById('regRefer').value;
+                    await recordUser(user, user.displayName, refer);
+                }
+
+                displayNotice(dictionary[currentLang].msg_login_ok, true);
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+            } catch (err) {
+                displayNotice(err.message);
+            }
+        });
+    </script>
+</body>
+</html>
