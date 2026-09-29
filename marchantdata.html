@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tioData Platform</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+
+  <!-- Google Font: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              red: '#dc2626',
+              green: '#16a34a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#f8fafc] text-slate-800 antialiased selection:bg-red-500 selection:text-white">
+
+  <!-- Floating Toast Notification -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ==================== CLEAN TOPBAR ==================== -->
+  <header class="h-16 bg-white border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-8 flex items-center justify-between shadow-xs">
+    <!-- Left: ONLY LOGO -->
+    <div class="flex items-center">
+      <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Logo" class="h-10 w-10 rounded-xl object-cover ring-1 ring-slate-200 shadow-sm cursor-pointer" onclick="switchMasterTab('overview')">
+    </div>
+
+    <!-- Right: Search & Refresh (No text) -->
+    <div class="flex items-center gap-2">
+      <div class="relative w-48 sm:w-80">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+        <input type="text" id="globalSearchInput" oninput="handleGlobalSearch(this.value)" placeholder="Search store, customer, phone..." class="w-full bg-slate-50 border border-slate-200 focus:border-red-500 focus:bg-white rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition font-medium">
+      </div>
+      <button onclick="refreshData(true)" class="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 rounded-xl transition">
+        <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== SUB-HEADER NAV TABS ==================== -->
+  <div class="bg-white border-b border-slate-200 px-4 sm:px-8 py-2 sticky top-16 z-30 flex items-center justify-between">
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <button onclick="switchMasterTab('overview')" id="tab-overview" class="master-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-red-600 text-white shadow-sm transition">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+        <span>Overview</span>
+      </button>
+
+      <button onclick="switchMasterTab('orders')" id="tab-orders" class="master-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+        <i data-lucide="shopping-bag" class="w-4 h-4 text-red-600"></i>
+        <span>Orders Ledger</span>
+        <span id="badgeOrderCount" class="font-mono text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
+
+      <button onclick="switchMasterTab('stores')" id="tab-stores" class="master-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+        <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
+        <span>Stores</span>
+        <span id="badgeStoreCount" class="font-mono text-[11px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
+
+      <button onclick="switchMasterTab('merchants')" id="tab-merchants" class="master-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+        <i data-lucide="users" class="w-4 h-4 text-slate-600"></i>
+        <span>Merchants</span>
+        <span id="badgeMerchantCount" class="font-mono text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
+    </div>
+
+    <div class="hidden sm:flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="text-xs font-bold text-emerald-600 uppercase font-mono">Live</span>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN CONTENT (100% FULL SCREEN) ==================== -->
+  <main class="flex-1 w-full p-4 sm:p-8 space-y-6">
+
+    <!-- ==================== TAB 1: OVERVIEW ==================== -->
+    <section id="view-overview" class="view-panel space-y-6">
+      
+      <!-- Key Counters: Red & Green Highlights -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Revenue (Green) -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs border-l-4 border-l-emerald-600">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Total Sales (GMV)</span>
+            <i data-lucide="banknote" class="w-5 h-5 text-emerald-600"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold font-mono text-emerald-700" id="statGMV">৳ 0</div>
+          <p class="text-[11px] text-slate-400 mt-1 font-medium">All stores combined</p>
+        </div>
+
+        <!-- Total Orders (Red) -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs border-l-4 border-l-red-600">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Total Orders</span>
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-red-600"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900" id="statTotalOrders">0</div>
+          <p class="text-[11px] text-red-600 font-bold mt-1" id="statPendingOrders">0 Pending Orders</p>
+        </div>
+
+        <!-- Active Stores (Green) -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs border-l-4 border-l-emerald-600">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Active Stores</span>
+            <i data-lucide="store" class="w-5 h-5 text-emerald-600"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900" id="statTotalStores">0</div>
+          <p class="text-[11px] text-emerald-600 font-bold mt-1">Live Platforms</p>
+        </div>
+
+        <!-- Total Products -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-xs border-l-4 border-l-slate-400">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-bold uppercase tracking-wider">Total Products</span>
+            <i data-lucide="package" class="w-5 h-5 text-slate-600"></i>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900" id="statTotalProducts">0</div>
+          <p class="text-[11px] text-slate-500 mt-1 font-medium" id="statTotalVisitors">Visitors: 0</p>
+        </div>
+
+      </div>
+
+      <!-- Quick Dual Preview -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Stores Box -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
+              <span>Operational Stores</span>
+            </h3>
+            <button onclick="switchMasterTab('stores')" class="text-xs font-bold text-red-600 hover:underline">View All</button>
+          </div>
+          <div id="quickStoresList" class="space-y-2"></div>
+        </div>
+
+        <!-- Recent Orders Box -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="shopping-bag" class="w-4 h-4 text-red-600"></i>
+              <span>Recent Orders</span>
+            </h3>
+            <button onclick="switchMasterTab('orders')" class="text-xs font-bold text-red-600 hover:underline">View Ledger</button>
+          </div>
+          <div id="quickOrdersList" class="space-y-2"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: ORDERS LEDGER (FULL WIDTH TABLE) ==================== -->
+    <section id="view-orders" class="view-panel hidden space-y-4">
+      
+      <!-- Top Filters -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <button onclick="setGlobalOrderFilter('all')" id="orderTab-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-red-600 text-white transition">All Orders</button>
+          <button onclick="setGlobalOrderFilter('Pending')" id="orderTab-Pending" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Pending</button>
+          <button onclick="setGlobalOrderFilter('Confirmed')" id="orderTab-Confirmed" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Confirmed</button>
+          <button onclick="setGlobalOrderFilter('Dispatched')" id="orderTab-Dispatched" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Dispatched</button>
+          <button onclick="setGlobalOrderFilter('Delivered')" id="orderTab-Delivered" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Delivered</button>
+        </div>
+
+        <span class="text-xs font-bold font-mono text-slate-500 self-end sm:self-auto" id="filteredOrdersCount">0 Orders</span>
+      </div>
+
+      <!-- Wide PC Table -->
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+        <div class="overflow-x-auto custom-scroll">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
+                <th class="p-4 pl-6">Order ID</th>
+                <th class="p-4">Store</th>
+                <th class="p-4">Customer</th>
+                <th class="p-4">Phone Number</th>
+                <th class="p-4">Delivery Location</th>
+                <th class="p-4">Amount & COD</th>
+                <th class="p-4">Status</th>
+                <th class="p-4 pr-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="platformOrdersTableBody" class="divide-y divide-slate-100 font-medium">
+              <tr>
+                <td colspan="8" class="py-12 text-center text-slate-400">Loading orders...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: ACTIVE STORES ==================== -->
+    <section id="view-stores" class="view-panel hidden space-y-4">
+      <div id="storesFullGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- ==================== TAB 4: MERCHANTS ==================== -->
+    <section id="view-merchants" class="view-panel hidden space-y-4">
+      <div id="merchantsFullList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    </section>
+
+  </main>
+
+  <!-- ==================== STORE INSPECTION MODAL ==================== -->
+  <div id="deepStoreModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-6">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img id="inspectModalLogo" src="" class="w-10 h-10 rounded-xl object-cover border border-slate-300 bg-white">
+          <div>
+            <h3 id="inspectModalTitle" class="text-sm font-bold text-slate-900">Store Name</h3>
+            <span id="inspectModalSlugBadge" class="text-[11px] font-mono text-emerald-600 font-bold">domain.tiodisk.top</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a id="inspectModalLiveLink" href="#" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            <span>Visit Store</span>
+          </a>
+          <button onclick="closeDeepStoreModal()" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="flex items-center gap-2 px-5 py-2.5 bg-white border-b border-slate-200 text-xs font-bold">
+        <button onclick="switchInspectTab('products')" id="inspectTabBtn-products" class="px-3.5 py-1.5 rounded-lg bg-red-600 text-white">Products</button>
+        <button onclick="switchInspectTab('orders')" id="inspectTabBtn-orders" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">Orders</button>
+        <button onclick="switchInspectTab('settings')" id="inspectTabBtn-settings" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">Settings</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto custom-scroll flex-1 space-y-4 bg-slate-50">
+        <!-- Products -->
+        <div id="inspectPanel-products">
+          <div id="inspectProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+
+        <!-- Orders -->
+        <div id="inspectPanel-orders" class="hidden space-y-2">
+          <div id="inspectOrdersList" class="space-y-2"></div>
+        </div>
+
+        <!-- Settings -->
+        <div id="inspectPanel-settings" class="hidden">
+          <div id="inspectSettingsBody" class="space-y-3 text-xs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPT LOGIC ==================== -->
+  <script>
+    const LOGO_PLACEHOLDER = "https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2txpRBwRAtKisXlsslm2BosSJ3rxrXQg",
+      authDomain: "tiodisk-d97c1.firebaseapp.com",
+      databaseURL: "https://tiodisk-d97c1-default-rtdb.firebaseio.com",
+      projectId: "tiodisk-d97c1",
+      storageBucket: "tiodisk-d97c1.firebasestorage.app",
+      messagingSenderId: "874244971549",
+      appId: "1:874244971549:web:7bf9532a6b6dcb1f8bbaf4"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let masterStores = {};
+    let masterMerchants = {};
+    let allAggregatedOrders = [];
+    let currentGlobalOrderFilter = 'all';
+
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs font-bold shadow-xl flex items-center gap-2 bg-white ${
+        isError ? 'border-red-500 text-red-600' : 'border-emerald-500 text-emerald-700'
+      }`;
+      toast.innerHTML = `<i data-lucide="${isError ? 'alert-circle' : 'check'}" class="w-4 h-4"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 2500);
+    }
+
+    function copyToClipboard(text, label = 'Copied') {
+      navigator.clipboard.writeText(text);
+      showToast(`${label}: ${text}`);
+    }
+
+    function switchMasterTab(tabId) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`view-${tabId}`);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.master-tab').forEach(b => {
+        b.className = 'master-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition';
+      });
+
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = 'master-tab flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-red-600 text-white shadow-sm transition';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    // ==================== REALTIME DATABASE ====================
+    function initDataListeners() {
+      db.ref('stores').on('value', snap => {
+        masterStores = snap.val() || {};
+        recalcAndRender();
+      });
+
+      db.ref('tiodisk_merchants').on('value', snap => {
+        masterMerchants = snap.val() || {};
+        recalcAndRender();
+      });
+    }
+
+    function recalcAndRender() {
+      const storeSlugs = Object.keys(masterStores);
+      const merchantIds = Object.keys(masterMerchants);
+
+      let gmv = 0;
+      let totalOrders = 0;
+      let pendingOrders = 0;
+      let totalProducts = 0;
+      let totalVisitors = 0;
+      allAggregatedOrders = [];
+
+      storeSlugs.forEach(slug => {
+        const store = masterStores[slug];
+        if (!store) return;
+
+        const settings = store.settings || {};
+        totalVisitors += Number(settings.visitorsCount || 0);
+
+        const prods = store.products || {};
+        totalProducts += Object.keys(prods).length;
+
+        const orders = store.orders || {};
+        Object.entries(orders).forEach(([orderId, order]) => {
+          totalOrders++;
+          const amount = Number(order.totalAmount || 0);
+          gmv += amount;
+
+          if (order.status === 'Pending' || !order.status) {
+            pendingOrders++;
+          }
+
+          allAggregatedOrders.push({
+            orderId,
+            storeSlug: slug,
+            storeName: settings.storeName || slug,
+            ...order
+          });
+        });
+      });
+
+      allAggregatedOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      // Metrics updates
+      document.getElementById('statGMV').innerText = `৳ ${gmv.toLocaleString()}`;
+      document.getElementById('statTotalOrders').innerText = totalOrders;
+      document.getElementById('statPendingOrders').innerText = `${pendingOrders} Pending Orders`;
+      document.getElementById('statTotalStores').innerText = storeSlugs.length;
+      document.getElementById('statTotalProducts').innerText = totalProducts;
+      document.getElementById('statTotalVisitors').innerText = `Visitors: ${totalVisitors.toLocaleString()}`;
+
+      // Badges
+      document.getElementById('badgeOrderCount').innerText = totalOrders;
+      document.getElementById('badgeStoreCount').innerText = storeSlugs.length;
+      document.getElementById('badgeMerchantCount').innerText = merchantIds.length;
+
+      renderQuickStores();
+      renderQuickOrders();
+      renderPlatformOrdersTable();
+      renderStoresGrid();
+      renderMerchantsList();
+
+      lucide.createIcons();
+    }
+
+    // ==================== RENDERING ====================
+    function renderQuickStores() {
+      const container = document.getElementById('quickStoresList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const slugs = Object.keys(masterStores).slice(0, 4);
+      if (!slugs.length) {
+        container.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">No stores registered yet.</p>';
+        return;
+      }
+
+      slugs.forEach(slug => {
+        const s = masterStores[slug].settings || {};
+        const prodsCount = Object.keys(masterStores[slug].products || {}).length;
+        const ordersCount = Object.keys(masterStores[slug].orders || {}).length;
+
+        const row = document.createElement('div');
+        row.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 flex items-center justify-between gap-3 transition cursor-pointer";
+        row.onclick = () => openDeepStoreModal(slug);
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <img src="${s.logo || LOGO_PLACEHOLDER}" class="w-8 h-8 rounded-lg object-cover border border-slate-200 bg-white shrink-0">
+            <div class="min-w-0">
+              <span class="text-xs font-bold text-slate-900 truncate block">${s.storeName || slug}</span>
+              <span class="text-[10px] text-emerald-600 font-mono truncate block">${slug}.tiodisk.top</span>
+            </div>
+          </div>
+          <div class="text-right text-[11px] font-mono text-slate-500 shrink-0">
+            <span class="text-red-600 font-bold">${ordersCount} orders</span> • ${prodsCount} items
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderQuickOrders() {
+      const container = document.getElementById('quickOrdersList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const recent = allAggregatedOrders.slice(0, 4);
+      if (!recent.length) {
+        container.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">No orders recorded yet.</p>';
+        return;
+      }
+
+      recent.forEach(o => {
+        const row = document.createElement('div');
+        row.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3";
+        row.innerHTML = `
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-900 truncate">${o.customerName || 'Customer'}</span>
+              <span class="text-[10px] text-emerald-600 font-semibold">(${o.storeName})</span>
+            </div>
+            <span class="text-[11px] font-mono text-slate-500">${o.phone || ''}</span>
+          </div>
+          <div class="text-right font-mono text-xs shrink-0">
+            <span class="font-bold text-emerald-700 block">৳${o.totalAmount || 0}</span>
+            <span class="text-[10px] font-bold ${o.status === 'Delivered' ? 'text-emerald-600' : 'text-red-600'}">${o.status || 'Pending'}</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderPlatformOrdersTable(filterText = '') {
+      const tbody = document.getElementById('platformOrdersTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const filtered = allAggregatedOrders.filter(o => {
+        if (currentGlobalOrderFilter !== 'all' && (o.status || 'Pending') !== currentGlobalOrderFilter) {
+          return false;
+        }
+        if (filterText) {
+          const matchStore = o.storeName.toLowerCase().includes(filterText);
+          const matchCust = (o.customerName || '').toLowerCase().includes(filterText);
+          const matchPhone = (o.phone || '').includes(filterText);
+          const matchId = o.orderId.toLowerCase().includes(filterText);
+          return matchStore || matchCust || matchPhone || matchId;
+        }
+        return true;
+      });
+
+      document.getElementById('filteredOrdersCount').innerText = `${filtered.length} Orders Listed`;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-xs text-slate-400">No orders found matching this filter.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(o => {
+        const shortId = o.orderId.slice(-6).toUpperCase();
+        const dateStr = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
+        const advance = Number(o.advancePaid || 0);
+        const total = Number(o.totalAmount || 0);
+        const cod = o.codAmount !== undefined ? Number(o.codAmount) : Math.max(0, total - advance);
+
+        // Status pill
+        let statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">Pending</span>`;
+        if (o.status === 'Confirmed') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">Confirmed</span>`;
+        else if (o.status === 'Dispatched') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 border border-purple-200">Dispatched</span>`;
+        else if (o.status === 'Delivered') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Delivered</span>`;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+
+        tr.innerHTML = `
+          <td class="p-4 pl-6 font-mono font-bold text-slate-900">
+            <button onclick="copyToClipboard('${o.orderId}', 'Order ID')" class="hover:text-red-600 flex items-center gap-1.5" title="Copy Full ID">
+              <span>#${shortId}</span>
+              <i data-lucide="copy" class="w-3 h-3 text-slate-400"></i>
+            </button>
+            <span class="block text-[10px] text-slate-400 font-sans font-normal">${dateStr}</span>
+          </td>
+
+          <td class="p-4">
+            <span class="font-bold text-slate-900 block">${o.storeName}</span>
+            <span class="text-[10px] text-emerald-600 font-mono font-bold">${o.storeSlug}</span>
+          </td>
+
+          <td class="p-4 text-slate-900 font-semibold">
+            ${o.customerName || 'Customer'}
+          </td>
+
+          <td class="p-4 font-mono">
+            <button onclick="copyToClipboard('${o.phone}', 'Phone')" class="text-slate-700 font-bold hover:text-emerald-600 transition flex items-center gap-1" title="Click to copy">
+              <span>${o.phone || 'N/A'}</span>
+              <i data-lucide="copy" class="w-3 h-3 text-slate-400"></i>
+            </button>
+          </td>
+
+          <td class="p-4 text-slate-600">
+            <span class="font-bold text-slate-800 block">${o.district || 'Dhaka'}</span>
+            <span class="text-[10px] text-slate-400 block truncate max-w-[170px]">${o.address || ''}</span>
+          </td>
+
+          <td class="p-4 font-mono">
+            <span class="font-bold text-slate-900 text-xs">৳${total}</span>
+            <span class="block text-[10px] text-red-600 font-bold">COD: ৳${cod}</span>
+          </td>
+
+          <td class="p-4">
+            ${statusBadge}
+          </td>
+
+          <td class="p-4 pr-6 text-right">
+            <button onclick="openDeepStoreModal('${o.storeSlug}', 'orders')" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition">
+              View Store
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function setGlobalOrderFilter(status) {
+      currentGlobalOrderFilter = status;
+      ['all', 'Pending', 'Confirmed', 'Dispatched', 'Delivered'].forEach(s => {
+        const btn = document.getElementById(`orderTab-${s}`);
+        if (!btn) return;
+        if (s === status) {
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-red-600 text-white transition";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+        }
+      });
+      renderPlatformOrdersTable();
+    }
+
+    function renderStoresGrid(filterText = '') {
+      const container = document.getElementById('storesFullGrid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const slugs = Object.keys(masterStores).filter(slug => {
+        if (!filterText) return true;
+        const s = masterStores[slug].settings || {};
+        return slug.toLowerCase().includes(filterText) || (s.storeName && s.storeName.toLowerCase().includes(filterText));
+      });
+
+      if (!slugs.length) {
+        container.innerHTML = '<p class="col-span-full py-12 text-center text-xs text-slate-400">No stores match.</p>';
+        return;
+      }
+
+      slugs.forEach(slug => {
+        const store = masterStores[slug];
+        const s = store.settings || {};
+        const orders = store.orders || {};
+        const prods = store.products || {};
+
+        let rev = 0;
+        Object.values(orders).forEach(o => { rev += Number(o.totalAmount || 0); });
+
+        const card = document.createElement('div');
+        card.className = "bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 shadow-xs space-y-4 flex flex-col justify-between";
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <img src="${s.logo || LOGO_PLACEHOLDER}" class="w-11 h-11 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0">
+              <div class="min-w-0">
+                <h3 class="text-sm font-bold text-slate-900 truncate">${s.storeName || slug}</h3>
+                <span class="text-xs text-emerald-600 font-mono font-bold block">${slug}.tiodisk.top</span>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 rounded-xl text-center text-xs font-mono border border-slate-100">
+              <div>
+                <span class="text-[10px] text-slate-400 block font-sans">Products</span>
+                <span class="font-bold text-slate-800">${Object.keys(prods).length}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block font-sans">Orders</span>
+                <span class="font-bold text-slate-800">${Object.keys(orders).length}</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block font-sans">Revenue</span>
+                <span class="font-bold text-emerald-600">৳${rev}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
+            <button onclick="openDeepStoreModal('${slug}')" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition">
+              Inspect Data
+            </button>
+            <a href="https://${slug}.tiodisk.top" target="_blank" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition" title="Storefront">
+              <i data-lucide="external-link" class="w-4 h-4"></i>
+            </a>
+            <a href="https://${slug}.tiodisk.top/admin.html" target="_blank" class="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition" title="Console">
+              <i data-lucide="shield" class="w-4 h-4"></i>
+            </a>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function renderMerchantsList(filterText = '') {
+      const container = document.getElementById('merchantsFullList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const keys = Object.keys(masterMerchants).filter(id => {
+        if (!filterText) return true;
+        const m = masterMerchants[id];
+        return (m.name && m.name.toLowerCase().includes(filterText)) || (m.phone && m.phone.includes(filterText));
+      });
+
+      if (!keys.length) {
+        container.innerHTML = '<p class="col-span-full py-12 text-center text-xs text-slate-400">No merchants found.</p>';
+        return;
+      }
+
+      keys.forEach(id => {
+        const m = masterMerchants[id];
+        const storeSlugs = Object.keys(m.stores || {});
+
+        const card = document.createElement('div');
+        card.className = "bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4 flex flex-col justify-between";
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <img src="${m.avatar || LOGO_PLACEHOLDER}" class="w-11 h-11 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0">
+              <div class="min-w-0">
+                <h3 class="text-sm font-bold text-slate-900 truncate">${m.name || 'Merchant'}</h3>
+                <span class="text-xs text-slate-500 font-mono block">${m.phone || 'No phone'}</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1.5 border border-slate-100">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Stores:</span>
+                <span class="font-mono text-red-600 font-bold">${storeSlugs.length} Store(s)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Email:</span>
+                <span class="font-mono text-slate-800 truncate max-w-[150px] font-semibold">${m.email || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
+            ${m.phone ? `
+              <a href="https://wa.me/88${m.phone.replace(/^0/, '')}" target="_blank" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>WhatsApp</span>
+              </a>
+              <a href="tel:${m.phone}" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition">
+                <i data-lucide="phone" class="w-4 h-4"></i>
+              </a>
+            ` : '<span class="text-xs text-slate-400">No phone</span>'}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    // ==================== STORE INSPECTION MODAL ====================
+    function openDeepStoreModal(slug, tab = 'products') {
+      const store = masterStores[slug];
+      if (!store) return showToast('Store details not found', true);
+
+      const s = store.settings || {};
+      document.getElementById('inspectModalLogo').src = s.logo || LOGO_PLACEHOLDER;
+      document.getElementById('inspectModalTitle').innerText = s.storeName || slug;
+      document.getElementById('inspectModalSlugBadge').innerText = `${slug}.tiodisk.top`;
+      document.getElementById('inspectModalLiveLink').href = `https://${slug}.tiodisk.top`;
+
+      // Products
+      const prods = store.products || {};
+      const pKeys = Object.keys(prods);
+      const pGrid = document.getElementById('inspectProductsGrid');
+      pGrid.innerHTML = '';
+
+      if (!pKeys.length) {
+        pGrid.innerHTML = '<p class="col-span-full py-8 text-center text-xs text-slate-400">No products uploaded.</p>';
+      } else {
+        pKeys.forEach(id => {
+          const p = prods[id];
+          pGrid.innerHTML += `
+            <div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3 shadow-xs">
+              <img src="${p.imageUrl || LOGO_PLACEHOLDER}" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0">
+              <div class="min-w-0 flex-1">
+                <span class="text-xs font-bold text-slate-900 truncate block">${p.name}</span>
+                <span class="text-xs font-mono font-bold text-emerald-600">৳${p.discountPrice || p.regularPrice || 0}</span>
+                <span class="text-[10px] text-slate-500 font-mono block">Stock: ${p.stock || 0}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // Orders
+      const orders = store.orders || {};
+      const oKeys = Object.keys(orders);
+      const oList = document.getElementById('inspectOrdersList');
+      oList.innerHTML = '';
+
+      if (!oKeys.length) {
+        oList.innerHTML = '<p class="py-8 text-center text-xs text-slate-400">No orders received.</p>';
+      } else {
+        oKeys.forEach(id => {
+          const o = orders[id];
+          oList.innerHTML += `
+            <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs shadow-xs">
+              <div>
+                <span class="font-bold text-slate-900">${o.customerName || 'Customer'}</span>
+                <span class="font-mono text-slate-500">(${o.phone || ''})</span>
+                <p class="text-[11px] text-slate-500">${o.address || ''}</p>
+              </div>
+              <div class="text-right font-mono">
+                <span class="font-bold text-slate-900">৳${o.totalAmount || 0}</span>
+                <span class="block text-[10px] text-red-600 font-bold">${o.status || 'Pending'}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // Settings
+      document.getElementById('inspectSettingsBody').innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-4 bg-white border border-slate-200 rounded-xl space-y-1 shadow-xs">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Contact</span>
+            <p class="text-slate-800">Phone: <b class="font-mono">${s.phone || 'N/A'}</b></p>
+            <p class="text-slate-800">WhatsApp: <b class="font-mono">${s.whatsapp || 'N/A'}</b></p>
+          </div>
+          <div class="p-4 bg-white border border-slate-200 rounded-xl space-y-1 shadow-xs">
+            <span class="text-[10px] uppercase font-bold text-slate-400">Logistics</span>
+            <p class="text-slate-800">Steadfast: <b class="${s.steadfastApiKey ? 'text-emerald-600' : 'text-slate-400'} font-mono">${s.steadfastApiKey ? 'Active' : 'Not Connected'}</b></p>
+            <p class="text-slate-800 font-mono">Inside: ৳${s.delInside || 60} • Outside: ৳${s.delOutside || 130}</p>
+          </div>
+        </div>
+      `;
+
+      switchInspectTab(tab);
+      document.getElementById('deepStoreModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function switchInspectTab(tab) {
+      ['products', 'orders', 'settings'].forEach(t => {
+        document.getElementById(`inspectPanel-${t}`).classList.add('hidden');
+        document.getElementById(`inspectTabBtn-${t}`).className = 'px-3.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition';
+      });
+
+      document.getElementById(`inspectPanel-${tab}`).classList.remove('hidden');
+      document.getElementById(`inspectTabBtn-${tab}`).className = 'px-3.5 py-1.5 rounded-lg bg-red-600 text-white font-bold transition';
+    }
+
+    function closeDeepStoreModal() {
+      document.getElementById('deepStoreModal').classList.add('hidden');
+    }
+
+    function handleGlobalSearch(val) {
+      const q = val.trim().toLowerCase();
+      renderPlatformOrdersTable(q);
+      renderStoresGrid(q);
+      renderMerchantsList(q);
+    }
+
+    function refreshData(showToastMsg = false) {
+      db.ref('stores').once('value', () => {
+        if (showToastMsg) showToast('Data synchronized');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDataListeners();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
