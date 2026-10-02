@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>tioDisk - Client Service Agreement</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter, Hind Siliguri & Great Vibes (For Signature) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- html2pdf.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <!-- Signature Pad CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', 'Inter', sans-serif;
+      background-color: #0b1310;
+      overflow-x: hidden;
+    }
+    .font-signature {
+      font-family: 'Great Vibes', cursive;
+    }
+    .font-official {
+      font-family: 'Inter', sans-serif;
+    }
+    .a4-page {
+      width: 210mm;
+      min-width: 210mm;
+      height: 296mm;
+      min-height: 296mm;
+      padding: 16mm 18mm;
+      background-color: #f7fbf9;
+      box-sizing: border-box;
+      position: relative;
+      color: #0f172a;
+      margin: 0 auto 30px auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .official-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #064e3b;
+    }
+    .official-table th, .official-table td {
+      border: 1px solid #064e3b;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .official-table th {
+      background-color: #e6f4ee;
+      color: #064e3b;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    .page-break {
+      page-break-after: always;
+      break-after: page;
+    }
+  </style>
+</head>
+<body class="py-6 px-3 md:px-6">
+
+  <div class="w-full max-w-4xl mx-auto space-y-8">
+    
+    <!-- TOP INPUT FORM -->
+    <div class="w-full bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-5 md:p-8 shadow-2xl backdrop-blur-md">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-4 mb-6">
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-2 bg-emerald-500 rounded-full"></div>
+          <div>
+            <h2 class="text-xl md:text-2xl font-bold text-white tracking-wide">চুক্তিপত্রের তথ্য পূরণ করুন</h2>
+            <p class="text-xs md:text-sm text-emerald-400">তথ্য দিলে নিচে চুক্তিপত্রে স্বয়ংক্রিয়ভাবে বসে যাবে</p>
+          </div>
+        </div>
+        <span class="hidden sm:inline-block text-[11px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-3 py-1 rounded-full font-mono">tioDisk Cloud Synced</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">ক্লাইন্টের পুরো নাম</label>
+          <input type="text" id="inClientName" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">ফোন নম্বর</label>
+          <input type="text" id="inClientPhone" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">ক্লাইন্টের ঠিকানা</label>
+          <input type="text" id="inClientAddress" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">প্রজেক্ট / সার্ভিসের নাম</label>
+          <input type="text" id="inProjectName" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">ডেলিভারির সময়সীমা</label>
+          <input type="text" id="inDeadline" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">মোট বাজেট</label>
+          <input type="text" id="inTotalBudget" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">অগ্রিম পেমেন্ট (Advance)</label>
+          <input type="text" id="inAdvanceBudget" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition">
+        </div>
+
+        <!-- Signature Pad -->
+        <div class="md:col-span-2 pt-2">
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="block text-xs font-semibold text-emerald-400">ক্লাইন্টের ডিজিটাল সাইন (Sign with Touch / Mouse)</label>
+            <button id="clearSig" class="text-xs text-red-400 hover:underline">ক্লিয়ার করুন</button>
+          </div>
+          <div class="w-full border-2 border-dashed border-slate-600 rounded-2xl bg-white overflow-hidden shadow-inner">
+            <canvas id="signature-pad" class="w-full h-32"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button id="btnDownloadPDF" class="w-full mt-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base md:text-lg rounded-2xl transition shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        চুক্তিপত্র পিডিএফ ডাউনলোড করুন (2-Page A4 PDF)
+      </button>
+    </div>
+
+    <!-- PREVIEW CONTAINER -->
+    <div class="w-full">
+      <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-3 px-1">
+        <span>ডকুমেন্ট প্রিভিউ (A4 পেপার সাইজ)</span>
+        <span class="md:hidden text-emerald-400">ডানে স্ক্রোল করে পুরো পেজটি দেখুন →</span>
+      </div>
+
+      <div class="w-full overflow-x-auto pb-8 rounded-2xl">
+        <div id="pdfContent" class="mx-auto w-fit font-official">
+          
+          <!-- PAGE 1 -->
+          <div class="a4-page page-break flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-4 border-b-2 border-emerald-950 mb-6">
+                <div class="flex items-center gap-3">
+                  <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Logo" class="w-14 h-14 object-contain rounded border border-emerald-900/30">
+                  <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">tioDisk</h1>
+                </div>
+                <div class="text-right text-xs space-y-1">
+                  <p><span class="font-bold text-slate-800">REF NO:</span> <span id="outDocId" class="font-mono"></span></p>
+                  <p><span class="font-bold text-slate-800">DATE:</span> <span id="outDate"></span></p>
+                </div>
+              </div>
+
+              <div class="text-center mb-6">
+                <h2 class="text-lg font-bold uppercase tracking-wider text-emerald-900 underline underline-offset-4">
+                  Service Agreement & Work Order
+                </h2>
+              </div>
+
+              <!-- Part I -->
+              <div class="mb-6">
+                <p class="text-xs font-bold text-emerald-900 uppercase mb-1.5 tracking-wider">Part I: Client Identification Details</p>
+                <table class="official-table">
+                  <tr>
+                    <th style="width: 25%;">Client Full Name</th>
+                    <td style="width: 75%;" class="font-bold" id="outClientName">-</td>
+                  </tr>
+                  <tr>
+                    <th>Contact Phone</th>
+                    <td id="outClientPhone">-</td>
+                  </tr>
+                  <tr>
+                    <th>Office / Permanent Address</th>
+                    <td id="outClientAddress">-</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Part II -->
+              <div class="mb-6">
+                <p class="text-xs font-bold text-emerald-900 uppercase mb-1.5 tracking-wider">Part II: Service Provider Details</p>
+                <table class="official-table">
+                  <tr>
+                    <th style="width: 25%;">Authorized Entity</th>
+                    <td style="width: 75%;" class="font-bold">tioDisk</td>
+                  </tr>
+                  <tr>
+                    <th>Designated Service</th>
+                    <td>Web Development, Software Engineering & IT Infrastructure</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Part III -->
+              <div class="mb-6">
+                <p class="text-xs font-bold text-emerald-900 uppercase mb-1.5 tracking-wider">Part III: Project Scope & Commercial Schedule</p>
+                <table class="official-table">
+                  <tr>
+                    <th style="width: 25%;">Project Title / Scope</th>
+                    <td colspan="3" class="font-bold" id="outProjectName">-</td>
+                  </tr>
+                  <tr>
+                    <th>Timeline / Delivery Target</th>
+                    <td colspan="3" id="outDeadline">-</td>
+                  </tr>
+                  <tr>
+                    <th style="width: 25%;">Total Project Fee</th>
+                    <td style="width: 25%;" class="font-bold" id="outTotalBudget">-</td>
+                    <th style="width: 25%;">Advance Deposit Paid</th>
+                    <td style="width: 25%;" class="font-bold text-emerald-800" id="outAdvanceBudget">-</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-emerald-900/30 flex justify-between items-center text-[10px] text-slate-500 font-semibold uppercase">
+              <span>tioDisk Official Registry Copy</span>
+              <span>Page 1 of 2 (Continued to Page 2)</span>
+            </div>
+          </div>
+
+          <!-- PAGE 2 -->
+          <div class="a4-page flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-emerald-950 mb-6">
+                <span class="font-bold text-slate-900 text-lg">tioDisk</span>
+                <span class="text-xs font-medium text-slate-600">Agreement Terms & Execution</span>
+              </div>
+
+              <div class="mb-8">
+                <p class="text-xs font-bold text-emerald-900 uppercase mb-3 tracking-wider underline">Part IV: Standard Terms and Conditions</p>
+                <ol class="list-decimal pl-5 space-y-3.5 text-[12px] leading-relaxed text-slate-800">
+                  <li>
+                    <strong>Scope of Services:</strong> tioDisk shall undertake the development and configuration of the specified web application in accordance with the deliverables established in Part III of this Agreement.
+                  </li>
+                  <li>
+                    <strong>Payment & Invoicing:</strong> The advance deposit specified herein must be cleared prior to development commencement. The final balance becomes strictly due and payable prior to the handover of root source codes and live hosting credentials.
+                  </li>
+                  <li>
+                    <strong>Review, Revisions & Testing:</strong> The Client is entitled to up to three (3) structured iterations and revisions within the defined scope. Any request departing materially from original specifications will incur separate billing.
+                  </li>
+                  <li>
+                    <strong>Ownership & Code Rights:</strong> Upon complete and final financial settlement, all intellectual property rights, application files, and repository ownership shall unconditionally transfer to the Client.
+                  </li>
+                  <li>
+                    <strong>Confidentiality:</strong> Both parties mutually agree to treat all business logic, technical data, credentials, and project information as confidential, maintaining non-disclosure standards throughout and following engagement.
+                  </li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- Signatures Section -->
+            <div>
+              <p class="text-xs font-bold text-emerald-900 uppercase mb-2 tracking-wider">Part V: Formal Execution & Acceptance</p>
+              
+              <table class="official-table">
+                <tr>
+                  <th style="width: 50%;" class="text-center">Authorized Service Provider</th>
+                  <th style="width: 50%;" class="text-center">Commissioned Client</th>
+                </tr>
+                <tr>
+                  <!-- Provider Signature Box -->
+                  <td class="h-36 text-center align-bottom p-4">
+                    <div class="h-16 flex flex-col items-center justify-center">
+                      <div class="font-signature text-4xl text-emerald-950 font-normal select-none transform -rotate-3">
+                        Rifat
+                      </div>
+                    </div>
+                    <div class="w-44 border-b border-slate-700 mx-auto mb-1"></div>
+                    <p class="font-bold text-[11px] text-slate-800 uppercase">N R Rifat Rehman</p>
+                    <p class="text-[10px] text-slate-500">tioDisk Manager</p>
+                  </td>
+
+                  <!-- Client Signature Box -->
+                  <td class="h-36 text-center align-bottom p-4">
+                    <div class="h-16 flex items-center justify-center">
+                      <img id="outClientSignature" class="max-h-14 max-w-[180px] object-contain hidden" alt="Signature">
+                      <span id="sigPlaceholder" class="text-xs text-slate-400 italic">Signature Not Affixed</span>
+                    </div>
+                    <div class="w-44 border-b border-slate-700 mx-auto mb-1"></div>
+                    <p class="font-bold text-[11px] text-slate-800 uppercase" id="outClientSignLabel">Client Signatory</p>
+                    <p class="text-[10px] text-slate-500">Assent & Acceptance</p>
+                  </td>
+                </tr>
+              </table>
+
+              <div class="mt-6 pt-3 border-t border-emerald-900/30 flex justify-between items-center text-[10px] text-slate-500 font-semibold uppercase">
+                <span>Official Legal Contract</span>
+                <span>Page 2 of 2</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 1. Firebase Initialization with your Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2txpRBwRAtKisXlsslm2BosSJ3rxrXQg",
+      authDomain: "tiodisk-d97c1.firebaseapp.com",
+      databaseURL: "https://tiodisk-d97c1-default-rtdb.firebaseio.com",
+      projectId: "tiodisk-d97c1",
+      storageBucket: "tiodisk-d97c1.firebasestorage.app",
+      messagingSenderId: "874244971549",
+      appId: "1:874244971549:web:7bf9532a6b6dcb1f8bbaf4",
+      measurementId: "G-3ZQWMQ2G8B"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 2. Date & Ref Generator
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    document.getElementById('outDate').innerText = formattedDate;
+
+    const ref = 'TD/' + now.getFullYear() + '/' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('outDocId').innerText = ref;
+
+    // Real-time synchronization
+    function sync(inId, outId) {
+      document.getElementById(inId).addEventListener('input', function(e) {
+        document.getElementById(outId).innerText = e.target.value.trim() || '-';
+      });
+    }
+
+    sync('inClientName', 'outClientName');
+    sync('inClientPhone', 'outClientPhone');
+    sync('inClientAddress', 'outClientAddress');
+    sync('inProjectName', 'outProjectName');
+    sync('inDeadline', 'outDeadline');
+    sync('inTotalBudget', 'outTotalBudget');
+    sync('inAdvanceBudget', 'outAdvanceBudget');
+
+    document.getElementById('inClientName').addEventListener('input', function(e) {
+      document.getElementById('outClientSignLabel').innerText = e.target.value.trim() || 'Client Signatory';
+    });
+
+    // Signature Pad Initialization
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas, {
+      backgroundColor: '#ffffff',
+      penColor: '#0f172a'
+    });
+
+    function resizeCanvas() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio);
+      signaturePad.clear();
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    signaturePad.addEventListener("endStroke", () => {
+      const dataUrl = signaturePad.toDataURL();
+      const img = document.getElementById('outClientSignature');
+      const placeholder = document.getElementById('sigPlaceholder');
+      img.src = dataUrl;
+      img.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+    });
+
+    document.getElementById('clearSig').addEventListener('click', () => {
+      signaturePad.clear();
+      const img = document.getElementById('outClientSignature');
+      const placeholder = document.getElementById('sigPlaceholder');
+      img.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+    });
+
+    // Save to Firebase & Download PDF
+    document.getElementById('btnDownloadPDF').addEventListener('click', async function() {
+      const clientName = document.getElementById('inClientName').value.trim();
+      const clientPhone = document.getElementById('inClientPhone').value.trim();
+
+      if (!clientName || !clientPhone) {
+        alert("অনুগ্রহ করে ক্লায়েন্টের নাম এবং ফোন নম্বর পূরণ করুন।");
+        return;
+      }
+
+      const btn = this;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = "ডাটাবেজে সেভ এবং PDF প্রস্তুত হচ্ছে...";
+      btn.disabled = true;
+
+      // Prepare Record Object
+      const record = {
+        refNo: ref,
+        date: formattedDate,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        clientName: clientName,
+        clientPhone: clientPhone,
+        clientAddress: document.getElementById('inClientAddress').value.trim() || '-',
+        projectName: document.getElementById('inProjectName').value.trim() || '-',
+        deadline: document.getElementById('inDeadline').value.trim() || '-',
+        totalBudget: document.getElementById('inTotalBudget').value.trim() || '-',
+        advanceBudget: document.getElementById('inAdvanceBudget').value.trim() || '-',
+        signatureData: signaturePad.isEmpty() ? null : signaturePad.toDataURL()
+      };
+
+      try {
+        // 1. Push to Firebase Realtime Database
+        await db.ref('agreements').push(record);
+
+        // 2. Generate and Download 2-Page A4 PDF
+        const element = document.getElementById('pdfContent');
+        const opt = {
+          margin: 0,
+          filename: `tioDisk_Agreement_${clientName.replace(/\s+/g, '_')}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        await html2pdf().set(opt).from(element).save();
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        alert("ডাটা সংরক্ষণ বা পিডিএফ ডাউনলোড করতে সমস্যা হয়েছে। Firebase Rules চেক করুন।");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
