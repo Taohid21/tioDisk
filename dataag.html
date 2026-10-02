@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tioDisk - Admin Console</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- html2pdf.js CDN (For Re-downloading from Admin) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', 'Hind Siliguri', sans-serif;
+      background-color: #080d0b;
+      color: #f1f5f9;
+    }
+    .font-signature {
+      font-family: 'Great Vibes', cursive;
+    }
+    /* Hidden print canvas structure */
+    .print-a4 {
+      width: 210mm;
+      min-width: 210mm;
+      height: 296mm;
+      padding: 16mm 18mm;
+      background-color: #f7fbf9;
+      box-sizing: border-box;
+      color: #0f172a;
+    }
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #064e3b;
+    }
+    .print-table th, .print-table td {
+      border: 1px solid #064e3b;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .print-table th {
+      background-color: #e6f4ee;
+      color: #064e3b;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body class="p-3 md:p-8">
+
+  <!-- TOP APP BAR -->
+  <div class="max-w-7xl mx-auto mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950 pb-5">
+    <div class="flex items-center gap-3">
+      <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="Logo" class="w-12 h-12 object-contain rounded-xl border border-emerald-500/30">
+      <div>
+        <h1 class="text-xl md:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          tioDisk <span class="text-xs font-semibold px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-md">ADMIN</span>
+        </h1>
+        <p class="text-xs text-slate-400">Client Agreements Database</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="flex items-center gap-3">
+      <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-right">
+        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Total Contracts</p>
+        <p id="totalCount" class="text-lg font-bold text-emerald-400 font-mono">0</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH & FILTER -->
+  <div class="max-w-7xl mx-auto mb-6">
+    <div class="relative">
+      <input type="text" id="searchInput" placeholder="Search by Client Name, Phone, or Reference ID..." 
+        class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl px-5 py-3.5 pl-11 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-4 top-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- MAIN LIST / TABLE -->
+  <div class="max-w-7xl mx-auto bg-slate-900/60 border border-slate-800/80 rounded-3xl overflow-hidden shadow-2xl">
+    
+    <!-- Loading Spinner -->
+    <div id="loading" class="py-20 text-center text-slate-500 text-sm">
+      <div class="inline-block animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mb-3"></div>
+      <p>Connecting to tioDisk Cloud Database...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden py-20 text-center text-slate-500 text-sm">
+      <p>No contract submissions recorded yet.</p>
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left text-sm text-slate-300">
+        <thead class="bg-slate-950/80 text-[11px] text-slate-400 uppercase tracking-wider border-b border-slate-800">
+          <tr>
+            <th class="py-4 px-6">Date & Ref</th>
+            <th class="py-4 px-6">Client Name</th>
+            <th class="py-4 px-6">Phone Number</th>
+            <th class="py-4 px-6">Project Scope</th>
+            <th class="py-4 px-6 text-right">Total / Advance</th>
+            <th class="py-4 px-6 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody" class="divide-y divide-slate-800/60">
+          <!-- Dynamic Items -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div id="mobileCards" class="md:hidden divide-y divide-slate-800/60">
+      <!-- Dynamic Mobile Cards -->
+    </div>
+
+  </div>
+
+  <!-- DETAILS & PDF RE-DOWNLOAD MODAL -->
+  <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+        <h3 class="font-bold text-white text-base" id="modalTitle">Agreement Details</h3>
+        <button id="modalClose" class="text-slate-400 hover:text-white p-1 text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-300" id="modalBody">
+        <!-- Injected details -->
+      </div>
+
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex gap-3">
+        <button id="btnModalDownloadPDF" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Download Official PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN CONTAINER FOR ON-THE-FLY PDF GENERATION FROM ADMIN -->
+  <div class="fixed left-[-9999px] top-0">
+    <div id="adminPdfRender"></div>
+  </div>
+
+  <script>
+    // 1. Firebase Init
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2txpRBwRAtKisXlsslm2BosSJ3rxrXQg",
+      authDomain: "tiodisk-d97c1.firebaseapp.com",
+      databaseURL: "https://tiodisk-d97c1-default-rtdb.firebaseio.com",
+      projectId: "tiodisk-d97c1",
+      storageBucket: "tiodisk-d97c1.firebasestorage.app",
+      messagingSenderId: "874244971549",
+      appId: "1:874244971549:web:7bf9532a6b6dcb1f8bbaf4",
+      measurementId: "G-3ZQWMQ2G8B"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let allRecords = [];
+    let currentSelectedRecord = null;
+
+    // 2. Real-time Listener on 'agreements'
+    db.ref('agreements').on('value', (snapshot) => {
+      document.getElementById('loading').classList.add('hidden');
+      const data = snapshot.val();
+      allRecords = [];
+
+      if (data) {
+        Object.keys(data).forEach(key => {
+          allRecords.push({ id: key, ...data[key] });
+        });
+        allRecords.reverse(); // Newest first
+      }
+
+      document.getElementById('totalCount').innerText = allRecords.length;
+      render(allRecords);
+    });
+
+    // 3. Render List
+    function render(records) {
+      const tableBody = document.getElementById('tableBody');
+      const mobileCards = document.getElementById('mobileCards');
+      const emptyState = document.getElementById('emptyState');
+
+      tableBody.innerHTML = '';
+      mobileCards.innerHTML = '';
+
+      if (records.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      records.forEach(item => {
+        // Desktop Row
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="py-4 px-6">
+            <span class="font-mono text-emerald-400 font-semibold text-xs">${item.refNo || '-'}</span>
+            <div class="text-[11px] text-slate-500">${item.date || ''}</div>
+          </td>
+          <td class="py-4 px-6 font-bold text-white">${item.clientName || '-'}</td>
+          <td class="py-4 px-6 text-slate-300 font-mono text-xs">${item.clientPhone || '-'}</td>
+          <td class="py-4 px-6 text-slate-400 max-w-xs truncate">${item.projectName || '-'}</td>
+          <td class="py-4 px-6 text-right font-mono">
+            <div class="text-white font-bold">${item.totalBudget || '-'}</div>
+            <div class="text-[11px] text-emerald-400">Adv: ${item.advanceBudget || '-'}</div>
+          </td>
+          <td class="py-4 px-6 text-center space-x-2">
+            <button onclick="viewDetails('${item.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg text-slate-200 transition font-medium">View / PDF</button>
+            <button onclick="deleteRecord('${item.id}')" class="p-1.5 text-slate-500 hover:text-red-400 transition" title="Delete">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+
+        // Mobile Card
+        const card = document.createElement('div');
+        card.className = 'p-4 space-y-3';
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-bold text-white text-sm">${item.clientName || '-'}</p>
+              <p class="text-xs text-slate-400 font-mono">${item.clientPhone || '-'}</p>
+            </div>
+            <span class="font-mono text-[11px] text-emerald-400 font-semibold">${item.refNo || '-'}</span>
+          </div>
+          <div class="text-xs text-slate-400 truncate">Project: ${item.projectName || '-'}</div>
+          <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-800">
+            <span class="text-emerald-400 font-bold font-mono">Total: ${item.totalBudget || '-'} (Adv: ${item.advanceBudget || '-'})</span>
+            <div class="flex items-center gap-2">
+              <button onclick="viewDetails('${item.id}')" class="px-3 py-1 bg-slate-800 text-xs text-slate-200 rounded-lg">View</button>
+              <button onclick="deleteRecord('${item.id}')" class="p-1 text-slate-500 hover:text-red-400">&times;</button>
+            </div>
+          </div>
+        `;
+        mobileCards.appendChild(card);
+      });
+    }
+
+    // 4. Search Filter
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = allRecords.filter(r => 
+        (r.clientName && r.clientName.toLowerCase().includes(q)) ||
+        (r.clientPhone && r.clientPhone.toLowerCase().includes(q)) ||
+        (r.refNo && r.refNo.toLowerCase().includes(q)) ||
+        (r.projectName && r.projectName.toLowerCase().includes(q))
+      );
+      render(filtered);
+    });
+
+    // 5. View Details Modal
+    window.viewDetails = function(id) {
+      const item = allRecords.find(r => r.id === id);
+      if (!item) return;
+      currentSelectedRecord = item;
+
+      document.getElementById('modalTitle').innerText = `${item.clientName} - ${item.refNo}`;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 pb-3 border-b border-slate-800">
+          <div><span class="text-slate-500">Date:</span> <span class="font-bold text-white">${item.date || '-'}</span></div>
+          <div><span class="text-slate-500">Phone:</span> <span class="font-bold text-white font-mono">${item.clientPhone || '-'}</span></div>
+          <div class="col-span-2"><span class="text-slate-500">Address:</span> <span class="text-white">${item.clientAddress || '-'}</span></div>
+        </div>
+        <div class="space-y-1.5 pb-3 border-b border-slate-800">
+          <div><span class="text-slate-500">Project Scope:</span> <span class="font-bold text-white">${item.projectName || '-'}</span></div>
+          <div><span class="text-slate-500">Timeline:</span> <span class="text-white">${item.deadline || '-'}</span></div>
+          <div><span class="text-slate-500">Commercials:</span> <span class="font-bold text-emerald-400 font-mono">${item.totalBudget || '-'} (Advance: ${item.advanceBudget || '-'})</span></div>
+        </div>
+        <div>
+          <span class="text-slate-500 block mb-1">Client Digital Signature:</span>
+          ${item.signatureData ? `<img src="${item.signatureData}" class="h-16 border border-slate-800 bg-white rounded-lg p-2" alt="Signature">` : '<span class="italic text-slate-600">No Signature Affixed</span>'}
+        </div>
+      `;
+      document.getElementById('modal').classList.remove('hidden');
+    };
+
+    document.getElementById('modalClose').addEventListener('click', () => {
+      document.getElementById('modal').classList.add('hidden');
+    });
+
+    // 6. Delete Record
+    window.deleteRecord = function(id) {
+      if (confirm("Are you sure you want to delete this agreement record?")) {
+        db.ref('agreements/' + id).remove();
+      }
+    };
+
+    // 7. Re-generate & Download 2-Page A4 PDF from Admin
+    document.getElementById('btnModalDownloadPDF').addEventListener('click', async () => {
+      if (!currentSelectedRecord) return;
+      const r = currentSelectedRecord;
+      const renderContainer = document.getElementById('adminPdfRender');
+
+      // Construct identical 2-Page A4 Template
+      renderContainer.innerHTML = `
+        <div id="adminPdfContent">
+          <!-- Page 1 -->
+          <div class="print-a4 flex flex-col justify-between" style="page-break-after: always; break-after: page;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #064e3b; padding-bottom: 12px; margin-bottom: 20px;">
+                <div style="display:flex; align-items:center; gap: 10px;">
+                  <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" style="width: 50px; height: 50px; object-contain: contain; border-radius: 6px;">
+                  <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 0;">tioDisk</h1>
+                </div>
+                <div style="text-align: right; font-size: 11px;">
+                  <p><strong>REF NO:</strong> ${r.refNo || '-'}</p>
+                  <p><strong>DATE:</strong> ${r.date || '-'}</p>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin-bottom: 24px;">
+                <h2 style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: #064e3b; text-decoration: underline;">
+                  Service Agreement & Work Order
+                </h2>
+              </div>
+
+              <!-- Part I -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-size: 11px; font-weight: 700; color: #064e3b; text-transform: uppercase; margin-bottom: 6px;">Part I: Client Identification Details</p>
+                <table class="print-table">
+                  <tr><th style="width: 25%;">Client Full Name</th><td style="width: 75%; font-weight: 700;">${r.clientName || '-'}</td></tr>
+                  <tr><th>Contact Phone</th><td>${r.clientPhone || '-'}</td></tr>
+                  <tr><th>Office / Permanent Address</th><td>${r.clientAddress || '-'}</td></tr>
+                </table>
+              </div>
+
+              <!-- Part II -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-size: 11px; font-weight: 700; color: #064e3b; text-transform: uppercase; margin-bottom: 6px;">Part II: Service Provider Details</p>
+                <table class="print-table">
+                  <tr><th style="width: 25%;">Authorized Entity</th><td style="width: 75%; font-weight: 700;">tioDisk</td></tr>
+                  <tr><th>Designated Service</th><td>Web Development, Software Engineering & IT Infrastructure</td></tr>
+                </table>
+              </div>
+
+              <!-- Part III -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-size: 11px; font-weight: 700; color: #064e3b; text-transform: uppercase; margin-bottom: 6px;">Part III: Project Scope & Commercial Schedule</p>
+                <table class="print-table">
+                  <tr><th style="width: 25%;">Project Title / Scope</th><td colspan="3" style="font-weight: 700;">${r.projectName || '-'}</td></tr>
+                  <tr><th>Timeline / Delivery Target</th><td colspan="3">${r.deadline || '-'}</td></tr>
+                  <tr>
+                    <th style="width: 25%;">Total Project Fee</th>
+                    <td style="width: 25%; font-weight: 700;">${r.totalBudget || '-'}</td>
+                    <th style="width: 25%;">Advance Deposit Paid</th>
+                    <td style="width: 25%; font-weight: 700; color: #064e3b;">${r.advanceBudget || '-'}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div style="border-top: 1px solid rgba(6, 78, 59, 0.3); padding-top: 10px; display: flex; justify-content: space-between; font-size: 9px; color: #64748b; text-transform: uppercase;">
+              <span>tioDisk Official Registry Copy</span>
+              <span>Page 1 of 2</span>
+            </div>
+          </div>
+
+          <!-- Page 2 -->
+          <div class="print-a4 flex flex-col justify-between">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #064e3b; padding-bottom: 10px; margin-bottom: 24px;">
+                <span style="font-size: 18px; font-weight: 800; color: #0f172a;">tioDisk</span>
+                <span style="font-size: 11px; color: #475569;">Agreement Terms & Execution</span>
+              </div>
+
+              <div style="margin-bottom: 24px;">
+                <p style="font-size: 11px; font-weight: 700; color: #064e3b; text-transform: uppercase; margin-bottom: 10px; text-decoration: underline;">Part IV: Standard Terms and Conditions</p>
+                <ol style="padding-left: 20px; font-size: 11.5px; line-height: 1.6; color: #1e293b;">
+                  <li style="margin-bottom: 8px;"><strong>Scope of Services:</strong> tioDisk shall undertake the development and configuration of the specified web application in accordance with the deliverables established in Part III of this Agreement.</li>
+                  <li style="margin-bottom: 8px;"><strong>Payment & Invoicing:</strong> The advance deposit specified herein must be cleared prior to development commencement. The final balance becomes strictly due and payable prior to the handover of root source codes and live hosting credentials.</li>
+                  <li style="margin-bottom: 8px;"><strong>Review, Revisions & Testing:</strong> The Client is entitled to up to three (3) structured iterations and revisions within the defined scope. Any request departing materially from original specifications will incur separate billing.</li>
+                  <li style="margin-bottom: 8px;"><strong>Ownership & Code Rights:</strong> Upon complete and final financial settlement, all intellectual property rights, application files, and repository ownership shall unconditionally transfer to the Client.</li>
+                  <li style="margin-bottom: 8px;"><strong>Confidentiality:</strong> Both parties mutually agree to treat all business logic, technical data, credentials, and project information as confidential, maintaining non-disclosure standards throughout and following engagement.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div>
+              <p style="font-size: 11px; font-weight: 700; color: #064e3b; text-transform: uppercase; margin-bottom: 8px;">Part V: Formal Execution & Acceptance</p>
+              <table class="print-table">
+                <tr>
+                  <th style="width: 50%; text-align: center;">Authorized Service Provider</th>
+                  <th style="width: 50%; text-align: center;">Commissioned Client</th>
+                </tr>
+                <tr>
+                  <td style="height: 130px; text-align: center; vertical-align: bottom; padding: 12px;">
+                    <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                      <div class="font-signature" style="font-size: 34px; color: #064e3b; transform: rotate(-3deg);">Rifat</div>
+                    </div>
+                    <div style="width: 150px; border-bottom: 1px solid #334155; margin: 4px auto;"></div>
+                    <p style="font-weight: 700; font-size: 10px; text-transform: uppercase;">N R Rifat Rehman</p>
+                    <p style="font-size: 9px; color: #64748b;">tioDisk Manager</p>
+                  </td>
+                  <td style="height: 130px; text-align: center; vertical-align: bottom; padding: 12px;">
+                    <div style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                      ${r.signatureData ? `<img src="${r.signatureData}" style="max-height: 50px; max-width: 160px; object-fit: contain;">` : '<span style="font-size: 10px; color: #94a3b8; font-style: italic;">Signature Not Affixed</span>'}
+                    </div>
+                    <div style="width: 150px; border-bottom: 1px solid #334155; margin: 4px auto;"></div>
+                    <p style="font-weight: 700; font-size: 10px; text-transform: uppercase;">${r.clientName || 'Client Signatory'}</p>
+                    <p style="font-size: 9px; color: #64748b;">Assent & Acceptance</p>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="border-top: 1px solid rgba(6, 78, 59, 0.3); padding-top: 8px; margin-top: 14px; display: flex; justify-content: space-between; font-size: 9px; color: #64748b; text-transform: uppercase;">
+                <span>Official Legal Contract</span>
+                <span>Page 2 of 2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 0,
+        filename: `tioDisk_Agreement_${(r.clientName || 'Client').replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdf().set(opt).from(document.getElementById('adminPdfContent')).save();
+    });
+  </script>
+
+</body>
+</html>
