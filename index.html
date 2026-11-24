@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tioDisk | Custom Web Development, E-Commerce & Business Automation Agency</title>
+
+  <!-- Primary SEO Meta Tags -->
+  <meta name="description" content="tioDisk is a leading custom web development and business automation agency. We build business websites, custom e-commerce platforms, web applications, and tailored automation systems based on your exact requirements.">
+  <meta name="keywords" content="tioDisk, web development agency Bangladesh, custom website development, e-commerce website development, business website design, web application development, business automation systems, custom software agency, Steadfast Pathao integration, bKash payment integration">
+  <meta name="author" content="tioDisk Technologies">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://tiodisk.top/">
+
+  <!-- Open Graph / Facebook / WhatsApp Preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tiodisk.top/">
+  <meta property="og:title" content="tioDisk | Custom Web Development & Business Automation Agency">
+  <meta property="og:description" content="Custom business websites, scalable e-commerce platforms, and end-to-end business automation engineered to your exact requirements.">
+  <meta property="og:image" content="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+  <meta property="og:site_name" content="tioDisk">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="tioDisk | Custom Web Development & Business Automation Agency">
+  <meta name="twitter:description" content="Custom business websites, scalable e-commerce platforms, and end-to-end business automation engineered to your exact requirements.">
+  <meta name="twitter:image" content="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+
+  <!-- Structured Data (JSON-LD Schema for Agency SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "tioDisk",
+    "url": "https://tiodisk.top",
+    "logo": "https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg",
+    "description": "Enterprise Web Development, Custom E-Commerce Platforms, and Client-Specific Business Automation Agency.",
+    "telephone": "+8801704609401",
+    "email": "support@tiodisk.top",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Golabari Mor, Bauphal",
+      "addressLocality": "Patuakhali",
+      "addressCountry": "BD"
+    },
+    "sameAs": [
+      "https://www.facebook.com/share/1dVfpAJtLH/",
+      "https://wa.me/message/HG3CUSUPMOWQE1"
+    ],
+    "serviceType": [
+      "Business Website Development",
+      "Custom E-Commerce Development",
+      "Custom Web Applications",
+      "Business Workflow Automation",
+      "Payment & Courier API Integration"
+    ]
+  }
+  </script>
+
+  <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Hind Siliguri"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#020617',
+              900: '#040a20',
+              850: '#070f2b',
+              800: '#0b163d',
+            },
+            electric: {
+              400: '#38bdf8',
+              500: '#0095ff',
+              600: '#0077ff',
+              700: '#0055cc',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif;
+      background-color: #03071b;
+      color: #f8fafc;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    .hero-surface {
+      background:
+        radial-gradient(ellipse 75% 60% at 50% 20%, rgba(0, 136, 255, 0.22) 0%, rgba(3, 7, 27, 0.96) 72%),
+        #03071b;
+    }
+
+    .panel-card {
+      background-color: #060d26;
+      border: 1px solid rgba(30, 58, 138, 0.45);
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .panel-card:hover {
+      border-color: rgba(0, 149, 255, 0.6);
+      background-color: #081233;
+    }
+
+    .tech-grid-bg {
+      background-color: #020618;
+      background-image:
+        linear-gradient(to right, rgba(30, 58, 138, 0.14) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.14) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+
+    .primary-btn {
+      background-color: #0084ff;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .primary-btn:hover {
+      background-color: #006ee6;
+      box-shadow: 0 8px 24px -4px rgba(0, 132, 255, 0.45);
+    }
+
+    .icon-badge {
+      background: linear-gradient(135deg, #0084ff 0%, #00a8ff 100%);
+    }
+  </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col justify-between selection:bg-electric-500 selection:text-white">
+
+  <!-- HEADER (Clean PC & Mobile Navigation) -->
+  <header class="sticky top-0 z-50 bg-[#03071b]/95 backdrop-blur-md border-b border-blue-900/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-2.5 shrink-0">
+        <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="tioDisk Logo" class="w-8 h-8 rounded-lg object-cover ring-1 ring-electric-500/60">
+        <span class="text-xl font-extrabold tracking-tight text-white">
+          <span class="text-electric-500">tio</span>Disk
+        </span>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-300">
+        <a href="#services" id="navServices" class="hover:text-white transition">Services</a>
+        <a href="#solutions" id="navSolutions" class="hover:text-white transition">Web Solutions</a>
+        <a href="#process" id="navProcess" class="hover:text-white transition">How We Work</a>
+        <a href="dash.html" id="navStore" class="hover:text-electric-400 transition flex items-center gap-1.5">
+          <span>Store Platform</span>
+        </a>
+        <a href="#contact" id="navContact" class="hover:text-white transition">Contact</a>
+      </nav>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <!-- EN / BN Toggle -->
+        <div class="flex items-center bg-[#070f2e] border border-slate-700/80 px-1.5 py-1 rounded-lg text-xs font-bold">
+          <button id="btnLangEn" onclick="switchLanguage('en')" class="px-2 py-0.5 text-electric-500 transition">EN</button>
+          <span class="text-slate-600 select-none">/</span>
+          <button id="btnLangBn" onclick="switchLanguage('bn')" class="px-2 py-0.5 text-slate-400 hover:text-white transition">BN</button>
+        </div>
+
+        <!-- Store Access (Desktop) -->
+        <button onclick="goToDash()" class="hidden md:inline-flex items-center gap-1.5 border border-slate-700 hover:border-electric-500 text-slate-200 hover:text-white font-semibold text-xs sm:text-sm px-3.5 py-2 rounded-lg transition">
+          <span id="txtStoreBtn">Store Portal</span>
+        </button>
+
+        <!-- Primary Agency CTA (Desktop) -->
+        <a href="https://wa.me/message/HG3CUSUPMOWQE1" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 primary-btn text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-lg">
+          <span id="txtHeaderCta">Start Project</span>
+        </a>
+
+        <!-- Mobile Menu Toggle -->
+        <button onclick="toggleMobileMenu()" aria-label="Open menu" class="lg:hidden p-2 rounded-lg text-slate-200 hover:bg-white/10 transition">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobileDrawer" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm lg:hidden">
+    <div class="ml-auto w-72 max-w-[85vw] h-full bg-[#040a20] border-l border-blue-900/50 p-6 flex flex-col justify-between">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-blue-900/40 pb-4">
+          <span class="text-lg font-extrabold text-white"><span class="text-electric-500">tio</span>Disk</span>
+          <button onclick="toggleMobileMenu()" aria-label="Close menu" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <nav class="flex flex-col space-y-2 text-sm font-semibold text-slate-300">
+          <a href="#services" onclick="toggleMobileMenu()" class="py-2.5 px-3 rounded-lg hover:bg-blue-950/60 hover:text-white">Services</a>
+          <a href="#solutions" onclick="toggleMobileMenu()" class="py-2.5 px-3 rounded-lg hover:bg-blue-950/60 hover:text-white">Web Solutions</a>
+          <a href="#process" onclick="toggleMobileMenu()" class="py-2.5 px-3 rounded-lg hover:bg-blue-950/60 hover:text-white">How We Work</a>
+          <a href="dash.html" class="py-2.5 px-3 rounded-lg hover:bg-blue-950/60 text-electric-400">Store Platform (dash.html)</a>
+          <a href="#contact" onclick="toggleMobileMenu()" class="py-2.5 px-3 rounded-lg hover:bg-blue-950/60 hover:text-white">Contact Us</a>
+        </nav>
+      </div>
+      <div class="space-y-2.5">
+        <a href="https://wa.me/message/HG3CUSUPMOWQE1" target="_blank" class="w-full primary-btn text-white font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-2">
+          <span>WhatsApp Consultation</span>
+        </a>
+        <button onclick="goToDash()" class="w-full border border-slate-700 text-slate-200 font-semibold text-sm py-2.5 rounded-lg">
+          Open Store Portal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="w-full">
+
+    <!-- 1. HERO SECTION (Authoritative Web Agency Positioning) -->
+    <section class="hero-surface border-b border-blue-900/40 py-16 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-5xl mx-auto text-center space-y-6">
+        <div class="inline-block">
+          <span id="txtHeroBadge" class="inline-block border border-electric-500/60 bg-electric-500/10 text-electric-400 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] px-4 py-1.5 rounded-full">
+            WEB DEVELOPMENT & AUTOMATION AGENCY
+          </span>
+        </div>
+
+        <h1 id="txtHeroTitle" class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.18]">
+          Custom Websites, E-Commerce & <br class="hidden md:inline">
+          <span class="text-electric-400">Business Automation Solutions</span>
+        </h1>
+
+        <p id="txtHeroDesc" class="text-sm sm:text-base lg:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          tioDisk is a full-service web development agency engineering custom business websites, scalable e-commerce stores, web applications, and automated workflows tailored strictly to each client's exact requirements.
+        </p>
+
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          <a href="https://wa.me/message/HG3CUSUPMOWQE1" target="_blank" class="w-full sm:w-auto primary-btn text-white font-bold text-sm sm:text-base px-8 py-3.5 rounded-full inline-flex items-center justify-center gap-2">
+            <span id="txtHeroCta1">Discuss Your Project</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="#services" class="w-full sm:w-auto border border-slate-600 hover:border-white hover:bg-white/5 text-white font-semibold text-sm sm:text-base px-8 py-3.5 rounded-full inline-flex items-center justify-center transition">
+            <span id="txtHeroCta2">Explore All Services</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CORE AGENCY PILLARS (Clean 3-Column PC Grid) -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+      <div class="text-center max-w-2xl mx-auto space-y-2 mb-12">
+        <span id="txtValuesTag" class="text-xs font-bold uppercase text-electric-500 tracking-widest">WHY CHOOSE TIODISK</span>
+        <h2 id="txtValuesTitle" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
+          Engineered Around Your Exact Requirements
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article class="panel-card rounded-xl p-7 space-y-4">
+          <div class="w-12 h-12 rounded-full icon-badge text-white flex items-center justify-center">
+            <i data-lucide="code-2" class="w-5 h-5"></i>
+          </div>
+          <h3 id="txtVal1Title" class="text-lg font-bold text-white">100% Custom Development</h3>
+          <p id="txtVal1Desc" class="text-sm text-slate-300 leading-relaxed">
+            No rigid limitations. Every website, portal, and feature is built cleanly from the ground up around your specific business model and brand identity.
+          </p>
+        </article>
+
+        <article class="panel-card rounded-xl p-7 space-y-4">
+          <div class="w-12 h-12 rounded-full icon-badge text-white flex items-center justify-center">
+            <i data-lucide="workflow" class="w-5 h-5"></i>
+          </div>
+          <h3 id="txtVal2Title" class="text-lg font-bold text-white">Client-Specific Automation</h3>
+          <p id="txtVal2Desc" class="text-sm text-slate-300 leading-relaxed">
+            Eliminate repetitive manual tasks with automated order processing, instant payment verification, courier booking APIs, invoicing, and CRM notifications.
+          </p>
+        </article>
+
+        <article class="panel-card rounded-xl p-7 space-y-4">
+          <div class="w-12 h-12 rounded-full icon-badge text-white flex items-center justify-center">
+            <i data-lucide="search-check" class="w-5 h-5"></i>
+          </div>
+          <h3 id="txtVal3Title" class="text-lg font-bold text-white">Enterprise SEO & Performance</h3>
+          <p id="txtVal3Desc" class="text-sm text-slate-300 leading-relaxed">
+            Fast page speeds, semantic architecture, structured schema markup, and responsive layouts tested across desktop, tablet, and mobile devices.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 3. DETAILED WEB DEVELOPMENT & AUTOMATION SERVICES (Google / Meta Style Structured Lists) -->
+    <section id="services" class="bg-[#04091f] border-y border-blue-900/40 py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto space-y-12">
+        <div class="max-w-3xl space-y-2.5">
+          <span id="txtSrvTag" class="text-xs font-bold uppercase text-electric-500 tracking-widest">WHAT WE BUILD</span>
+          <h2 id="txtSrvTitle" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
+            Complete Web Development & Automation Directory
+          </h2>
+          <p id="txtSrvSub" class="text-sm sm:text-base text-slate-300 leading-relaxed">
+            From corporate business websites to complex multi-vendor e-commerce and custom software, we deliver complete solutions tailored to your requirements.
+          </p>
+        </div>
+
+        <!-- 2x2 Clean Structured Directory Grid (PC: 2 columns, Mobile: 1 column) -->
+        <div id="solutions" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Category 1: Business & Corporate Websites -->
+          <div class="panel-card rounded-xl p-6 sm:p-8 space-y-5">
+            <div class="flex items-center gap-3.5 border-b border-blue-900/40 pb-4">
+              <div class="w-10 h-10 rounded-lg bg-electric-500/15 border border-electric-500/40 text-electric-400 flex items-center justify-center shrink-0">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 id="txtCat1Title" class="text-lg font-bold text-white">Business & Corporate Websites</h3>
+                <p id="txtCat1Sub" class="text-xs text-slate-400">Professional brand authority & lead generation</p>
+              </div>
+            </div>
+            <ul id="listCat1" class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-sm text-slate-200">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Company & Corporate Profiles</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Agency & Consultancy Websites</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Real Estate & Property Portals</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Hospital, Clinic & Healthcare Sites</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>School, University & LMS Portals</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>High-Converting Landing Pages</span></li>
+            </ul>
+          </div>
+
+          <!-- Category 2: Custom E-Commerce Platforms -->
+          <div class="panel-card rounded-xl p-6 sm:p-8 space-y-5">
+            <div class="flex items-center gap-3.5 border-b border-blue-900/40 pb-4">
+              <div class="w-10 h-10 rounded-lg bg-electric-500/15 border border-electric-500/40 text-electric-400 flex items-center justify-center shrink-0">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 id="txtCat2Title" class="text-lg font-bold text-white">Custom E-Commerce Development</h3>
+                <p id="txtCat2Sub" class="text-xs text-slate-400">Built for high-volume sales & seamless checkout</p>
+              </div>
+            </div>
+            <ul id="listCat2" class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-sm text-slate-200">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Single-Brand Online Stores</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Multi-Vendor Marketplaces</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>bKash, Nagad & SSLCommerz Pay</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Steadfast & Pathao Courier Sync</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>B2B Wholesale & Dealer Portals</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Digital Product & Subscription Shops</span></li>
+            </ul>
+          </div>
+
+          <!-- Category 3: Custom Web Applications & Portals -->
+          <div class="panel-card rounded-xl p-6 sm:p-8 space-y-5">
+            <div class="flex items-center gap-3.5 border-b border-blue-900/40 pb-4">
+              <div class="w-10 h-10 rounded-lg bg-electric-500/15 border border-electric-500/40 text-electric-400 flex items-center justify-center shrink-0">
+                <i data-lucide="layers" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 id="txtCat3Title" class="text-lg font-bold text-white">Custom Web Apps & Specialized Portals</h3>
+                <p id="txtCat3Sub" class="text-xs text-slate-400">Tailored software engineered for unique operations</p>
+              </div>
+            </div>
+            <ul id="listCat3" class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-sm text-slate-200">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Custom SaaS Web Applications</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>News, Magazine & Media Portals</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Hotel, Travel & Ticket Booking</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Restaurant & Cloud Kitchen Systems</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Custom Admin & Client Dashboards</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Role-Based Staff & Branch Panels</span></li>
+            </ul>
+          </div>
+
+          <!-- Category 4: Business Automation & Integrations -->
+          <div class="panel-card rounded-xl p-6 sm:p-8 space-y-5">
+            <div class="flex items-center gap-3.5 border-b border-blue-900/40 pb-4">
+              <div class="w-10 h-10 rounded-lg bg-electric-500/15 border border-electric-500/40 text-electric-400 flex items-center justify-center shrink-0">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 id="txtCat4Title" class="text-lg font-bold text-white">Business Automation & API Systems</h3>
+                <p id="txtCat4Sub" class="text-xs text-slate-400">Built to match your daily operational workflow</p>
+              </div>
+            </div>
+            <ul id="listCat4" class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-sm text-slate-200">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Automated Order & Courier Dispatch</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>POS, Stock & Inventory Automation</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Auto Invoice, Slip & Billing Systems</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>WhatsApp & SMS Order Alerts</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>CRM & Lead Pipeline Automation</span></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-4 h-4 text-electric-400 shrink-0 mt-0.5"></i><span>Custom Third-Party API Integration</span></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Subtle Store Platform Feature Strip (Access dash.html without clutter) -->
+        <div class="panel-card rounded-xl p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border-electric-500/40">
+          <div class="flex items-start sm:items-center gap-4">
+            <div class="w-11 h-11 rounded-lg bg-electric-500/15 border border-electric-500/40 text-electric-400 flex items-center justify-center shrink-0">
+              <i data-lucide="store" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 id="txtStoreFeatTitle" class="text-base sm:text-lg font-bold text-white">tioDisk Instant Store Platform</h3>
+              <p id="txtStoreFeatDesc" class="text-xs sm:text-sm text-slate-300">
+                Alongside our custom agency development, merchants can also launch an instant ready-made online store with built-in checkout and courier dispatch.
+              </p>
+            </div>
+          </div>
+          <button onclick="goToDash()" class="shrink-0 border border-electric-500/70 hover:bg-electric-500 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-lg transition inline-flex items-center gap-2">
+            <span id="txtStoreFeatCta">Open Store Platform</span>
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ANIMATED AGENCY STATS GRID (Count-Up Animation on Scroll) -->
+    <section id="stats-section" class="w-full bg-gradient-to-br from-[#0066ff] via-[#0080ff] to-[#00a6ff] text-white border-b border-sky-400/30">
+      <div class="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4">
+        <div class="p-8 sm:p-12 text-center border-r border-b lg:border-b-0 border-white/20 space-y-1.5">
+          <div class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+            <span class="stat-counter" data-target="560" data-suffix="+">0+</span>
+          </div>
+          <div id="txtStat1" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-100">ACTIVE CLIENTS</div>
+        </div>
+
+        <div class="p-8 sm:p-12 text-center border-b lg:border-b-0 lg:border-r border-white/20 space-y-1.5">
+          <div class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+            <span class="stat-counter" data-target="3500" data-format="k" data-suffix="+">0+</span>
+          </div>
+          <div id="txtStat2" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-100">HAPPY CLIENTS</div>
+        </div>
+
+        <div class="p-8 sm:p-12 text-center border-r border-white/20 space-y-1.5">
+          <div class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+            <span class="stat-counter" data-target="1300" data-format="k" data-suffix="+">0+</span>
+          </div>
+          <div id="txtStat3" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-100">PROJECTS DELIVERED</div>
+        </div>
+
+        <div class="p-8 sm:p-12 text-center space-y-1.5">
+          <div class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+            <span class="stat-counter" data-target="25" data-suffix="+">0+</span>
+          </div>
+          <div id="txtStat4" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-100">EXPERT ADVISORS</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. HOW WE WORK (Structured 4-Step Engineering Process) -->
+    <section id="process" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 space-y-12">
+      <div class="max-w-2xl space-y-2">
+        <span id="txtProcTag" class="text-xs font-bold uppercase text-electric-500 tracking-widest">HOW WE WORK</span>
+        <h2 id="txtProcTitle" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
+          From Client Requirement to Automated Launch
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="panel-card rounded-xl p-6 space-y-3">
+          <span class="text-xs font-extrabold text-electric-400 uppercase tracking-wider">01</span>
+          <h3 id="txtStep1Title" class="text-base font-bold text-white">Requirement Analysis</h3>
+          <p id="txtStep1Desc" class="text-sm text-slate-300 leading-relaxed">
+            We listen carefully to your business goals, required features, user roles, and operational workflow before planning the architecture.
+          </p>
+        </div>
+
+        <div class="panel-card rounded-xl p-6 space-y-3">
+          <span class="text-xs font-extrabold text-electric-400 uppercase tracking-wider">02</span>
+          <h3 id="txtStep2Title" class="text-base font-bold text-white">Clean UI/UX & System Design</h3>
+          <p id="txtStep2Desc" class="text-sm text-slate-300 leading-relaxed">
+            Designing responsive layouts optimized for both desktop PCs and mobile devices with clear navigation and conversion-focused structure.
+          </p>
+        </div>
+
+        <div class="panel-card rounded-xl p-6 space-y-3">
+          <span class="text-xs font-extrabold text-electric-400 uppercase tracking-wider">03</span>
+          <h3 id="txtStep3Title" class="text-base font-bold text-white">Development & Automation</h3>
+          <p id="txtStep3Desc" class="text-sm text-slate-300 leading-relaxed">
+            Building fast frontend & backend systems along with automated payment gateways, courier sync, and custom business logic.
+          </p>
+        </div>
+
+        <div class="panel-card rounded-xl p-6 space-y-3">
+          <span class="text-xs font-extrabold text-electric-400 uppercase tracking-wider">04</span>
+          <h3 id="txtStep4Title" class="text-base font-bold text-white">SEO, Testing & Ongoing Support</h3>
+          <p id="txtStep4Desc" class="text-sm text-slate-300 leading-relaxed">
+            Thorough QA across browsers, technical SEO setup for Google ranking, secure deployment, and reliable long-term technical support.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CONTACT & CONSULTATION SECTION (Screenshot 3 Layout) -->
+    <section id="contact" class="tech-grid-bg border-t border-blue-900/40 py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-5">
+          <h2 id="txtWorkTitle" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Let’s Work Together!
+          </h2>
+          <p id="txtWorkDesc" class="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+            Looking for a trusted web development partner to build your business website, e-commerce store, or custom automation system? Share your requirements with our team today.
+          </p>
+          <div class="pt-2 flex flex-wrap items-center gap-3.5">
+            <a href="https://wa.me/message/HG3CUSUPMOWQE1" target="_blank" class="primary-btn inline-flex items-center gap-2 text-white font-bold text-sm px-7 py-3.5 rounded-full">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span id="txtGetInTouch">Chat on WhatsApp</span>
+            </a>
+            <a href="tel:+8801704609401" class="inline-flex items-center gap-2 border border-slate-600 hover:border-white text-white font-semibold text-sm px-6 py-3.5 rounded-full transition">
+              <span id="txtCallNow">Call Our Team</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+          <a href="https://wa.me/message/HG3CUSUPMOWQE1" target="_blank" class="flex items-center gap-4 p-4 rounded-xl panel-card group">
+            <div class="w-11 h-11 rounded-full icon-badge text-white flex items-center justify-center shrink-0">
+              <i data-lucide="message-circle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="txtWaLbl" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">WHATSAPP BUSINESS</div>
+              <div class="text-sm sm:text-base font-bold text-white group-hover:text-electric-400 transition">Message tioDisk Directly</div>
+            </div>
+          </a>
+
+          <a href="tel:+8801704609401" class="flex items-center gap-4 p-4 rounded-xl panel-card group">
+            <div class="w-11 h-11 rounded-full icon-badge text-white flex items-center justify-center shrink-0">
+              <i data-lucide="phone" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="txtLetsTalk" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">LET'S TALK</div>
+              <div class="text-sm sm:text-base font-bold text-white group-hover:text-electric-400 transition">+880 1704-609401</div>
+            </div>
+          </a>
+
+          <a href="mailto:support@tiodisk.top" class="flex items-center gap-4 p-4 rounded-xl panel-card group">
+            <div class="w-11 h-11 rounded-full icon-badge text-white flex items-center justify-center shrink-0">
+              <i data-lucide="mail" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="txtEmailSup" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">EMAIL SUPPORT</div>
+              <div class="text-sm sm:text-base font-bold text-white group-hover:text-electric-400 transition">support@tiodisk.top</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER (Clean Desktop 4-Column + Mobile Structured Directory) -->
+  <footer class="bg-[#020617] border-t border-blue-900/40 pt-14 pb-10 text-xs sm:text-sm text-slate-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+        <!-- Brand Info -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="flex items-center gap-2.5">
+            <img src="https://i.postimg.cc/Y28MDVJr/FB-IMG-1788689035157.jpg" alt="tioDisk" class="w-8 h-8 rounded-lg object-cover ring-1 ring-electric-500/60">
+            <span class="text-2xl font-extrabold tracking-tight text-white">
+              <span class="text-electric-500">tio</span>Disk
+            </span>
+          </div>
+          <div id="txtFooterTagline" class="text-sm font-bold text-white">Custom Web Development & Automation Agency</div>
+          <p id="txtFooterBio" class="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md">
+            We transform business ideas into scalable digital products through custom web development, e-commerce engineering, and intelligent workflow automation.
+          </p>
+
+          <!-- Social Links -->
+          <div class="flex items-center gap-3 pt-1">
+            <a href="https://www.facebook.com/share/1dVfpAJtLH/" target="_blank" title="Facebook" class="w-9 h-9 rounded-full bg-white text-[#040a20] hover:bg-electric-500 hover:text-white flex items-center justify-center transition">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </a>
+            <a href="https://wa.me/message/HG3CUSUPMOWQE1" target="_blank" title="WhatsApp" class="w-9 h-9 rounded-full bg-white text-[#040a20] hover:bg-emerald-500 hover:text-white flex items-center justify-center transition">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+            </a>
+            <a href="mailto:support@tiodisk.top" title="Email" class="w-9 h-9 rounded-full bg-white text-[#040a20] hover:bg-electric-500 hover:text-white flex items-center justify-center transition">
+              <i data-lucide="mail" class="w-4 h-4"></i>
+            </a>
+            <a href="https://tiodisk.top" target="_blank" title="Website" class="w-9 h-9 rounded-full bg-white text-[#040a20] hover:bg-electric-500 hover:text-white flex items-center justify-center transition">
+              <i data-lucide="globe" class="w-4 h-4"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="lg:col-span-3 space-y-3">
+          <h4 id="txtQuickHead" class="text-sm font-bold text-white uppercase tracking-wider">Quick Links</h4>
+          <ul class="space-y-2.5 text-slate-400">
+            <li><a href="#" class="hover:text-white transition">Home</a></li>
+            <li><a href="#services" class="hover:text-white transition">All Web Services</a></li>
+            <li><a href="#process" class="hover:text-white transition">How We Work</a></li>
+            <li><a href="dash.html" class="hover:text-electric-400 transition">Store Platform (dash.html)</a></li>
+            <li><a href="#contact" class="hover:text-white transition">Contact & Consultation</a></li>
+          </ul>
+        </div>
+
+        <!-- Services List -->
+        <div class="lg:col-span-4 space-y-3">
+          <h4 id="txtServicesHead" class="text-sm font-bold text-white uppercase tracking-wider">Core Solutions</h4>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 text-slate-400">
+            <li><a href="#solutions" class="hover:text-white transition">Business & Corporate Websites</a></li>
+            <li><a href="#solutions" class="hover:text-white transition">Custom E-Commerce Development</a></li>
+            <li><a href="#solutions" class="hover:text-white transition">Custom Web Applications & SaaS</a></li>
+            <li><a href="#solutions" class="hover:text-white transition">Business Workflow Automation</a></li>
+            <li><a href="#solutions" class="hover:text-white transition">Payment & Courier API Integration</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-6 border-t border-blue-900/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <span>© 2026 tioDisk Technologies. All Rights Reserved.</span>
+        <span id="txtOfficeFooter">Patuakhali, Bauphal, Golabari Mor, Bangladesh</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let currentLang = 'en';
+
+    function goToDash() {
+      window.location.href = "dash.html";
+    }
+
+    function toggleMobileMenu() {
+      document.getElementById('mobileDrawer').classList.toggle('hidden');
+    }
+
+    // Smooth Count-Up Animation for Stats Section
+    function animateCounters() {
+      const counters = document.querySelectorAll('.stat-counter');
+      const duration = 1600; // ms
+
+      counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'), 10);
+        const suffix = counter.getAttribute('data-suffix') || '';
+        const format = counter.getAttribute('data-format') || '';
+        const startTime = performance.now();
+
+        function update(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease-out cubic
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const currentVal = Math.floor(eased * target);
+
+          if (progress < 1) {
+            if (format === 'k' && currentVal >= 1000) {
+              counter.innerText = (currentVal / 1000).toFixed(1) + 'K' + suffix;
+            } else {
+              counter.innerText = currentVal.toLocaleString() + suffix;
+            }
+            requestAnimationFrame(update);
+          } else {
+            if (format === 'k') {
+              counter.innerText = (target / 1000).toFixed(1).replace(/\.0$/, '') + 'K' + suffix;
+            } else {
+              counter.innerText = target.toLocaleString() + suffix;
+            }
+          }
+        }
+        requestAnimationFrame(update);
+      });
+    }
+
+    // Trigger Count-Up once when stats section enters viewport
+    function setupStatsObserver() {
+      const statsSection = document.getElementById('stats-section');
+      if (!statsSection) return;
+
+      let hasAnimated = false;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !hasAnimated) {
+            hasAnimated = true;
+            animateCounters();
+            observer.unobserve(statsSection);
+          }
+        });
+      }, { threshold: 0.25 });
+
+      observer.observe(statsSection);
+    }
+
+    // EN / BN Language Dictionary
+    const dict = {
+      en: {
+        navServices: "Services",
+        navSolutions: "Web Solutions",
+        navProcess: "How We Work",
+        navStore: "Store Platform",
+        navContact: "Contact",
+        storeBtn: "Store Portal",
+        headerCta: "Start Project",
+        heroBadge: "WEB DEVELOPMENT & AUTOMATION AGENCY",
+        heroTitle: "Custom Websites, E-Commerce & <br class='hidden md:inline'><span class='text-electric-400'>Business Automation Solutions</span>",
+        heroDesc: "tioDisk is a full-service web development agency engineering custom business websites, scalable e-commerce stores, web applications, and automated workflows tailored strictly to each client's exact requirements.",
+        heroCta1: "Discuss Your Project",
+        heroCta2: "Explore All Services",
+        valuesTag: "WHY CHOOSE TIODISK",
+        valuesTitle: "Engineered Around Your Exact Requirements",
+        val1Title: "100% Custom Development",
+        val1Desc: "No rigid limitations. Every website, portal, and feature is built cleanly from the ground up around your specific business model and brand identity.",
+        val2Title: "Client-Specific Automation",
+        val2Desc: "Eliminate repetitive manual tasks with automated order processing, instant payment verification, courier booking APIs, invoicing, and CRM notifications.",
+        val3Title: "Enterprise SEO & Performance",
+        val3Desc: "Fast page speeds, semantic architecture, structured schema markup, and responsive layouts tested across desktop, tablet, and mobile devices.",
+        srvTag: "WHAT WE BUILD",
+        srvTitle: "Complete Web Development & Automation Directory",
+        srvSub: "From corporate business websites to complex multi-vendor e-commerce and custom software, we deliver complete solutions tailored to your requirements.",
+        cat1Title: "Business & Corporate Websites",
+        cat1Sub: "Professional brand authority & lead generation",
+        cat2Title: "Custom E-Commerce Development",
+        cat2Sub: "Built for high-volume sales & seamless checkout",
+        cat3Title: "Custom Web Apps & Specialized Portals",
+        cat3Sub: "Tailored software engineered for unique operations",
+        cat4Title: "Business Automation & API Systems",
+        cat4Sub: "Built to match your daily operational workflow",
+        storeFeatTitle: "tioDisk Instant Store Platform",
+        storeFeatDesc: "Alongside our custom agency development, merchants can also launch an instant ready-made online store with built-in checkout and courier dispatch.",
+        storeFeatCta: "Open Store Platform",
+        stat1: "ACTIVE CLIENTS",
+        stat2: "HAPPY CLIENTS",
+        stat3: "PROJECTS DELIVERED",
+        stat4: "EXPERT ADVISORS",
+        procTag: "HOW WE WORK",
+        procTitle: "From Client Requirement to Automated Launch",
+        step1Title: "Requirement Analysis",
+        step1Desc: "We listen carefully to your business goals, required features, user roles, and operational workflow before planning the architecture.",
+        step2Title: "Clean UI/UX & System Design",
+        step2Desc: "Designing responsive layouts optimized for both desktop PCs and mobile devices with clear navigation and conversion-focused structure.",
+        step3Title: "Development & Automation",
+        step3Desc: "Building fast frontend & backend systems along with automated payment gateways, courier sync, and custom business logic.",
+        step4Title: "SEO, Testing & Ongoing Support",
+        step4Desc: "Thorough QA across browsers, technical SEO setup for Google ranking, secure deployment, and reliable long-term technical support.",
+        workTitle: "Let’s Work Together!",
+        workDesc: "Looking for a trusted web development partner to build your business website, e-commerce store, or custom automation system? Share your requirements with our team today.",
+        getInTouch: "Chat on WhatsApp",
+        callNow: "Call Our Team",
+        waLbl: "WHATSAPP BUSINESS",
+        letsTalk: "LET'S TALK",
+        emailSup: "EMAIL SUPPORT",
+        footerTagline: "Custom Web Development & Automation Agency",
+        footerBio: "We transform business ideas into scalable digital products through custom web development, e-commerce engineering, and intelligent workflow automation.",
+        quickHead: "Quick Links",
+        servicesHead: "Core Solutions"
+      },
+      bn: {
+        navServices: "সার্ভিস",
+        navSolutions: "ওয়েব সলিউশন",
+        navProcess: "কাজের ধাপ",
+        navStore: "স্টোর প্ল্যাটফর্ম",
+        navContact: "যোগাযোগ",
+        storeBtn: "স্টোর পোর্টাল",
+        headerCta: "প্রজেক্ট শুরু করুন",
+        heroBadge: "ওয়েব ডেভেলপমেন্ট ও অটোমেশন এজেন্সি",
+        heroTitle: "কাস্টম ওয়েবসাইট, ই-কমার্স ও <br class='hidden md:inline'><span class='text-electric-400'>বিজনেস অটোমেশন সলিউশন</span>",
+        heroDesc: "tioDisk একটি পূর্ণাঙ্গ ওয়েব ডেভেলপমেন্ট এজেন্সি। ক্লায়েন্টের নিজস্ব চাহিদা ও রিকোয়ারমেন্ট অনুযায়ী আমরা বিজনেস ওয়েবসাইট, কাস্টম ই-কমার্স, ওয়েব অ্যাপ এবং স্মার্ট বিজনেস অটোমেশন সিস্টেম তৈরি করি।",
+        heroCta1: "আপনার প্রজেক্ট নিয়ে কথা বলুন",
+        heroCta2: "সকল সার্ভিস দেখুন",
+        valuesTag: "কেন tioDisk সেরা",
+        valuesTitle: "ক্লায়েন্টের রিকোয়ারমেন্ট অনুযায়ী শতভাগ কাস্টম কাজ",
+        val1Title: "সম্পূর্ণ কাস্টম ওয়েব ডেভেলপমেন্ট",
+        val1Desc: "কোনো সীমাবদ্ধতা ছাড়াই আপনার ব্যবসার ধরন, ব্র্যান্ড এবং নির্দিষ্ট চাহিদা অনুযায়ী প্রতিটি ওয়েবসাইট ও ফিচার শুরু থেকে তৈরি করা হয়।",
+        val2Title: "ক্লায়েন্ট-ভিত্তিক অটোমেশন সিস্টেম",
+        val2Desc: "ম্যানুয়াল কাজের ঝামেলা কমাতে অটোমেটেড অর্ডার প্রসেসিং, পেমেন্ট ভেরিফিকেশন, কুরিয়ার এন্ট্রি, ইনভয়েস ও কাস্টমার নোটিফিকেশন যুক্ত করা হয়।",
+        val3Title: "অ্যাডভান্সড SEO ও পিসি-মোবাইল পারফেক্ট",
+        val3Desc: "দ্রুত লোডিং স্পিড, গুগল র‍্যাংকিংয়ের জন্য শক্তিশালী SEO স্ট্রাকচার এবং পিসি, ট্যাব ও মোবাইলের জন্য নিখুঁত রেসপন্সিভ ডিজাইন।",
+        srvTag: "আমরা যা তৈরি করি",
+        srvTitle: "ওয়েব ডেভেলপমেন্ট ও অটোমেশন সার্ভিসের বিস্তারিত তালিকা",
+        srvSub: "সাধারণ বিজনেস ওয়েবসাইট থেকে শুরু করে বড় ই-কমার্স এবং কাস্টম সফটওয়্যার—সব ধরনের ওয়েব সলিউশন আমরা তৈরি করে থাকি।",
+        cat1Title: "বিজনেস ও কর্পোরেট ওয়েবসাইট",
+        cat1Sub: "ব্র্যান্ড পরিচিতি ও কাস্টমার লিড জেনারেশনের জন্য",
+        cat2Title: "কাস্টম ই-কমার্স ডেভেলপমেন্ট",
+        cat2Sub: "দ্রুত বিক্রি ও সহজ অর্ডার ম্যানেজমেন্টের জন্য",
+        cat3Title: "কাস্টম ওয়েব অ্যাপ ও বিশেষ পোর্টাল",
+        cat3Sub: "আপনার ব্যবসার নিজস্ব অপারেশনের জন্য কাস্টম সফটওয়্যার",
+        cat4Title: "বিজনেস অটোমেশন ও API সিস্টেম",
+        cat4Sub: "প্রতিদিনের কাজ স্বয়ংক্রিয়ভাবে পরিচালনার জন্য",
+        storeFeatTitle: "tioDisk ইনস্ট্যান্ট স্টোর প্ল্যাটফর্ম",
+        storeFeatDesc: "কাস্টম এজেন্সি ডেভেলপমেন্টের পাশাপাশি, যারা দ্রুত রেডিমেড অনলাইন শপ চালু করতে চান তাদের জন্য রয়েছে আমাদের নিজস্ব স্টোর প্ল্যাটফর্ম।",
+        storeFeatCta: "স্টোর প্ল্যাটফর্ম দেখুন",
+        stat1: "সক্রিয় ক্লায়েন্ট",
+        stat2: "সন্তুষ্ট ক্লায়েন্ট",
+        stat3: "সম্পন্ন প্রজেক্ট",
+        stat4: "অভিজ্ঞ ডেভেলপার ও উপদেষ্টা",
+        procTag: "আমাদের কাজের প্রক্রিয়া",
+        procTitle: "রিকোয়ারমেন্ট থেকে অটোমেটেড লঞ্চ পর্যন্ত",
+        step1Title: "রিকোয়ারমেন্ট অ্যানালাইসিস",
+        step1Desc: "প্রথমে আপনার ব্যবসার লক্ষ্য, প্রয়োজনীয় ফিচার এবং কাজের ধরন বিস্তারিত বুঝে নিয়ে আর্কিটেকচার পরিকল্পনা করা হয়।",
+        step2Title: "ক্লিন UI/UX ও সিস্টেম ডিজাইন",
+        step2Desc: "পিসি এবং মোবাইল সব ডিভাইসে সুন্দরভাবে দেখার জন্য প্রফেশনাল ও ব্যবহারবান্ধব লেআউট তৈরি করা হয়।",
+        step3Title: "ডেভেলপমেন্ট ও অটোমেশন",
+        step3Desc: "দ্রুতগতির ওয়েবসাইট কোডিংয়ের পাশাপাশি পেমেন্ট গেটওয়ে, কুরিয়ার এপিআই ও কাস্টম অটোমেশন যুক্ত করা হয়।",
+        step4Title: "SEO, টেস্টিং ও সাপোর্ট",
+        step4Desc: "সকল ব্রাউজারে পরীক্ষা, গুগল সার্চের জন্য টেকনিক্যাল SEO সেটআপ এবং প্রজেক্ট ডেলিভারির পর দীর্ঘমেয়াদী সাপোর্ট প্রদান।",
+        workTitle: "চলুন একসাথে কাজ শুরু করি!",
+        workDesc: "আপনার বিজনেস ওয়েবসাইট, ই-কমার্স প্ল্যাটফর্ম অথবা কাস্টম অটোমেশন সিস্টেম তৈরি করতে আজই আমাদের সাথে যোগাযোগ করুন।",
+        getInTouch: "WhatsApp-এ মেসেজ দিন",
+        callNow: "সরাসরি কল করুন",
+        waLbl: "হোয়াটসঅ্যাপ বিজনেস",
+        letsTalk: "কথা বলুন",
+        emailSup: "ইমেইল সাপোর্ট",
+        footerTagline: "কাস্টম ওয়েব ডেভেলপমেন্ট ও অটোমেশন এজেন্সি",
+        footerBio: "কাস্টম ওয়েব ডেভেলপমেন্ট, ই-কমার্স ইঞ্জিনিয়ারিং এবং স্মার্ট অটোমেশনের মাধ্যমে আমরা আপনার ব্যবসাকে ডিজিটাল ও নির্ভরযোগ্য সিস্টেমে রূপান্তর করি।",
+        quickHead: "কুইক লিংকস",
+        servicesHead: "মূল সার্ভিসসমূহ"
+      }
+    };
+
+    function switchLanguage(lang) {
+      currentLang = lang;
+      const bBn = document.getElementById('btnLangBn');
+      const bEn = document.getElementById('btnLangEn');
+
+      if (lang === 'bn') {
+        bBn.className = "px-2 py-0.5 text-electric-500 transition";
+        bEn.className = "px-2 py-0.5 text-slate-400 hover:text-white transition";
+        document.body.style.fontFamily = "'Hind Siliguri', sans-serif";
+      } else {
+        bEn.className = "px-2 py-0.5 text-electric-500 transition";
+        bBn.className = "px-2 py-0.5 text-slate-400 hover:text-white transition";
+        document.body.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
+      }
+
+      const t = dict[lang];
+      document.getElementById('navServices').innerText = t.navServices;
+      document.getElementById('navSolutions').innerText = t.navSolutions;
+      document.getElementById('navProcess').innerText = t.navProcess;
+      document.getElementById('navStore').innerText = t.navStore;
+      document.getElementById('navContact').innerText = t.navContact;
+      document.getElementById('txtStoreBtn').innerText = t.storeBtn;
+      document.getElementById('txtHeaderCta').innerText = t.headerCta;
+
+      document.getElementById('txtHeroBadge').innerText = t.heroBadge;
+      document.getElementById('txtHeroTitle').innerHTML = t.heroTitle;
+      document.getElementById('txtHeroDesc').innerText = t.heroDesc;
+      document.getElementById('txtHeroCta1').innerText = t.heroCta1;
+      document.getElementById('txtHeroCta2').innerText = t.heroCta2;
+
+      document.getElementById('txtValuesTag').innerText = t.valuesTag;
+      document.getElementById('txtValuesTitle').innerText = t.valuesTitle;
+      document.getElementById('txtVal1Title').innerText = t.val1Title;
+      document.getElementById('txtVal1Desc').innerText = t.val1Desc;
+      document.getElementById('txtVal2Title').innerText = t.val2Title;
+      document.getElementById('txtVal2Desc').innerText = t.val2Desc;
+      document.getElementById('txtVal3Title').innerText = t.val3Title;
+      document.getElementById('txtVal3Desc').innerText = t.val3Desc;
+
+      document.getElementById('txtSrvTag').innerText = t.srvTag;
+      document.getElementById('txtSrvTitle').innerText = t.srvTitle;
+      document.getElementById('txtSrvSub').innerText = t.srvSub;
+
+      document.getElementById('txtCat1Title').innerText = t.cat1Title;
+      document.getElementById('txtCat1Sub').innerText = t.cat1Sub;
+      document.getElementById('txtCat2Title').innerText = t.cat2Title;
+      document.getElementById('txtCat2Sub').innerText = t.cat2Sub;
+      document.getElementById('txtCat3Title').innerText = t.cat3Title;
+      document.getElementById('txtCat3Sub').innerText = t.cat3Sub;
+      document.getElementById('txtCat4Title').innerText = t.cat4Title;
+      document.getElementById('txtCat4Sub').innerText = t.cat4Sub;
+
+      document.getElementById('txtStoreFeatTitle').innerText = t.storeFeatTitle;
+      document.getElementById('txtStoreFeatDesc').innerText = t.storeFeatDesc;
+      document.getElementById('txtStoreFeatCta').innerText = t.storeFeatCta;
+
+      document.getElementById('txtStat1').innerText = t.stat1;
+      document.getElementById('txtStat2').innerText = t.stat2;
+      document.getElementById('txtStat3').innerText = t.stat3;
+      document.getElementById('txtStat4').innerText = t.stat4;
+
+      document.getElementById('txtProcTag').innerText = t.procTag;
+      document.getElementById('txtProcTitle').innerText = t.procTitle;
+      document.getElementById('txtStep1Title').innerText = t.step1Title;
+      document.getElementById('txtStep1Desc').innerText = t.step1Desc;
+      document.getElementById('txtStep2Title').innerText = t.step2Title;
+      document.getElementById('txtStep2Desc').innerText = t.step2Desc;
+      document.getElementById('txtStep3Title').innerText = t.step3Title;
+      document.getElementById('txtStep3Desc').innerText = t.step3Desc;
+      document.getElementById('txtStep4Title').innerText = t.step4Title;
+      document.getElementById('txtStep4Desc').innerText = t.step4Desc;
+
+      document.getElementById('txtWorkTitle').innerText = t.workTitle;
+      document.getElementById('txtWorkDesc').innerText = t.workDesc;
+      document.getElementById('txtGetInTouch').innerText = t.getInTouch;
+      document.getElementById('txtCallNow').innerText = t.callNow;
+      document.getElementById('txtWaLbl').innerText = t.waLbl;
+      document.getElementById('txtLetsTalk').innerText = t.letsTalk;
+      document.getElementById('txtEmailSup').innerText = t.emailSup;
+
+      document.getElementById('txtFooterTagline').innerText = t.footerTagline;
+      document.getElementById('txtFooterBio').innerText = t.footerBio;
+      document.getElementById('txtQuickHead').innerText = t.quickHead;
+      document.getElementById('txtServicesHead').innerText = t.servicesHead;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      setupStatsObserver();
+    });
+  </script>
+</body>
+</html>
